@@ -1,5 +1,5 @@
-# Ethereum Flashboys
-### Attacking Ethereum Smartcontracs (DeFi) and Mitigation
+# Bothnode
+### Ethereum Smartcontracs (DeFi) Mitigating the Manipulation
 Work In Progress
 
 ### Getting Started 
