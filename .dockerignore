@@ -1,0 +1,18 @@
+# frontend local dev context
+./frontend/node_modules
+./frontend/package-lock.json
+
+# docker context
+./Dockerfile*
+./docker-compose.yml
+
+# git context
+./LICENSE
+./README.md
+.git
+.gitignore
+
+# others 
+*.pdf
+*.ipynb
+

@@ -1,0 +1,9 @@
+time=2024-01-02T14:35:29.784Z level=INFO msg=Configured api=signer "audit log"=audit.log
+time=2024-01-02T14:39:05.586Z level=INFO msg=Configured api=signer "audit log"=audit.log
+time=2024-01-02T14:39:41.366Z level=INFO msg=Version api=signer type=request metadata="{\"remote\":\"NA\",\"local\":\"NA\",\"scheme\":\"ipc\",\"User-Agent\":\"\",\"Origin\":\"\"}"
+time=2024-01-02T14:39:41.366Z level=INFO msg=Version api=signer type=response data=6.1.0 error=<nil>
+time=2024-01-02T14:58:43.733Z level=INFO msg=List api=signer type=request metadata="{\"remote\":\"NA\",\"local\":\"NA\",\"scheme\":\"ipc\",\"User-Agent\":\"\",\"Origin\":\"\"}"
+time=2024-01-02T15:01:27.681Z level=INFO msg=List api=signer type=response data=[0x24FF31815b6Cfa36d50f39432661FDCAa03857e1]
+time=2024-01-02T15:04:11.533Z level=INFO msg=List api=signer type=request metadata="{\"remote\":\"NA\",\"local\":\"NA\",\"scheme\":\"ipc\",\"User-Agent\":\"\",\"Origin\":\"\"}"
+time=2024-01-02T15:05:23.741Z level=INFO msg=List api=signer type=request metadata="{\"remote\":\"NA\",\"local\":\"NA\",\"scheme\":\"ipc\",\"User-Agent\":\"\",\"Origin\":\"\"}"
+time=2024-01-02T15:06:15.036Z level=INFO msg=List api=signer type=request metadata="{\"remote\":\"NA\",\"local\":\"NA\",\"scheme\":\"ipc\",\"User-Agent\":\"\",\"Origin\":\"\"}"

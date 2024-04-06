@@ -1,0 +1,18 @@
+# Sensitive data
+private/
+
+# local 
+.ipynb*
+
+# Node
+node_modules
+package-lock.json
+yarn.lock
+
+# host dev package.json
+frontend/package.json
+
+# pdf
+*.pdf
+
+

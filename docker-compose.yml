@@ -1,0 +1,42 @@
+version: '3'
+
+networks:
+  my-network:
+    driver: bridge
+
+services:
+  web-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.django-backend
+    container_name: my-django-app
+    ports:
+      - "80:8000"
+    depends_on:
+      - db
+    env_file:
+      - private/.env
+    environment:
+      - DJANGO_DB_HOST=db
+      - DJANGO_DB_PORT=5432
+      - DJANGO_DB_NAME=my-postgresql
+      - DJANGO_DB_USER=my-user
+      - DJANGO_DB_PASSWORD=my-password
+  
+  web-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.react-frontend
+    container_name: my-react-app
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://my-react-app:8000
+      
+  db:
+    image: postgres:latest
+    container_name: my-postgresql
+    environment:
+      - POSTGRES_DB=my-postgresql
+      - POSTGRES_USER=my-user
+      - POSTGRES_PASSWORD=my-password

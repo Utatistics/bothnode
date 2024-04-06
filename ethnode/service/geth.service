@@ -1,0 +1,17 @@
+[Unit]
+
+Description=Geth Full Node
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+
+WorkingDirectory=/home/ubuntu
+User=ubuntu
+ExecStart=/usr/bin/geth --authrpc.addr localhost --authrpc.port 8551 --authrpc.vhosts localhost --authrpc.jwtsecret /tmp/jwtsecret --syncmode snap --http --http.api personal,eth,net,web3,txpool --http.corsdomain *
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+

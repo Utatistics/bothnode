@@ -1,0 +1,1 @@
+{"address": "0x38eA004c2a1Fe0C5378890A3491e329693E0AfA9", "abi": [{"inputs": [{"internalType": "address", "name": "account", "type": "address"}], "name": "getBalance", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"}]}

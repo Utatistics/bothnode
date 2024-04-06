@@ -1,0 +1,17 @@
+{
+    "CONFIG": {
+        "root_dir": ".",
+        "backend_dir": "./backend",
+        "private_dir": "./private"
+    },
+    "NETWORK": {
+        "GANACHE": {
+            "name": "GANACHE",
+            "url": "http://127.0.0.1:8545",
+            "chain_id": 1337, 
+            "port": 8545}
+    },
+    "CLI": {
+        "version": "0.0.0"
+    }
+}
