@@ -1,9 +1,22 @@
+import logging
+from logging import getLogger
 import argparse
 from blessed import Terminal
 import time
 import json
 
 from backend import driver
+
+logger = getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s-%(levelname)s: %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Log to console
+    ]
+)
+
 
 with open('config.json') as f:
     jf = json.load(f)
@@ -24,22 +37,26 @@ def draw_ascii_art(term: Terminal):
 
     for i, line in enumerate(pattern):
             print(line)
-            time.sleep(.001)
+            time.sleep(.005)
+    print('\n')
 
 def console_mode(term: Terminal):
-    print(f"bothnode v{version}")
+    print(f"welcome to bothnode v{version}")
     draw_ascii_art(term)
 
     while True:
-        command = input('>>> ')
-        if command.lower() in ['exit', 'q']:
+        cmd = input('>>> ')
+        if cmd in ['exit', 'q']:
              break
-        elif command.lower() == 'init':
-             pass
-        elif command.lower() == 'queue':
-             pass          
+        elif cmd.lower() == 'init':
+            net_name = input("Network? -> ")
+            protocol = input("Protocol? -> ")
+            net = driver.init_net_instance(net_name=net_name, protocol=protocol)
+        elif cmd == 'queue':
+             logger.info(f"querying {net.name} for the queue...")
+             print(net.url)         
         else:
-            print(f"Hello, {command}")
+            print(f"Hello, {cmd}")
             
     print("Thanks for using bothnode.")
 
@@ -50,12 +67,15 @@ def handler(args: argparse.Namespace, term: Terminal):
         net = args.net
         protocol = args.protocol
         if net:
-            driver.create_net_instance(net, protocol)
+            driver.init_net_instance(net_name=net, protocol=protocol)
+            console_mode(term=term)
         else:
             raise ValueError('network not specified.')
+        
     elif cmd == 'tx':
         issc = args.smart_contract
         driver.send_transactions(is_smart_contract=issc)
+    
     elif cmd == 'detect':
         method = args.method
         if method:
