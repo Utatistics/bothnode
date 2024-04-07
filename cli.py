@@ -5,7 +5,7 @@ from blessed import Terminal
 import time
 import json
 
-from backend import driver
+from backend.driver import driver
 
 logger = getLogger(__name__)
 
@@ -48,13 +48,22 @@ def console_mode(term: Terminal):
         cmd = input('>>> ')
         if cmd in ['exit', 'q']:
              break
+        
         elif cmd.lower() == 'init':
-            net_name = input("Network? -> ")
-            protocol = input("Protocol? -> ")
+            net_name = input("Network: ")
+            protocol = input("Protocol: ")
             net = driver.init_net_instance(net_name=net_name, protocol=protocol)
+        
         elif cmd == 'queue':
              logger.info(f"querying {net.name} for the queue...")
-             print(net.url)         
+             print(net.url)
+             net_name = input("Network: ")
+             protocol = input("Protocol: ")
+        
+        elif cmd == 'tx':
+            net_name = input("Network: ")
+            tx_type = input("Tx Type: ")
+        
         else:
             print(f"Hello, {cmd}")
             

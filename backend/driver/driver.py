@@ -6,7 +6,7 @@ logger = getLogger(__name__)
 with open('config.json') as f:
     config_json = json.load(f)
 
-from backend.network import Network
+from backend.object.network import Network
 
 def init_net_instance(net_name: str, protocol: str):
     logger.info(f"Creating Network instance of {net_name}...")
