@@ -8,6 +8,8 @@ with open('config.json') as f:
 
 import web3
 from backend.object.network import Network
+from backend.object.account import Account
+from backend.object.contract import Contract
 
 def init_net_instance(net_name: str, protocol: str):
     logger.info(f"Creating Network instance of {net_name}...")
@@ -25,9 +27,14 @@ def nounce_getter(net: Network, address: str):
 def queue_getter(net: Network):
     net.get_queue()
 
-def send_transaction(net: Network, tx_type: bool):
+def send_transaction(net: Network, tx_type: bool, sender_address: str, recipient_address: str):
     logger.info("Sending TX...")
-    net.send_tx(tx_type)
+    sender = Account(sender_address, chain_id=net.chain_id)
+    recipient = Account(recipient_address, chain_id=net.chain_id)
+
+    if tx_type:
+        contract = Contract()
+    net.send_tx(tx_type, sender=sender, recipient=recipient, contract=contract)
 
 def detect_anamolies(method: str):
     logger.info("Let there be light")

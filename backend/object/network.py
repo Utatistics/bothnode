@@ -5,6 +5,8 @@ from web3 import Web3
 from backend import config
 
 from logging import getLogger
+from backend.object.account import Account
+from backend.object.contract import Contract
 
 logger = getLogger(__name__)
 
@@ -41,35 +43,33 @@ class Network(object):
         web3.geth.txpool.inspect
         web3.geth.txpool.status
  
-    def send_tx(self, sender: str, recipient: str, tx_type: str, smart_contract: str):
-        if tx_type:
-            # retrieve smart contract infomation
-            with open(path_to_output / 'build_info.json', 'r') as file:
-                data = json.load(file)
-            contract_address = None # address not neccesary for contract creation
-            abi = data['contracts'][smart_contract]['abi']
-            bytecode = data['contracts'][smart_contract]["bin"]
+    def send_tx(self, sender: Account, recipient: Account, contract: Contract):
+        sender_pk = sender.private_key
 
-        # define contract creation transaction
-        contract = self.provider.eth.contract(address=contract_address, abi=abi, bytecode=bytecode)
-        constructor_args = (sender, recipient)
-        nonce = self.get_nonce(address=sender)
-        data = contract.constructor(*constructor_args).build_transaction(
-            {
-                "nonce": nonce,  # Include the nonce here
-            }
-        )
+        if contract:
+            contract.contract_builder()
+            contract.contract_generator()
 
+            constructor_args = (sender, recipient)   
+            nonce = self.get_nonce(address=sender)
+            payload = contract.constructor(*constructor_args).build_transaction(
+                {
+                    "nonce": nonce,  # Include the nonce here
+                }
+            )
+        else:
+            payload = {}
+        
         # deploy smart contract
-        signed_tx = self.provider.eth.account.sign_transaction(data, agent_pk)
+        signed_tx = self.provider.eth.account.sign_transaction(payload, sender_pk)
         hashed_tx = self.provider.eth.send_raw_transaction(signed_tx.rawTransaction)
 
         # store the result of transaction
         tx_receipt = self.provider.eth.wait_for_transaction_receipt(hashed_tx)
         contract_address = tx_receipt.contractAddress
-        contract = self.provider.eth.contract(address=contract_address, abi=abi, bytecode=bytecode) # post-deployment update
-        contract_info = {
-            "address": contract.address,
-            "abi": contract.abi}
-    
+        
+        # update
+        logger.info("Post-deployment update of the contract attribute.")
+        contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.by) # post-deployment update
+     
 
