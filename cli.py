@@ -56,31 +56,36 @@ def console_mode(term: Terminal, net: Network):
         history.append(inputs)
         cmd = inputs[0]
         args = inputs[1:]
-        if cmd in ['exit', 'q']:
-             break
-        
-        elif cmd.lower() == 'init':
-            net_name = args[0]
-            protocol = args[1]
-            net = driver.init_net_instance(net_name=net_name, protocol=protocol)
+        try:
+            if cmd in ['exit', 'q']:
+                break
+            
+            elif cmd.lower() == 'init':
+                net_name = args[0]
+                protocol = args[1]
+                net = driver.init_net_instance(net_name=net_name, protocol=protocol)
+                    
+            elif cmd == 'get':
+                target = args[0]
+                logger.info(f"querying {net.name} for the {target}..")
+                if target == 'queue':
+                    driver.queue_getter(net)
                 
-        elif cmd == 'get':
-             target = args[0]
-             logger.info(f"querying {net.name} for the {target}..")
-             if target == 'queue':
-                driver.queue_getter(net)
-             
-             elif target == 'nounce':
-                address = args[1]
-                nounce = driver.nounce_getter(net=net, address=address)
-                print(f'nounce: {nounce}')
+                elif target == 'nounce':
+                    address = args[1]
+                    nounce = driver.nounce_getter(net=net, address=address)
+                    print(f'nounce: {nounce}')
 
-        elif cmd == 'tx':
-            tx_type = args[1]
-            driver.send_transaction(net=net, tx_type=tx_type)
-        
-        else:
-            print(f"Hello, {cmd}")
+            elif cmd == 'tx':
+                tx_type = args[0]
+                sender = input('sender address: ')
+                recipient = input('recipient address: ')
+                driver.send_transaction(net=net, tx_type=tx_type, sender_address=sender, recipient_address=recipient)
+            
+            else:
+                print(f"Hello, {cmd}")
+        except Exception as e:
+            logger.info(e)
             
     print("Thanks for using bothnode.")
 

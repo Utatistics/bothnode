@@ -6,7 +6,6 @@ from backend import config
 
 from logging import getLogger
 from backend.config import PRIVATE_DIR
-from backend.object.network import Network
 
 logger = getLogger(__name__)
 
@@ -17,15 +16,17 @@ class Account(object):
         if private_key:
             self.private_key = private_key
         else:
-            self.private_key = private_key
+            self.private_key = self._get_private_key()
 
     def _get_private_key(self):
         if self.chain_id == '1337':
             with open(PRIVATE_DIR / 'ganache_pk.json') as jf:
                 primary_keys = json.load(jf)
-            self.private_key = primary_keys[self.address]
+                private_key = primary_keys[self.address]
         else:
-            pass 
+            pass
+        self.private_key = private_key
+        return private_key
 
     
 def create_account(chain_id: str) -> Account:

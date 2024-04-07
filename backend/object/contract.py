@@ -4,7 +4,7 @@ logger = getLogger(__name__)
 
 import json 
 import subprocess
-import config
+from backend import config
 
 
 class Contract(object):
@@ -24,9 +24,9 @@ class Contract(object):
         with open(self.path_to_build, 'r') as f:
             build_info = json.load(f)
             contract_address = None # address not neccesary for contract creation
-            abi = build_info['contracts'][self.contract_name]['abi']
-            bytecode = build_info['contracts'][self.contract_name]["bin"]
+            self.abi = build_info['contracts'][self.contract_name]['abi']
+            self.bytecode = build_info['contracts'][self.contract_name]["bin"]
 
         # define contract creation transaction
-        self.contract = self.provider.eth.contract(address=contract_address, abi=abi, bytecode=bytecode)
+        self.contract = self.provider.eth.contract(address=contract_address, abi=self.abi, bytecode=self.bytecode)
 
