@@ -1,6 +1,9 @@
-# Bothnode
+# bothnode
 ### Ethereum Smartcontracs (DeFi) Mitigating the Manipulation
-Work In Progress
+What you can do with bothnode:
+ - setup a node with the choice of your network
+ - interact with a node for basic operation 
+ - detect the anamolies and malpractiecs using the variety of methods
 
 ### Getting Started 
 Frist, clone the repository. 

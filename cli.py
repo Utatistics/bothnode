@@ -1,12 +1,5 @@
 import logging
 from logging import getLogger
-import argparse
-from blessed import Terminal
-import time
-import json
-
-from backend.driver import driver
-from ethnode.executor import node_launcher
 
 logger = getLogger(__name__)
 
@@ -17,6 +10,16 @@ logging.basicConfig(
         logging.StreamHandler()  # Log to console
     ]
 )
+
+import time
+import json
+import argparse
+from blessed import Terminal
+import readline
+
+from backend.driver import driver
+from ethnode.executor import node_launcher
+from backend.object.network import Network
 
 with open('config.json') as f:
     jf = json.load(f)
@@ -37,32 +40,44 @@ def draw_ascii_art(term: Terminal):
 
     for i, line in enumerate(pattern):
             print(line)
-            time.sleep(.005)
+            time.sleep(.05)
     print('\n')
 
-def console_mode(term: Terminal):
-    print(f"welcome to bothnode v{version}")
+def console_mode(term: Terminal, net: Network):
+    print(f"*** welcome to bothnode v{version}")
     draw_ascii_art(term)
 
+    # Enable readline for command history
+    readline.parse_and_bind('"\e[A": history-search-backward')
+    history = []
+
     while True:
-        cmd = input('>>> ')
+        inputs = input('>>> ').split()
+        history.append(inputs)
+        cmd = inputs[0]
+        args = inputs[1:]
         if cmd in ['exit', 'q']:
              break
         
         elif cmd.lower() == 'init':
-            net_name = input("Network: ")
-            protocol = input("Protocol: ")
+            net_name = args[0]
+            protocol = args[1]
             net = driver.init_net_instance(net_name=net_name, protocol=protocol)
-        
-        elif cmd == 'queue':
-             logger.info(f"querying {net.name} for the queue...")
-             print(net.url)
-             net_name = input("Network: ")
-             protocol = input("Protocol: ")
-        
+                
+        elif cmd == 'get':
+             target = args[0]
+             logger.info(f"querying {net.name} for the {target}..")
+             if target == 'queue':
+                driver.queue_getter(net)
+             
+             elif target == 'nounce':
+                address = args[1]
+                nounce = driver.nounce_getter(net=net, address=address)
+                print(f'nounce: {nounce}')
+
         elif cmd == 'tx':
-            net_name = input("Network: ")
-            tx_type = input("Tx Type: ")
+            tx_type = args[1]
+            driver.send_transaction(net=net, tx_type=tx_type)
         
         else:
             print(f"Hello, {cmd}")
@@ -76,14 +91,14 @@ def handler(args: argparse.Namespace, term: Terminal):
         net = args.net
         protocol = args.protocol
         if net:
-            driver.init_net_instance(net_name=net, protocol=protocol)
-            console_mode(term=term)
+            net = driver.init_net_instance(net_name=net, protocol=protocol)
+            console_mode(term=term, net=net)
         else:
             raise ValueError('network not specified.')
         
     elif cmd == 'tx':
         issc = args.smart_contract
-        driver.send_transactions(is_smart_contract=issc)
+        driver.send_transaction(tx_type=issc)
     
     elif cmd == 'detect':
         method = args.method
@@ -108,7 +123,7 @@ def main():
     parser = argparse.ArgumentParser(description="bothnode CLI")
     parser.add_argument("command", nargs='?', help="Command to execute", choices=cmd)
     parser.add_argument("net", help="Network name (e.g., ganache)")
-    
+
     parser.add_argument("-v", "--version", action='version', version=f"bothnode v{version}")
     parser.add_argument("-t", "--terminal", action='store_true')
     parser.add_argument("-n", "--net")
@@ -120,7 +135,7 @@ def main():
     if args.command:
         handler(args=args, term=term)
     else:
-        console_mode(term=term)
+        console_mode(term=term, net=None)
          
 if __name__ == '__main__':
     main()

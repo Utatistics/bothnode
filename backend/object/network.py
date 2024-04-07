@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import web3
 from web3 import Web3
 from backend import config
 
@@ -34,3 +35,13 @@ class Network(object):
     
     def get_nonce(self, address):
         return self.provider.eth.get_transaction_count(address)
+    
+    def get_queue(self):
+        web3.geth.txpool.content
+        web3.geth.txpool.inspect
+        web3.geth.txpool.status
+ 
+    def send_tx():
+        pass
+
+

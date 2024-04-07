@@ -19,6 +19,7 @@ def node_launcher(net_name: str):
     path_to_sh = SCRIPT_DIR / endpoint
 
     logger.info(f'Launching {net_name}')
+    
     try:
         subprocess.run(["bash", path_to_sh], check=True)
         logger.info(f"Executed {path_to_sh} successfully.")
