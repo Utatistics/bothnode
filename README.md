@@ -1,4 +1,11 @@
 # bothnode
+    "__.           __  .__                      .___       ",
+    "\_ |__   _____/  |_|  |__   ____   ____   __| _/____  ",
+    " | __ \ /  _ \   __\  |  \ /    \ /  _ \ / __ |/ __ \ ",
+    " | \_\ (  <_> )  | |   Y  \   |  (  <_> ) /_/ \  ___/ ",
+    " |___  /\____/|__| |___|  /___|  /\____/\____ |\___  >",
+    "     \/                 \/     \/            \/    \/ ",
+
 ### Ethereum Smartcontracs (DeFi) Mitigating the Manipulation
 What you can do with bothnode:
  - setup a node with the choice of your network
