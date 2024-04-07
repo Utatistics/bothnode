@@ -3,6 +3,7 @@ private/
 
 # local 
 .ipynb*
+__pycache__*
 
 # Node
 node_modules

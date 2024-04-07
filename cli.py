@@ -6,6 +6,7 @@ import time
 import json
 
 from backend.driver import driver
+from ethnode.executor import node_launcher
 
 logger = getLogger(__name__)
 
@@ -16,7 +17,6 @@ logging.basicConfig(
         logging.StreamHandler()  # Log to console
     ]
 )
-
 
 with open('config.json') as f:
     jf = json.load(f)
@@ -91,22 +91,31 @@ def handler(args: argparse.Namespace, term: Terminal):
             driver.detect_anamolies(method=method)
         else:
             raise Exception('Method not specified.')
+    
+    elif cmd == 'launch':
+        net = args.net
+        if net:
+            node_launcher(net_name=net)
+        else:
+            raise ValueError('network not specified.')
 
     if args.terminal:
         console_mode(term=term)
 
 def main():
     term = Terminal()
-    cmd = ["init", "tx", "detect"]
+    cmd = ["init", "tx", "detect","launch"]
     parser = argparse.ArgumentParser(description="bothnode CLI")
     parser.add_argument("command", nargs='?', help="Command to execute", choices=cmd)
+    parser.add_argument("net", help="Network name (e.g., ganache)")
+    
     parser.add_argument("-v", "--version", action='version', version=f"bothnode v{version}")
     parser.add_argument("-t", "--terminal", action='store_true')
     parser.add_argument("-n", "--net")
     parser.add_argument("-p", "--protocol", default='HTTPS')
     parser.add_argument("--smart_contract", action='store_true')
     parser.add_argument("--method", choices=['SVM','GNN'])
-
+    
     args = parser.parse_args()
     if args.command:
         handler(args=args, term=term)

@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from backend.config import NET_CONFIG
-from backend.network import Network
+from backend.object.network import Network
 from web3 import Web3
 
 
