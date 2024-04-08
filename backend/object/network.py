@@ -6,7 +6,7 @@ from backend import config
 
 from logging import getLogger
 from backend.object.account import Account
-from backend.object.contract import Contract
+from backend.object.contract import Contract, generate_contract
 
 logger = getLogger(__name__)
 
@@ -44,15 +44,11 @@ class Network(object):
         web3.geth.txpool.status
  
     def send_tx(self, sender: Account, recipient: Account, contract: Contract):
-        sender_pk = sender.private_key
-
         if contract:
-            contract.contract_builder()
-            contract.contract_generator()
-
+            logger.info('>> the contract is smart.')
             constructor_args = (sender, recipient)   
             nonce = self.get_nonce(address=sender)
-            payload = contract.constructor(*constructor_args).build_transaction(
+            payload = contract.contract.constructor(*constructor_args).build_transaction(
                 {
                     "nonce": nonce,  # Include the nonce here
                 }
@@ -60,7 +56,8 @@ class Network(object):
         else:
             payload = {}
         
-        # deploy smart contract
+        # sign & send the transaction
+        sender_pk = sender.private_key
         signed_tx = self.provider.eth.account.sign_transaction(payload, sender_pk)
         hashed_tx = self.provider.eth.send_raw_transaction(signed_tx.rawTransaction)
 
@@ -72,4 +69,3 @@ class Network(object):
         logger.info("Post-deployment update of the contract attribute.")
         contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.by) # post-deployment update
      
-

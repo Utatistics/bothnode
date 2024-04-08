@@ -27,12 +27,17 @@ def nounce_getter(net: Network, address: str):
 def queue_getter(net: Network):
     net.get_queue()
 
-def send_transaction(net: Network, sender_address: str, recipient_address: str, contract_name: str):
+def send_transaction(net: Network, sender_address: str, recipient_address: str, contract_name: str, build: bool):
     logger.info("Sending TX...")
+
     sender = Account(sender_address, chain_id=net.chain_id, private_key=None)
     recipient = Account(recipient_address, chain_id=net.chain_id, private_key=None)
+
     if contract_name:
-        contract = Contract(contract_name=contract_name)
+        contract = Contract(contract_name=contract_name, provider=net.provider)
+        if build:
+            contract.contract_builder()
+        contract.contract_generator()
     else:
         contract = None
     net.send_tx(sender=sender, recipient=recipient, contract=contract)

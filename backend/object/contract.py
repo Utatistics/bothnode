@@ -8,8 +8,9 @@ from backend import config
 
 
 class Contract(object):
-    def __init__(self, contract_name: str) -> None:
+    def __init__(self, contract_name: str, provider) -> None:
         self.contract_name = contract_name
+        self.provider = provider
         self.path_to_contract = config.SOLC_DIR / contract_name
         self.path_to_sh = config.SOLC_DIR / 'build.sh'
 
@@ -34,6 +35,7 @@ class Contract(object):
         
     def contract_generator(self):
         logger.info(f"Generating the contract...")
+  
         with open(self.path_to_build, 'r') as f:
             build_info = json.load(f)
             contract_address = None # address not neccesary for contract creation
@@ -42,4 +44,5 @@ class Contract(object):
 
         # define contract creation transaction
         self.contract = self.provider.eth.contract(address=contract_address, abi=self.abi, bytecode=self.bytecode)
+
 

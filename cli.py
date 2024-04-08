@@ -80,7 +80,9 @@ def console_mode(term: Terminal, net: Network):
                 sender = input('sender address: ')
                 recipient = input('recipient address: ')
                 contract_name = input('contract name: ')
-                driver.send_transaction(net=net, sender_address=sender, recipient_address=recipient, contract_name=contract_name)
+                if contract_name:
+                    build = input('build?: ')
+                driver.send_transaction(net=net, sender_address=sender, recipient_address=recipient, contract_name=contract_name, build=build)
             
             else:
                 print(f"Hello, {cmd}")
