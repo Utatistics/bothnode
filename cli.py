@@ -81,7 +81,7 @@ def console_mode(term: Terminal, net: Network):
                 recipient = input('recipient address: ')
                 contract_name = input('contract name: ')
                 if contract_name:
-                    build = input('build?: ')
+                    build = input('build?: ').map(lambda x: True if x in ['y', 'yes'] else False)
                 driver.send_transaction(net=net, sender_address=sender, recipient_address=recipient, contract_name=contract_name, build=build)
             
             else:
