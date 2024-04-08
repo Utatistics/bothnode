@@ -14,11 +14,9 @@ class Contract(object):
         self.path_to_sh = config.SOLC_DIR / 'build.sh'
 
     def contract_builder(self):
-        logger.info("Building the contract...")
-        self.path_to_build / 'build.json'        
-        logger.info()
-
-        cmd = ["bash", str(self.path_to_sh), self.contract_name]
+        logger.info(f"Building the contract: {self.contract_name}")
+        self.path_to_build = config.SOLC_DIR / self.contract_name / 'build.json'
+        cmd = f"{self.path_to_sh} {self.contract_name}"
         subprocess.run(["bash", cmd], check=True)
 
     def contract_generator(self):
