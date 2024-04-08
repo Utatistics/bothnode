@@ -77,16 +77,16 @@ def console_mode(term: Terminal, net: Network):
                     print(f'nounce: {nounce}')
 
             elif cmd == 'tx':
-                tx_type = args[0]
                 sender = input('sender address: ')
                 recipient = input('recipient address: ')
-                driver.send_transaction(net=net, tx_type=tx_type, sender_address=sender, recipient_address=recipient)
+                contract_name = input('contract name: ')
+                driver.send_transaction(net=net, sender_address=sender, recipient_address=recipient, contract_name=contract_name)
             
             else:
                 print(f"Hello, {cmd}")
         except Exception as e:
             logger.info(e)
-            
+
     print("Thanks for using bothnode.")
 
 def handler(args: argparse.Namespace, term: Terminal):

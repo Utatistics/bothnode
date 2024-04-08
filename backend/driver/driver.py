@@ -27,14 +27,15 @@ def nounce_getter(net: Network, address: str):
 def queue_getter(net: Network):
     net.get_queue()
 
-def send_transaction(net: Network, tx_type: bool, sender_address: str, recipient_address: str):
+def send_transaction(net: Network, sender_address: str, recipient_address: str, contract_name: str):
     logger.info("Sending TX...")
-    sender = Account(sender_address, chain_id=net.chain_id)
-    recipient = Account(recipient_address, chain_id=net.chain_id)
-
-    if tx_type:
-        contract = Contract()
-    net.send_tx(tx_type, sender=sender, recipient=recipient, contract=contract)
+    sender = Account(sender_address, chain_id=net.chain_id, private_key=None)
+    recipient = Account(recipient_address, chain_id=net.chain_id, private_key=None)
+    if contract_name:
+        contract = Contract(contract_name=contract_name)
+    else:
+        contract = None
+    net.send_tx(sender=sender, recipient=recipient, contract=contract)
 
 def detect_anamolies(method: str):
     logger.info("Let there be light")

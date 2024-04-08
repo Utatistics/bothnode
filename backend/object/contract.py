@@ -17,7 +17,9 @@ class Contract(object):
         logger.info("Building the contract...")
         self.path_to_build / 'build.json'        
         logger.info()
-        subprocess.run(["bash", self.path_to_sh], check=True)
+
+        cmd = ["bash", str(self.path_to_sh), self.contract_name]
+        subprocess.run(["bash", cmd], check=True)
 
     def contract_generator(self):
         logger.info(f"Generating the contract...")

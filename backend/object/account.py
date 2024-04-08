@@ -13,12 +13,14 @@ class Account(object):
     def __init__(self, address: str, chain_id: str, private_key: str) -> None:
         self.chain_id = chain_id
         self.address = address
+        
         if private_key:
             self.private_key = private_key
         else:
             self.private_key = self._get_private_key()
-
+        
     def _get_private_key(self):
+        private_key = None
         if self.chain_id == '1337':
             with open(PRIVATE_DIR / 'ganache_pk.json') as jf:
                 primary_keys = json.load(jf)
@@ -26,6 +28,7 @@ class Account(object):
         else:
             pass
         self.private_key = private_key
+        
         return private_key
 
     
