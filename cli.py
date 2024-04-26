@@ -1,15 +1,33 @@
 import logging
 from logging import getLogger
+from colorlog import ColoredFormatter
 
 logger = getLogger(__name__)
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.StreamHandler()  # Log to console
-    ]
+formatter = ColoredFormatter(
+    "%(log_color)s%(asctime)s [%(levelname)s] %(message)s%(reset)s",
+    datefmt='%Y-%m-%d %H:%M:%S',
+    reset=True,
+    log_colors={
+        'DEBUG': 'white',
+        'INFO': 'green',
+        'WARNING': 'yellow',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    }
 )
+
+# Get the root logger
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)  # Set logging level to DEBUG
+
+# Add a stream handler with the colored formatter
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)  # Set the same level as logger
+stream_handler.setFormatter(formatter)
+
+# Add the handler to the logger
+logger.addHandler(stream_handler)
 
 import time
 import json

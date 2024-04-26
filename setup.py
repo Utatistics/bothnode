@@ -8,7 +8,7 @@ with open('config.json') as f:
 setup(
     name='bothnode',
     version=version,
-    install_requires=['blessed==1.20.0'],  # web3==6.16.0',   
+    install_requires=['blessed==1.20.0', 'colorlog'],  # web3==6.16.0',   
     entry_points={
         "console_scripts": [
             "bothnode = cli:main",
