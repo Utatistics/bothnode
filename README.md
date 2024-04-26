@@ -43,7 +43,7 @@ Connect to remote server with SSH
 ssh 
 ```
 
-#### Node Settings
+#### Set up your Node
 Then, set up ethereum client by running the following command:
 ```bash
 ./ethnode/pkg_install.sh
@@ -54,10 +54,13 @@ Then, set up ethereum client by running the following command:
 To start using CLI tool, go to the top of the project directory and run:
 ```bash
 pip install -e .
-bothnode init --net <network_name>
+bothnode launch <network_name>
+bothnode init <network_name>
 ```
+'launch' will activate the node of your choice, and 'init' will kick start the background process that allows you to interact the node.
 
-To send transaction to the network:
+### Interact with Node
+bothnode implements multiple ways of node interaction. For example, to send transaction to the network:
 ```bash
 bothnode tx
 ```
