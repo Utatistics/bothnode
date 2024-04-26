@@ -41,8 +41,10 @@ class Contract(object):
             contract_address = None # address not neccesary for contract creation
             self.abi = build_info['contracts'][self.contract_name]['abi']
             self.bytecode = build_info['contracts'][self.contract_name]["bin"]
-
+            print('YO')
+            
         # define contract creation transaction
         self.contract = self.provider.eth.contract(address=contract_address, abi=self.abi, bytecode=self.bytecode)
+        logger.info("Completed.")
 
 

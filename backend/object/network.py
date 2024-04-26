@@ -6,7 +6,7 @@ from backend import config
 
 from logging import getLogger
 from backend.object.account import Account
-from backend.object.contract import Contract, generate_contract
+from backend.object.contract import Contract
 
 logger = getLogger(__name__)
 

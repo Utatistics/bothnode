@@ -38,8 +38,10 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
         if build:
             contract.contract_builder()
         contract.contract_generator()
+        print('HEY')
     else:
         contract = None
+    
     net.send_tx(sender=sender, recipient=recipient, contract=contract)
 
 def detect_anamolies(method: str):

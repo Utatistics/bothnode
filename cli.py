@@ -4,8 +4,8 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s-%(levelname)s: %(message)s',
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
         logging.StreamHandler()  # Log to console
     ]
@@ -20,10 +20,38 @@ import readline
 from backend.driver import driver
 from ethnode.executor import node_launcher
 from backend.object.network import Network
-
+        
 with open('config.json') as f:
     jf = json.load(f)
     version = jf['CLI']['version']
+
+class ArgParse(object):
+    def __init__(self) -> None:
+        self.cmd = ["init", "tx", "detect","launch"]
+        self.parser = argparse.ArgumentParser(description="bothnode CLI")
+
+        # command and args
+        self.parser.add_argument("command", help="Command to execute", choices=self.cmd)
+        self.parser.add_argument("net", nargs='?', help="Network name (e.g., ganache)")
+        self.parser.add_argument("sender_address", nargs='?', help="The address for the sender")
+        self.parser.add_argument("recipient_address", nargs='?', help="The address for the recipient")
+
+        # specifying the options 
+        self.parser.add_argument("-v", "--version", action='version', version=f"bothnode v{version}")
+        self.parser.add_argument("-t", "--terminal", action='store_true')
+        
+        # parser.add_argument("-n", "--net")
+        self.parser.add_argument("-p", "--protocol", default='HTTPS')
+        self.parser.add_argument("--contract_name")
+        self.parser.add_argument("--build", action='store_true')
+        self.parser.add_argument("--method", choices=['SVM','GNN'])
+
+        # parse the args
+        self._parse_args()
+
+    def _parse_args(self):
+        self.args = self.parser.parse_args()
+        logger.debug(f'{self.args=}')
 
 def clear_screen(term: Terminal):
     print(term.clear)
@@ -40,7 +68,7 @@ def draw_ascii_art(term: Terminal):
 
     for i, line in enumerate(pattern):
             print(line)
-            time.sleep(.05)
+            time.sleep(.025)
     print('\n')
 
 def console_mode(term: Terminal, net: Network):
@@ -79,9 +107,11 @@ def console_mode(term: Terminal, net: Network):
             elif cmd == 'tx':
                 sender = input('sender address: ')
                 recipient = input('recipient address: ')
-                contract_name = input('contract name: ')
+                contract_name = input('contract name* press Enter for None: ')
                 if contract_name:
-                    build = input('build?: ').map(lambda x: True if x in ['y', 'yes'] else False)
+                    build = input('build?: ').lower() in ['y', 'yes']
+                else:
+                    build = None
                 driver.send_transaction(net=net, sender_address=sender, recipient_address=recipient, contract_name=contract_name, build=build)
             
             else:
@@ -92,55 +122,52 @@ def console_mode(term: Terminal, net: Network):
     print("Thanks for using bothnode.")
 
 def handler(args: argparse.Namespace, term: Terminal):
-    cmd = args.command
-    
-    if cmd == 'init':
-        net = args.net
-        protocol = args.protocol
-        if net:
-            net = driver.init_net_instance(net_name=net, protocol=protocol)
-            console_mode(term=term, net=net)
-        else:
-            raise ValueError('network not specified.')
-        
-    elif cmd == 'tx':
-        issc = args.smart_contract
-        driver.send_transaction(tx_type=issc)
-    
-    elif cmd == 'detect':
-        method = args.method
-        if method:
-            driver.detect_anamolies(method=method)
-        else:
-            raise Exception('Method not specified.')
-    
-    elif cmd == 'launch':
-        net = args.net
-        if net:
-            node_launcher(net_name=net)
-        else:
-            raise ValueError('network not specified.')
+    # initiate the net instance
+    status = False
+    try:
+        net = driver.init_net_instance(net_name=args.net, protocol=args.protocol)
+        logger.info(f"Successfully initiated network instance: {net.name}")
+        status = True
+    except AttributeError as err:
+        logger.error('Network not specified.')
+        logger.debug(f'Error: {err}')
+    except KeyError as err:
+        logger.error(f'Invalid network name: {args.net}')
 
-    if args.terminal:
-        console_mode(term=term)
+    # handling the command    
+    if status:
+        if args.command == 'init':
+            logger.info("Opening the console...")
+            console_mode(term=term, net=args.net)
+        
+        elif args.command == 'tx':
+            logger.info("Starting a transaction...")
+            driver.send_transaction(net=net,
+                                    sender_address=args.sender_address,
+                                    recipient_address=args.recipient_address,
+                                    contract_name=args.contract_name,
+                                    build=args.build)
+        
+        elif args.command == 'detect':
+            if args.method:
+                driver.detect_anamolies(method=args.method)
+            else:
+                raise ValueError('Method not specified.')
+        
+        elif args.command == 'launch':
+            node_launcher(net_name=args.net)
+        
+        if args.terminal:
+            console_mode(term=term)
+    else:
+        logger.error('Commmand not executed due to the internal error.')
 
 def main():
     term = Terminal()
-    cmd = ["init", "tx", "detect","launch"]
-    parser = argparse.ArgumentParser(description="bothnode CLI")
-    parser.add_argument("command", nargs='?', help="Command to execute", choices=cmd)
-    parser.add_argument("net", help="Network name (e.g., ganache)")
+    argparser = ArgParse()
 
-    parser.add_argument("-v", "--version", action='version', version=f"bothnode v{version}")
-    parser.add_argument("-t", "--terminal", action='store_true')
-    parser.add_argument("-n", "--net")
-    parser.add_argument("-p", "--protocol", default='HTTPS')
-    parser.add_argument("--smart_contract", action='store_true')
-    parser.add_argument("--method", choices=['SVM','GNN'])
-    
-    args = parser.parse_args()
-    if args.command:
-        handler(args=args, term=term)
+    if argparser.args.command:
+        handler(args=argparser.args, term=term)
     else:
         console_mode(term=term, net=None)
          

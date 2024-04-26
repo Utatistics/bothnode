@@ -25,6 +25,8 @@ class Account(object):
             with open(PRIVATE_DIR / 'ganache_pk.json') as jf:
                 primary_keys = json.load(jf)
                 private_key = primary_keys[self.address]
+        elif self.chain_id == '1':
+            pass
         else:
             pass
         self.private_key = private_key
