@@ -27,7 +27,7 @@ def nounce_getter(net: Network, address: str):
 def queue_getter(net: Network):
     net.get_queue()
 
-def send_transaction(net: Network, sender_address: str, recipient_address: str, contract_name: str, build: bool):
+def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, build: bool):
     logger.info("Sending TX...")
 
     sender = Account(sender_address, chain_id=net.chain_id, private_key=None)
@@ -37,12 +37,12 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
         contract = Contract(contract_name=contract_name, provider=net.provider)
         if build:
             contract.contract_builder()
+            logger.info(f'Smart Contract build completed: {contract_name}')
         contract.contract_generator()
-        print('HEY')
     else:
         contract = None
     
-    net.send_tx(sender=sender, recipient=recipient, contract=contract)
+    net.send_tx(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build)
 
 def detect_anamolies(method: str):
     logger.info("Let there be light")

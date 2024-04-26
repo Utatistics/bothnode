@@ -32,7 +32,7 @@ class Network(object):
     
     def _get_network_attributes(self):
         if self.name == 'GANACHE':
-            with open(config.PRIVATE_DIR / 'pk.json') as f:
+            with open(config.PRIVATE_DIR / 'ganache_pk.json') as f:
                 json = json.load(f)
     
     def get_nonce(self, address):
@@ -43,21 +43,41 @@ class Network(object):
         web3.geth.txpool.inspect
         web3.geth.txpool.status
  
-    def send_tx(self, sender: Account, recipient: Account, contract: Contract):
+    def send_tx(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
         if contract:
-            logger.info('>> the contract is smart.')
-            constructor_args = (sender, recipient)   
-            nonce = self.get_nonce(address=sender)
-            payload = contract.contract.constructor(*constructor_args).build_transaction(
-                {
-                    "nonce": nonce,  # Include the nonce here
+            logger.info('>> Smart Contract Transaction')
+            if build:
+                constructor_args = (sender, recipient)   
+                nonce = self.get_nonce(address=sender)
+                payload = contract.contract.constructor(*constructor_args).build_transaction(
+                    {
+                        "nonce": nonce,  # Include the nonce here
+                    }
+                )
+            else:
+                # UPDATE REQUIRED!
+                payload = {
+                    'from' : sender.address,
+                    'to': recipient.address,
+                    'value': amount,  # Value in Wei (for Ethereum), usually 0 for token transfers
+                    'data': contract.encode_function_call('transfer', [recipient.address, amount]),  # Encoded function call to transfer tokens
+                    'gasPrice': self.provider.eth.gas_price,  # Gas price
+                    'gas': 100000  # Gas limit
                 }
-            )
+
         else:
-            payload = {}
-        
+            logger.info('>> Regular Transaction')
+            payload = {
+                'from': sender.address,
+                'to': recipient.address,
+                'value': amount,  # Amount of cryptocurrency to transfer
+                'gasPrice': self.provider.eth.gas_price,  # Gas price
+                'gas': 100000  # Gas limit
+            }
+
         # sign & send the transaction
         sender_pk = sender.private_key
+        logger.debug(f'{sender_pk=}')
         signed_tx = self.provider.eth.account.sign_transaction(payload, sender_pk)
         hashed_tx = self.provider.eth.send_raw_transaction(signed_tx.rawTransaction)
 

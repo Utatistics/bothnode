@@ -33,18 +33,20 @@ class ArgParse(object):
         # command and args
         self.parser.add_argument("command", help="Command to execute", choices=self.cmd)
         self.parser.add_argument("net", nargs='?', help="Network name (e.g., ganache)")
-        self.parser.add_argument("sender_address", nargs='?', help="The address for the sender")
-        self.parser.add_argument("recipient_address", nargs='?', help="The address for the recipient")
 
-        # specifying the options 
+        # common options
         self.parser.add_argument("-v", "--version", action='version', version=f"bothnode v{version}")
-        self.parser.add_argument("-t", "--terminal", action='store_true')
-        
-        # parser.add_argument("-n", "--net")
         self.parser.add_argument("-p", "--protocol", default='HTTPS')
+
+        # tx related options
+        self.parser.add_argument("-f", "--sender_address", nargs='?', help="The address for the sender")
+        self.parser.add_argument("-t", "--recipient_address", nargs='?', help="The address for the recipient")
+        self.parser.add_argument("-a", "--amount")
         self.parser.add_argument("--contract_name")
-        self.parser.add_argument("--build", action='store_true')
-        self.parser.add_argument("--method", choices=['SVM','GNN'])
+        self.parser.add_argument("-b", "--build", action='store_true', default=False)
+
+        # detect related options "-n", "--net")
+        self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])
 
         # parse the args
         self._parse_args()
@@ -122,45 +124,45 @@ def console_mode(term: Terminal, net: Network):
     print("Thanks for using bothnode.")
 
 def handler(args: argparse.Namespace, term: Terminal):
-    # initiate the net instance
-    status = False
-    try:
-        net = driver.init_net_instance(net_name=args.net, protocol=args.protocol)
-        logger.info(f"Successfully initiated network instance: {net.name}")
-        status = True
-    except AttributeError as err:
-        logger.error('Network not specified.')
-        logger.debug(f'Error: {err}')
-    except KeyError as err:
-        logger.error(f'Invalid network name: {args.net}')
-
-    # handling the command    
-    if status:
-        if args.command == 'init':
-            logger.info("Opening the console...")
-            console_mode(term=term, net=args.net)
-        
-        elif args.command == 'tx':
-            logger.info("Starting a transaction...")
-            driver.send_transaction(net=net,
-                                    sender_address=args.sender_address,
-                                    recipient_address=args.recipient_address,
-                                    contract_name=args.contract_name,
-                                    build=args.build)
-        
-        elif args.command == 'detect':
-            if args.method:
-                driver.detect_anamolies(method=args.method)
-            else:
-                raise ValueError('Method not specified.')
-        
-        elif args.command == 'launch':
-            node_launcher(net_name=args.net)
-        
-        if args.terminal:
-            console_mode(term=term)
+    if args.command == 'launch':
+        node_launcher(net_name=args.net)
     else:
-        logger.error('Commmand not executed due to the internal error.')
+        # initiate the net instance
+        status = False
+        try:
+            net = driver.init_net_instance(net_name=args.net, protocol=args.protocol)
+            logger.info(f"Successfully initiated network instance: {net.name}")
+            status = True
+        except AttributeError as err:
+            logger.error('Network not specified.')
+            logger.debug(f'Error: {err}')
+        except KeyError as err:
+            logger.error(f'Invalid network name: {args.net}')
+
+        # handling the command    
+        if status:
+            if args.command == 'init':
+                logger.info("Opening the console...")
+                console_mode(term=term, net=args.net)
+            
+            elif args.command == 'tx':
+                logger.info("Starting a transaction...")
+                driver.send_transaction(net=net,
+                                        sender_address=args.sender_address,
+                                        recipient_address=args.recipient_address,
+                                        amount=args.amount,
+                                        contract_name=args.contract_name,
+                                        build=args.build)
+            
+            elif args.command == 'detect':
+                if args.method:
+                    driver.detect_anamolies(method=args.method)
+                else:
+                    raise ValueError('Method not specified.')        
+            if args.terminal:
+                console_mode(term=term)
+        else:
+            logger.error('Commmand not executed due to the internal error.')
 
 def main():
     term = Terminal()

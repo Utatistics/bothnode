@@ -19,13 +19,17 @@ class Account(object):
         else:
             self.private_key = self._get_private_key()
         
+        logger.debug(f'Created an account: {self.address}')
+        logger.debug(f'Private key: {self.private_key}')
+        
     def _get_private_key(self):
         private_key = None
-        if self.chain_id == '1337':
+        if self.chain_id == 1337:
             with open(PRIVATE_DIR / 'ganache_pk.json') as jf:
                 primary_keys = json.load(jf)
-                private_key = primary_keys[self.address]
-        elif self.chain_id == '1':
+                # logger.debug(primary_keys["private_keys"].keys())
+                private_key = primary_keys["private_keys"][self.address]
+        elif self.chain_id == 1:
             pass
         else:
             pass

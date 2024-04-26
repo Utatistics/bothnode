@@ -3,7 +3,7 @@
 # set path
 ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
 PRIVATE_DIR="$ROOT_DIR/private"
-ACCOUNT_KEYS_PATH="$PRIVATE_DIR/pk.json"
+ACCOUNT_KEYS_PATH="$PRIVATE_DIR/ganache_pk.json"
 
 echo ">>> private keys will be stored in: $ACCOUNT_KEYS_PATH"
 
