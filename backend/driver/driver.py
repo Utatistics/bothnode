@@ -42,7 +42,7 @@ def query_handler(net: Network, target: str, query_params: dict):
 
     elif target == 'gas_price':
         net.get_gas_price()
-        
+
     elif target == 'queue':
         return net.get_queue()
     
@@ -53,16 +53,17 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
     logger.info("Sending TX...")
 
     sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
-    recipient = Account(recipient_address, private_key=None, chain_id=net.chain_id)
-
     if contract_name:
         contract = Contract(contract_name=contract_name, provider=net.provider)
         if build:
+            recipient = None
             contract.contract_builder()
-            logger.info(f'Smart Contract build completed: {contract_name}')
+        else:
+            recipient = Account(recipient_address, private_key=None, chain_id=net.chain_id)
         contract.contract_generator()
     else:
         contract = None
+        recipient = Account(recipient_address, private_key=None, chain_id=net.chain_id)
     
     net.send_tx(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build)
 

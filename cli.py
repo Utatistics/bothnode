@@ -68,7 +68,7 @@ class ArgParse(object):
         self.parser.add_argument("-f", "--sender-address", help="The address for the sender")
         self.parser.add_argument("-t", "--recipient-address", help="The address for the recipient")
         self.parser.add_argument("-a", "--amount", type=int)
-        self.parser.add_argument("--contract_name")
+        self.parser.add_argument("-c", "--contract-name")
         self.parser.add_argument("-b", "--build", action='store_true', default=False)
 
         # detect related options
@@ -192,8 +192,6 @@ def handler(args: argparse.Namespace, term: Terminal):
 
             elif args.command == 'tx':
                 logger.info("Starting a transaction...")
-                logger.debug(f'{args.amount=}')
-                logger.debug(f'{type(args.amount)=}')
                 driver.send_transaction(net=net,
                                         sender_address=args.sender_address,
                                         recipient_address=args.recipient_address,

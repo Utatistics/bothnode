@@ -8,7 +8,7 @@ from hexbytes import HexBytes
 from logging import getLogger
 from backend.object.account import Account
 from backend.object.contract import Contract
-from backend.util.tools import convert_to_serializable
+from backend.util.tools import logger_hexbytes
 
 logger = getLogger(__name__)
 
@@ -65,8 +65,8 @@ class Network(object):
         else:
             block_info = self.provider.eth.get_block('latest')
 
-        block_info_serializable = {k: convert_to_serializable(v) for k, v in block_info.items()}
-        logger.info(">> Block info:\n%s", json.dumps(block_info_serializable, indent=4))
+        logger_hexbytes(level='info', data=block_info)
+
         return block_info
 
     def get_chain_info(self):
@@ -92,25 +92,30 @@ class Network(object):
  
     def _create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
         nonce = self.get_nonce(address=sender.address)
-
         if contract:
-            logger.info('>> Smart Contract Transaction')
+            # self.provider = contract.provider
             if build:
-                constructor_args = (sender, recipient)   
-                payload = contract.contract.constructor(*constructor_args).build_transaction(
+                logger.info('>> Smart Contract Deployment')
+                payload = contract.contract.constructor().build_transaction(
                     {
-                        "nonce": nonce,  # Include the nonce here
+                        "from": sender.address,
+                        "nonce": nonce
                     }
                 )
             else:
-                payload = { # UPDATE REQUIRED!
-                    'from' : sender.address,
-                    'to': recipient.address,
-                    'value': amount,  # Value in Wei (for Ethereum), usually 0 for token transfers
-                    'data': contract.encode_function_call('transfer', [recipient.address, amount]),  # Encoded function call to transfer tokens
-                    'gasPrice': self.provider.eth.gas_price,  # Gas price
-                    'gas': 100000  # Gas limit
-                }
+                logger.info('>> Smart Contract Transaction')
+                # UPDATE REQUIRED
+                # constructor_args = (sender.address, '') *constructor_args
+                payload = contract.contract.constructor().build_transaction(
+                    {
+                        'from' : sender.address,
+                        'to': recipient.address,
+                        'value': amount,  # Value in Wei (for Ethereum), usually 0 for token transfers
+                        'data': contract.encode_function_call('transfer', [recipient.address, amount]),  # Encoded function call to transfer tokens
+                        'gasPrice': self.provider.eth.gas_price,  # Gas price
+                        'gas': 100000  # Gas limit
+                    }
+                )
         else:
             logger.info('>> Regular Transaction')
             payload = {
@@ -122,7 +127,11 @@ class Network(object):
                 'nonce': nonce
             }
 
-        logger.info(">> Payload content:\n%s", json.dumps(payload, indent=4))                
+        try:
+            logger.info(">> Payload:\n%s", json.dumps(payload, indent=4))
+        except TypeError:
+            logger_hexbytes(level='info', data=payload)
+            
         return payload
 
     def send_tx(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
@@ -139,13 +148,14 @@ class Network(object):
         contract_address = tx_receipt.contractAddress
         
         if tx_receipt.status == 1:
-            contract_address = tx_receipt.contractAddress  # Get contract address if applicable
-            logger.info(f"Successfully completed  the transaction.")
+            logger.info(f"Successfully completed the transaction.")
+            logger_hexbytes(level='info', data=tx_receipt)
         else:
-            # Transaction failed or reverted
             logger.error("The transaction failed or reverted.")
+            logger_hexbytes(level='error', data=tx_receipt)
 
-        # update
         if contract and build:
             logger.info("Post-deployment update of the contract attribute.")
-            contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.by) 
+            contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.bytecode) 
+            contract_address = tx_receipt.contractAddress
+            logger.info(f'{contract_address=}')
