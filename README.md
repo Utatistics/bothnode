@@ -15,7 +15,7 @@ What you can do with bothnode:
  - detect the anamolies and malpractiecs using the variety of methods
 
 #### Remote Settings 
-* Skip this step if not necessary.
+*Skip this step if not necessary.
 To install Terraform, follow the instructions provided in the [official documentation](https://developer.hashicorp.com/terraform/install).
 
 Use terraform to activate cloud resources in accordance with the predefined configuration. 
