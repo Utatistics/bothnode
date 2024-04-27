@@ -1,12 +1,13 @@
 # bothnode
 welcome to bothnode.
-
+```
     __.           __  .__                      .___       
     \_ |__   _____/  |_|  |__   ____   ____   __| _/____  
      | __ \ /  _ \   __\  |  \ /    \ /  _ \ / __ |/ __ \ 
      | \_\ (  <_> )  | |   Y  \   |  (  <_> ) /_/ \  ___/ 
      |___  /\____/|__| |___|  /___|  /\____/\____ |\___  >
          \/                 \/     \/            \/    \/ 
+```
 
 ### Ethereum Smartcontracs (DeFi) Mitigating the Manipulation
 What you can do with bothnode:
@@ -14,22 +15,12 @@ What you can do with bothnode:
  - interact with a node for basic operation 
  - detect the anamolies and malpractiecs using the variety of methods
 
-#### Remote Settings 
-* Skip this step if not necessary.
-To install Terraform, follow the instructions provided in the [official documentation](https://developer.hashicorp.com/terraform/install).
-
-Use terraform to activate cloud resources in accordance with the predefined configuration. 
-```bash
-terraform init 
-terraform plan
-terraform apply
-```
-Connect to remote server with SSH
-```bash
-ssh 
-```
-
 ### Getting Started 
+#### Remote Settings 
+*Skip this step if not necessary.
+
+Use [bothnode-infra](https://github.com/Utatistics/bothnode-infra/tree/main) to automate cloud resources setup 
+
 #### Install bothnode
 First, clone the repository. 
 ```bash
