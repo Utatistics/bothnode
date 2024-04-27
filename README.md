@@ -14,13 +14,6 @@ What you can do with bothnode:
  - interact with a node for basic operation 
  - detect the anamolies and malpractiecs using the variety of methods
 
-### Getting Started 
-Frist, clone the repository. 
-```bash
-git clone https://github.com/your-username/bothnode.git
-cd bothnode
-```
-
 #### Remote Settings 
 * Skip this step if not necessary.
 To install Terraform, follow the instructions provided in the [official documentation](https://developer.hashicorp.com/terraform/install).
@@ -31,32 +24,40 @@ terraform init
 terraform plan
 terraform apply
 ```
-
 Connect to remote server with SSH
 ```bash
 ssh 
 ```
 
+### Getting Started 
+#### Install bothnode
+First, clone the repository. 
+```bash
+git clone https://github.com/your-username/bothnode.git
+cd bothnode
+```
+
+To start using CLI tool, install bothnode to your machine 
+```bash
+pip install -e .
+```
+
 #### Set up your Node
 Then, set up ethereum client by running the following command:
 ```bash
-./ethnode/pkg_install.sh
-./ethnode/start_geth.sh
-./ethnode/start_lighthouse.sh
-```
-
-To start using CLI tool, go to the top of the project directory and run:
-```bash
-pip install -e .
 bothnode launch <network_name>
-bothnode init <network_name>
 ```
-'launch' will activate the node of your choice, and 'init' will kick start the background process that allows you to interact the node.
+'launch' activates the node of your choice, which will be running in the background. 
 
 ### Interact with Node
-bothnode implements multiple ways of node interaction. For example, to send transaction to the network:
+bothnode implements multiple ways of node interaction. For example, to query network information:
 ```bash
-bothnode tx
+bothnode get <network_name> <target> --options
+```
+
+To send transaction to the network:
+```bash
+bothnode tx <network_name> --options
 ```
 
 Specify the method and apply detection algorithms to the living network!
@@ -66,3 +67,5 @@ bothnode detect --method <method_name>
 
 see --help for the available commands and options.
 
+### Documentation
+For further information on how to use bothnode, see the official documentation.
