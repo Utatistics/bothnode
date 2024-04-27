@@ -17,14 +17,8 @@ What you can do with bothnode:
 ### Getting Started 
 Frist, clone the repository. 
 ```bash
-git clone https://github.com/your-username/ethereum-flashboys.git
-cd ethereum-flashboys
-```
-
-#### Local Settings
-Set up ganache server and launch your local node:
-```bash
-./start_geth.sh
+git clone https://github.com/your-username/bothnode.git
+cd bothnode
 ```
 
 #### Remote Settings 
