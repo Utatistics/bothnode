@@ -4,6 +4,7 @@ private/
 # local 
 .ipynb*
 **__pycache__/
+**.egg-info/
 
 # Node
 node_modules

@@ -6,7 +6,6 @@ logger = getLogger(__name__)
 with open('config.json') as f:
     config_json = json.load(f)
 
-import web3
 from backend.object.network import Network
 from backend.object.account import Account
 from backend.object.contract import Contract
