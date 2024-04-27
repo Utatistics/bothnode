@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import web3
 from web3 import Web3
-from backend import config
+from backend.util import config
 
 from logging import getLogger
 from backend.object.account import Account
@@ -19,23 +19,40 @@ class Network(object):
         net_config : json
         
         """
+        # set attributes
         self.name = net_config['name']
         self.url = net_config['url']
         self.chain_id = net_config['chain_id']
 
-    def connector(self):
+        # init instance 
+        self._connector()
+        if self.chain_id == 1337:
+            self._modify_ganache_account_keys()
+
+    def _connector(self):
+        logger.info(f"The instance connecting to {self.name}...")
         self.provider = Web3(Web3.HTTPProvider(self.url))
         if self.provider.is_connected():
             logger.info(f"Successfully connected to {self.name}!")
         else:
             raise ConnectionError(f'{self.name} NW not connected')
-    
-    def _get_network_attributes(self):
-        if self.name == 'GANACHE':
-            with open(config.PRIVATE_DIR / 'ganache_pk.json') as f:
-                json = json.load(f)
-    
-    def get_nonce(self, address):
+        
+    def _modify_ganache_account_keys(self):
+        path_to_json = config.PRIVATE_DIR / 'ganache_pk.json'
+        addresses = self.provider.eth.accounts
+        address_map = {a.lower(): a for a in addresses}
+        with open(path_to_json, mode='r') as jf:
+            account_keys = json.load(jf)
+            d = {
+                "addresses": {address_map.get(k,k): address_map.get(v,v) for k, v in account_keys["addresses"].items()},
+                "private_keys": {address_map.get(k,k): v for k, v in account_keys["private_keys"].items()},
+                }
+            with open(path_to_json, mode='w') as jj:
+                json.dump(d, jj, indent=4)
+
+    def get_nonce(self, address: str):
+        logger.debug(f'{address=}')
+        logger.debug(f'{type(address)=}')
         return self.provider.eth.get_transaction_count(address)
     
     def get_queue(self):
@@ -43,12 +60,13 @@ class Network(object):
         web3.geth.txpool.inspect
         web3.geth.txpool.status
  
-    def send_tx(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
+    def create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
+        nonce = self.get_nonce(address=sender.address)
+
         if contract:
             logger.info('>> Smart Contract Transaction')
             if build:
                 constructor_args = (sender, recipient)   
-                nonce = self.get_nonce(address=sender)
                 payload = contract.contract.constructor(*constructor_args).build_transaction(
                     {
                         "nonce": nonce,  # Include the nonce here
@@ -64,7 +82,6 @@ class Network(object):
                     'gasPrice': self.provider.eth.gas_price,  # Gas price
                     'gas': 100000  # Gas limit
                 }
-
         else:
             logger.info('>> Regular Transaction')
             payload = {
@@ -72,12 +89,19 @@ class Network(object):
                 'to': recipient.address,
                 'value': amount,  # Amount of cryptocurrency to transfer
                 'gasPrice': self.provider.eth.gas_price,  # Gas price
-                'gas': 100000  # Gas limit
+                'gas': 100000,  # Gas limit
+                'nonce': nonce
             }
+
+        logger.info(">> Payload content:\n%s", json.dumps(payload, indent=4))                
+        return payload
+
+    def send_tx(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
+        # create payload
+        payload = self.create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build)
 
         # sign & send the transaction
         sender_pk = sender.private_key
-        logger.debug(f'{sender_pk=}')
         signed_tx = self.provider.eth.account.sign_transaction(payload, sender_pk)
         hashed_tx = self.provider.eth.send_raw_transaction(signed_tx.rawTransaction)
 
@@ -85,7 +109,14 @@ class Network(object):
         tx_receipt = self.provider.eth.wait_for_transaction_receipt(hashed_tx)
         contract_address = tx_receipt.contractAddress
         
+        if tx_receipt.status == 1:
+            contract_address = tx_receipt.contractAddress  # Get contract address if applicable
+            logger.info(f"Successfully completed  the transaction.")
+        else:
+            # Transaction failed or reverted
+            logger.error("The transaction failed or reverted.")
+
         # update
-        logger.info("Post-deployment update of the contract attribute.")
-        contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.by) # post-deployment update
-     
+        if contract and build:
+            logger.info("Post-deployment update of the contract attribute.")
+            contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.by) 

@@ -16,13 +16,11 @@ def init_net_instance(net_name: str, protocol: str):
     net_config = config_json['NETWORK'][net_name.upper()] 
     net = Network(net_config=net_config)
 
-    logger.info(f"The instance connecting to {net_name}...")
-    net.connector()
     return net
 
-def nounce_getter(net: Network, address: str):
-    nounce = net.get_nonce(address=address)
-    return nounce
+def nonce_getter(net: Network, address: str):
+    nonce = net.get_nonce(address=address)
+    return nonce
 
 def queue_getter(net: Network):
     net.get_queue()
@@ -30,8 +28,8 @@ def queue_getter(net: Network):
 def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, build: bool):
     logger.info("Sending TX...")
 
-    sender = Account(sender_address, chain_id=net.chain_id, private_key=None)
-    recipient = Account(recipient_address, chain_id=net.chain_id, private_key=None)
+    sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
+    recipient = Account(recipient_address, private_key=None, chain_id=net.chain_id)
 
     if contract_name:
         contract = Contract(contract_name=contract_name, provider=net.provider)
