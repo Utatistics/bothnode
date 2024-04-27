@@ -1,6 +1,7 @@
 {
     "CONFIG": {
         "root_dir": ".",
+        "script_dir": "./ethnode",
         "backend_dir": "./backend",
         "private_dir": "./private"
     },

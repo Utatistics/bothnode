@@ -3,14 +3,16 @@ private/
 
 # local 
 .ipynb*
+**__pycache__/
+**.egg-info/
 
 # Node
 node_modules
 package-lock.json
 yarn.lock
 
-# host dev package.json
-frontend/package.json
+# frontend
+frontend/
 
 # pdf
 *.pdf

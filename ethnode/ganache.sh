@@ -3,11 +3,9 @@
 # set path
 ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
 PRIVATE_DIR="$ROOT_DIR/private"
-ACCOUNT_KEYS_PATH="$PRIVATE_DIR/pk.json"
+ACCOUNT_KEYS_PATH="$PRIVATE_DIR/ganache_pk.json"
 
-echo $ROOT_DIR
-echo $PRIVATE_DIR
-echo $ACCOUNT_KEYS_PATH
+echo ">>> private keys will be stored in: $ACCOUNT_KEYS_PATH"
 
 # load config values from config.json
 GANACHE_CHAIN_ID=$(jq -r '.NETWORK.GANACHE.chain_id' "$ROOT_DIR/config.json")

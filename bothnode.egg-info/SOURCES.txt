@@ -1,8 +1,0 @@
-README.md
-setup.py
-bothnode.egg-info/PKG-INFO
-bothnode.egg-info/SOURCES.txt
-bothnode.egg-info/dependency_links.txt
-bothnode.egg-info/entry_points.txt
-bothnode.egg-info/requires.txt
-bothnode.egg-info/top_level.txt
