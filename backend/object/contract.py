@@ -19,12 +19,9 @@ class Contract(object):
         cmd = f"{self.path_to_sh} {self.contract_name}"
 
         try:
-            # Run the command using subprocess and capture output and errors
             result = subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            # Print the stdout (output) of the script
             logger.info("Build output:")
             logger.info(result.stdout)
-            # Print any errors (stderr) encountered during execution
             if result.stderr:
                 logger.error("Build errors:")
                 logger.error(result.stderr)

@@ -3,10 +3,12 @@ from pathlib import Path
 import web3
 from web3 import Web3
 from backend.util import config
+from hexbytes import HexBytes 
 
 from logging import getLogger
 from backend.object.account import Account
 from backend.object.contract import Contract
+from backend.util.tools import convert_to_serializable
 
 logger = getLogger(__name__)
 
@@ -51,16 +53,44 @@ class Network(object):
                 json.dump(d, jj, indent=4)
 
     def get_nonce(self, address: str):
-        logger.debug(f'{address=}')
-        logger.debug(f'{type(address)=}')
-        return self.provider.eth.get_transaction_count(address)
+        nonce = self.provider.eth.get_transaction_count(address)
+        logger.info(f'>> Nonce={nonce} for {address=}')
+        return nonce
     
+    def get_block_info(self, number: int, hash: str):
+        if number:
+            block_info = self.provider.eth.get_block(number)
+        elif hash:
+            block_info = self.provider.eth.get_block(hash)
+        else:
+            block_info = self.provider.eth.get_block('latest')
+
+        block_info_serializable = {k: convert_to_serializable(v) for k, v in block_info.items()}
+        logger.info(">> Block info:\n%s", json.dumps(block_info_serializable, indent=4))
+        return block_info
+
+    def get_chain_info(self):
+        logger.info(f">> Chain ID: {self.provider.eth.chain_id}")
+        logger.info(f">> Chain hashrate: {self.provider.eth.hashrate}")
+        logger.info(f">> Chain syncing status: {self.provider.eth.syncing}")
+
+    def get_gas_price(self):
+        gas_price = self.provider.eth.gas_price
+        max_priority_fee = self.provider.eth.max_priority_fee 
+        gas_price_gwei = self.provider.from_wei(gas_price, 'gwei')
+        max_priority_fee_gwei = self.provider.from_wei(max_priority_fee, 'gwei')
+        
+        logger.info(f"Current gas price: {gas_price}")
+        logger.info(f"Current gas price (gwei): {gas_price_gwei}")
+        logger.info(f"Max priority fee: {max_priority_fee}")
+        logger.info(f"Max priority fee (gwei): {max_priority_fee_gwei}")
+
     def get_queue(self):
-        web3.geth.txpool.content
-        web3.geth.txpool.inspect
-        web3.geth.txpool.status
+        logger.info(f'{web3.geth.txpool.content=}')
+        logger.info(f'{web3.geth.txpool.inspect=}')
+        logger.info(f'{web3.geth.txpool.status=}')
  
-    def create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
+    def _create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
         nonce = self.get_nonce(address=sender.address)
 
         if contract:
@@ -73,8 +103,7 @@ class Network(object):
                     }
                 )
             else:
-                # UPDATE REQUIRED!
-                payload = {
+                payload = { # UPDATE REQUIRED!
                     'from' : sender.address,
                     'to': recipient.address,
                     'value': amount,  # Value in Wei (for Ethereum), usually 0 for token transfers
@@ -98,7 +127,7 @@ class Network(object):
 
     def send_tx(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
         # create payload
-        payload = self.create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build)
+        payload = self._create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build)
 
         # sign & send the transaction
         sender_pk = sender.private_key

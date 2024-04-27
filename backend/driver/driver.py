@@ -18,13 +18,37 @@ def init_net_instance(net_name: str, protocol: str):
 
     return net
 
-def nonce_getter(net: Network, address: str):
-    nonce = net.get_nonce(address=address)
-    return nonce
+def query_handler(net: Network, target: str, query_params: dict):
+    logger.debug(f'Querying {target}...')
+    logger.debug(f'{query_params=}')
 
-def queue_getter(net: Network):
-    net.get_queue()
+    if target == 'nonce':
+        try:
+            address = query_params['address']
+        except:
+            raise ValueError('address parameter cannot be found.')
+        return net.get_nonce(address=address)
+        
+    elif target =='block_info':
+        try:
+            net.get_block_info(number=query_params['block_number'], hash=None)
+        except KeyError:
+            net.get_block_info(number=None, hash=query_params['block_hash'])
+        except TypeError:
+            net.get_block_info(number=None, hash=None)
 
+    elif target == 'chain_info':
+        net.get_chain_info()
+
+    elif target == 'gas_price':
+        net.get_gas_price()
+        
+    elif target == 'queue':
+        return net.get_queue()
+    
+    else:
+        raise ValueError(f'Invalid target: {target}')
+    
 def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, build: bool):
     logger.info("Sending TX...")
 

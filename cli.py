@@ -9,7 +9,7 @@ formatter = ColoredFormatter(
     datefmt='%Y-%m-%d %H:%M:%S',
     reset=True,
     log_colors={
-        'DEBUG': 'white',
+        'DEBUG': 'light_black',
         'INFO': 'green',
         'WARNING': 'yellow',
         'ERROR': 'red',
@@ -44,22 +44,29 @@ with open('config.json') as f:
     jf = json.load(f)
     version = jf['CLI']['version']
 
+
 class ArgParse(object):
     def __init__(self) -> None:
-        self.cmd = ["init", "tx", "detect","launch"]
+        # define parsers
         self.parser = argparse.ArgumentParser(description="bothnode CLI")
-
+    
         # command and args
+        self.cmd = ["launch", "init", "get", "tx", "detect"]
+        self.tgt = ["block_info", "nonce", 'chain_info', 'gas_price', 'queue']
         self.parser.add_argument("command", help="Command to execute", choices=self.cmd)
-        self.parser.add_argument("net", nargs='?', help="Network name (e.g., ganache)")
+        self.parser.add_argument("net", help="Network name (e.g., ganache)")
+        self.parser.add_argument("target", nargs='?', help="Target for the comamnd", choices=self.tgt)
 
         # common options
         self.parser.add_argument("-v", "--version", action='version', version=f"bothnode v{version}")
         self.parser.add_argument("-p", "--protocol", default='HTTPS')
 
+        # get related options
+        self.parser.add_argument("-q", "--query-params", type=self._dict_parser, help="Query parameters in dictionary format")
+
         # tx related options
-        self.parser.add_argument("-f", "--sender_address", nargs='?', help="The address for the sender")
-        self.parser.add_argument("-t", "--recipient_address", nargs='?', help="The address for the recipient")
+        self.parser.add_argument("-f", "--sender-address", help="The address for the sender")
+        self.parser.add_argument("-t", "--recipient-address", help="The address for the recipient")
         self.parser.add_argument("-a", "--amount", type=int)
         self.parser.add_argument("--contract_name")
         self.parser.add_argument("-b", "--build", action='store_true', default=False)
@@ -73,6 +80,13 @@ class ArgParse(object):
     def _parse_args(self):
         self.args = self.parser.parse_args()
         logger.debug(f'{self.args=}')
+    
+    def _dict_parser(self, value):
+        try:
+            parsed_dict = json.loads(value)
+            return parsed_dict
+        except json.JSONDecodeError:
+            raise argparse.ArgumentTypeError(f"Invalid dictionary format: {value}")
 
 def clear_screen(term: Terminal):
     print(term.clear)
@@ -171,7 +185,11 @@ def handler(args: argparse.Namespace, term: Terminal):
             if args.command == 'init':
                 logger.info("Opening the console...")
                 console_mode(term=term, net=args.net)
-            
+
+            elif args.command == 'get':
+                logger.info("Query the network")
+                driver.query_handler(net=net, target=args.target, query_params=args.query_params)
+
             elif args.command == 'tx':
                 logger.info("Starting a transaction...")
                 logger.debug(f'{args.amount=}')
