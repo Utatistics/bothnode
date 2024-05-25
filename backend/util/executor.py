@@ -14,14 +14,14 @@ with open('config.json') as f:
 def node_launcher(net_name: str):
     if net_name.lower() == 'ganache':
         endpoint = 'ganache.sh'
-    elif net_name.lower() == 'main':
+    else:
         endpoint = 'start.sh'
     path_to_sh = SCRIPT_DIR / endpoint
 
     logger.info(f'Launching {net_name}')
     
     try:
-        subprocess.run(["bash", path_to_sh], check=True)
+        subprocess.run(["bash", path_to_sh, net_name], check=True)
         logger.info(f"Executed {path_to_sh} successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Error executing shell script: {e}")

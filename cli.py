@@ -3,6 +3,7 @@ from logging import getLogger
 from colorlog import ColoredFormatter
 
 logger = getLogger(__name__)
+level = logging.DEBUG
 
 formatter = ColoredFormatter(
     "%(log_color)s%(asctime)s [%(levelname)s] %(message)s%(reset)s",
@@ -19,11 +20,11 @@ formatter = ColoredFormatter(
 
 # Get the root logger
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)  # Set logging level to DEBUG
+logger.setLevel(level=level)
 
 # Add a stream handler with the colored formatter
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)  # Set the same level as logger
+stream_handler.setLevel(level=level)
 stream_handler.setFormatter(formatter)
 
 # Add the handler to the logger
@@ -43,7 +44,6 @@ from backend.object.network import Network
 with open('config.json') as f:
     jf = json.load(f)
     version = jf['CLI']['version']
-
 
 class ArgParse(object):
     def __init__(self) -> None:

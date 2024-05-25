@@ -1,8 +1,29 @@
 #!/bin/bash
 
-# Run start_geth.sh
-./start_geth.sh
+# set path
+ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
+PATH_TO_CONFIG="$ROOT_DIR/config.json"
 
-# Run start_lighthouse.sh
-./start_lighthouse.sh
+# set parameters
+NETWORK_NAME=$1
+AUTHRPC_PORT=$(jq -r --arg NETWORK_NAME "$NETWORK_NAME" '.NETWORK[$NETWORK_NAME].authrpc_port' "$PATH_TO_CONFIG")
 
+# start geth
+geth --$NETWORK_NAME \
+     --datadir ~/geth-tutorial \
+     --authrpc.addr localhost \
+     --authrpc.port $AUTHRPC_PORT \
+     --authrpc.vhosts localhost \
+     --authrpc.jwtsecret ~/geth-tutorial/jwtsecret \
+     --http \
+     --http.api eth,net \
+     --signer=~/geth-tutorial/clef/clef.ipc \
+     --http
+
+# start lighthouse
+lighthouse bn \
+  --network $NETWORK_NAME \
+  --execution-endpoint http://localhost:$AUTHRPC_PORT \
+  --execution-jwt ~/geth-tutorial/jwtsecret \
+  --checkpoint-sync- https://$NETWORK_NAME.beaconstate.info \
+  --http

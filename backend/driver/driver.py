@@ -25,6 +25,7 @@ def query_handler(net: Network, target: str, query_params: dict):
         try:
             address = query_params['address']
         except:
+            logger.error('address parameter cannot be found.')
             raise ValueError('address parameter cannot be found.')
         return net.get_nonce(address=address)
         

@@ -8,7 +8,7 @@ Wants=network-online.target
 
 WorkingDirectory=/home/ubuntu
 User=ubuntu
-ExecStart=/usr/local/bin/lighthouse bn --network mainnet --execution-endpoint http://localhost:8551 --execution-jwt /tmp/jwtsecret --checkpoint-sync-url https://mainnet.checkpoint.sigp.io --disable-deposit-contract-sync
+ExecStart=/usr/local/bin/lighthouse bn --network mainnet --execution-endpoint http://localhost:8551 --execution-jwt /tmp/jwtsecret --checkpoint-sync- https://mainnet.checkpoint.sigp.io --disable-deposit-contract-sync
 Restart=always
 RestartSec=5s
 

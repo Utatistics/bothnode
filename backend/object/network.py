@@ -23,7 +23,7 @@ class Network(object):
         """
         # set attributes
         self.name = net_config['name']
-        self.url = net_config['url']
+        self.local_rpc = net_config['local_rpc']
         self.chain_id = net_config['chain_id']
 
         # init instance 
@@ -33,7 +33,7 @@ class Network(object):
 
     def _connector(self):
         logger.info(f"The instance connecting to {self.name}...")
-        self.provider = Web3(Web3.HTTPProvider(self.url))
+        self.provider = Web3(Web3.HTTPProvider(self.local_rpc))
         if self.provider.is_connected():
             logger.info(f"Successfully connected to {self.name}!")
         else:

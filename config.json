@@ -8,9 +8,73 @@
     "NETWORK": {
         "GANACHE": {
             "name": "GANACHE",
-            "url": "http://127.0.0.1:8545",
-            "chain_id": 1337, 
-            "port": 8545}
+            "local_rpc": "http://127.0.0.1:8545",
+            "remote_rpc": "",
+            "chain_id": 1337,
+            "rpc_port": 8545,
+            "network_port": 30303,
+            "authrpc_port": 8551
+        },
+        "MAIN": {
+            "name": "Ethereum Main Network (Mainnet)",
+            "local_rpc": "http://127.0.0.1:8545",
+            "remote_rpc": "https://mainnet.infura.io/v3/<ProjectID>",
+            "chain_id": 1,
+            "rpc_port": 8545,
+            "network_port": 30303,
+            "authrpc_port": 8551,
+            "block_explorer_url": "https://etherscan.io"
+        },
+        "ROPSTEN": {
+            "name": "Ropsten Test Network",
+            "local_rpc": "http://127.0.0.1:8545",
+            "remote_rpc": "https://ropsten.infura.io/v3/<ProjectID>",
+            "chain_id": 3,
+            "rpc_port": 8545,
+            "network_port": 30303,
+            "authrpc_port": 8551,
+            "block_explorer_url": "https://ropsten.etherscan.io/"
+        },
+        "RINKEBY": {
+            "name": "Rinkeby Test Network",
+            "local_rpc": "http://127.0.0.1:8545",
+            "remote_rpc": "https://rinkeby.infura.io/v3/<ProjectID>",
+            "chain_id": 4,
+            "rpc_port": 8545,
+            "network_port": 30303,
+            "authrpc_port": 8551,
+            "block_explorer_url": "https://rinkeby.etherscan.io/"
+        },
+        "GOERLI": {
+            "name": "Goerli Test Network",
+            "local_rpc": "http://127.0.0.1:8545",
+            "remote_rpc": "https://goerli.infura.io/v3/<ProjectID>",
+            "chain_id": 5,
+            "rpc_port": 8545,
+            "network_port": 30303,
+            "authrpc_port": 8551,
+            "block_explorer_url": "https://goerli.etherscan.io/"
+        },
+        "KOVAN": {
+            "name": "Kovan Test Network",
+            "local_rpc": "http://127.0.0.1:8545",
+            "remote_rpc": "https://kovan.infura.io/v3/<ProjectID>",
+            "chain_id": 42,
+            "rpc_port": 8545,
+            "network_port": 30303,
+            "authrpc_port": 8551,
+            "block_explorer_url": "https://kovan.etherscan.io/"
+        },
+        "SEPOLIA": {
+            "name": "Sepolia Test Network",
+            "local_rpc": "http://127.0.0.1:8545",
+            "remote_rpc": "https://eth-sepolia.g.alchemy.com/v2/[YOUR-API-KEY]",
+            "chain_id": 42,
+            "rpc_port": 8545,
+            "network_port": 30303,
+            "authrpc_port": 8551,
+            "block_explorer_url": "https://sepolia.etherscan.io"
+        }
     },
     "CLI": {
         "version": "0.1.0"

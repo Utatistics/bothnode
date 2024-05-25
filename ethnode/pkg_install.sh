@@ -15,7 +15,7 @@ sudo apt-get -y install unzip
 sudo apt-get install -y ethereum
 
 # lighthouse
-curl -LO https://github.com/sigp/lighthouse/releases/download/v4.0.1/lighthouse-v4.0.1-x86_64-unknown-linux-gnu.tar.gz
+c -LO https://github.com/sigp/lighthouse/releases/download/v4.0.1/lighthouse-v4.0.1-x86_64-unknown-linux-gnu.tar.gz
 tar -xvf lighthouse-v4.0.1-x86_64-unknown-linux-gnu.tar.gz
 sudo mv lighthouse /usr/local/bin/
 rm -rf lighthouse-v4.0.1-x86_64-unknown-linux-gnu.tar.gz
