@@ -2,7 +2,7 @@
 
 # set path
 ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
-INSTALL_DIR="$ROOT_DIR/install"
+INSTALL_DIR="$ROOT_DIR/ethnode/install"
 PATH_TO_CONFIG="$ROOT_DIR/config.json"
 
 # set parameters
