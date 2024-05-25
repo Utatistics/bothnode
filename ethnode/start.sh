@@ -10,7 +10,7 @@ NETWORK_NAME=$1
 AUTHRPC_PORT=$(jq -r --arg NETWORK_NAME "$NETWORK_NAME" '.NETWORK[$NETWORK_NAME].authrpc_port' "$PATH_TO_CONFIG")
 
 # install 
-bash "$INSTALL_DIR/nstall_geth.sh"
+bash "$INSTALL_DIR/install_geth.sh"
 bash "$INSTALL_DIR/install_lighthouse.sh"
 
 # start geth
