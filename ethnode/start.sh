@@ -8,6 +8,10 @@ PATH_TO_CONFIG="$ROOT_DIR/config.json"
 NETWORK_NAME=$1
 AUTHRPC_PORT=$(jq -r --arg NETWORK_NAME "$NETWORK_NAME" '.NETWORK[$NETWORK_NAME].authrpc_port' "$PATH_TO_CONFIG")
 
+# install 
+bash "$ROOT_DIR/install_geth.sh"
+bash "$ROOT_DIR/install_lighthouse.sh"
+
 # start geth
 geth --$NETWORK_NAME \
      --datadir ~/geth-tutorial \
