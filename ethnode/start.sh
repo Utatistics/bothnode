@@ -6,8 +6,9 @@ INSTALL_DIR="$ROOT_DIR/ethnode/install"
 PATH_TO_CONFIG="$ROOT_DIR/config.json"
 
 # set parameters
-NETWORK_NAME=$(echo "$1" | tr '[:lower:]' '[:upper:]')
-AUTHRPC_PORT=$(jq -r --arg NETWORK_NAME "$NETWORK_NAME" '.NETWORK[$NETWORK_NAME].authrpc_port' "$PATH_TO_CONFIG")
+NETWORK=$(echo "$1" | tr '[:lower:]' '[:upper:]')
+NETWORK_NAME=$1
+AUTHRPC_PORT=$(jq -r --arg NETWORK_NAME "$NETWORK" '.NETWORK[$NETWORK].authrpc_port' "$PATH_TO_CONFIG")
 
 # install 
 bash "$INSTALL_DIR/install_geth.sh"
