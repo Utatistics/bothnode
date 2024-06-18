@@ -10,6 +10,9 @@ NETWORK=$(echo "$1" | tr '[:lower:]' '[:upper:]')
 NETWORK_NAME=$1
 AUTHRPC_PORT=$(jq -r --arg NETWORK_NAME "$NETWORK" '.NETWORK[$NETWORK].authrpc_port' "$PATH_TO_CONFIG")
 
+echo $ROOT_DIR
+echo $INSTALL_DIR
+echo $PATH_TO_CONFIG
 echo $NETWORK
 echo $NETWORK_NAME
 echo $AUTHRPC_PORT
