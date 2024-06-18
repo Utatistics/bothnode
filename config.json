@@ -73,7 +73,8 @@
             "rpc_port": 8545,
             "network_port": 30303,
             "authrpc_port": 8551,
-            "block_explorer_url": "https://sepolia.etherscan.io"
+            "block_explorer_url": "https://sepolia.etherscan.io",
+            "checkpoint-sync-url": "https://sepolia.beaconstate.info"
         }
     },
     "CLI": {

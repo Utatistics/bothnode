@@ -15,7 +15,7 @@ def node_launcher(net_name: str):
     if net_name.lower() == 'ganache':
         endpoint = 'ganache.sh'
     else:
-        endpoint = 'start.sh'
+        endpoint = 'geth.sh'
     path_to_sh = SCRIPT_DIR / endpoint
 
     logger.info(f'Launching {net_name}')
