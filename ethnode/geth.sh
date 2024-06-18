@@ -4,6 +4,7 @@
 ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
 INSTALL_DIR="$ROOT_DIR/ethnode/install"
 PATH_TO_CONFIG="$ROOT_DIR/config.json"
+PRIVATE_DIR="$ROOT_DIR/private"
 
 # set parameters
 NETWORK=$(echo "$1" | tr '[:lower:]' '[:upper:]')
@@ -25,23 +26,22 @@ openssl rand -hex 32 | tr -d "\n" | sudo tee /secrets/jwt.hex
 lighthouse bn \
   --network $NETWORK_NAME \
   --execution-endpoint http://localhost:$AUTHRPC_PORT \
-  --execution-jwt ~bothnode/private/jwtsecret \
+  --execution-jwt $PRIVATE_DIR/jwtsecret \
   --checkpoint-sync-url $SYNC_URL \
   --http
 
 # start clef
-clef newaccount --keystore ~bothnode/private/keystore
-clef --keystore ~bothnode/private/keystore --configdir ~bothnode/private/clef --chainid $CHAIN_ID
+clef newaccount --keystore $PRIVATE_DIR/keystore
+clef --keystore $PRIVATE_DIR/keystore --configdir $PRIVATE_DIR/clef --chainid $CHAIN_ID
 
 # start geth
 geth --$NETWORK_NAME \
-     --datadir ~bothnode/private \
+     --datadir $PRIVATE_DIR \
      --authrpc.addr localhost \
      --authrpc.port $AUTHRPC_PORT \
      --authrpc.vhosts localhost \
-     --authrpc.jwtsecret ~bothnode/private/jwtsecret \
+     --authrpc.jwtsecret $PRIVATE_DIR/jwtsecret \
      --http \
      --http.api eth,net \
-     --signer=~bothnode/private/clef/clef.ipc \
-     --http
+     --signer=$PRIVATE_DIR/clef/clef.ipc \
 
