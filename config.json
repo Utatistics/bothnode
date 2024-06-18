@@ -69,7 +69,7 @@
             "name": "sepolia",
             "local_rpc": "http://127.0.0.1:8545",
             "remote_rpc": "https://eth-sepolia.g.alchemy.com/v2/[YOUR-API-KEY]",
-            "chain_id": 42,
+            "chain_id": 11155111,
             "rpc_port": 8545,
             "network_port": 30303,
             "authrpc_port": 8551,

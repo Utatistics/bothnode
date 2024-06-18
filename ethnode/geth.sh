@@ -10,6 +10,7 @@ NETWORK=$(echo "$1" | tr '[:lower:]' '[:upper:]')
 NETWORK_NAME=$1
 AUTHRPC_PORT=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].authrpc_port' "$PATH_TO_CONFIG")
 SYNC_URL=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].checkpoint-sync-url' "$PATH_TO_CONFIG")
+CHAIN_ID=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].chain_id' "$PATH_TO_CONFIG")
 
 # install 
 bash "$INSTALL_DIR/install_geth.sh"
@@ -30,7 +31,7 @@ lighthouse bn \
 
 # start clef
 clef newaccount --keystore ~bothnode/private/keystore
-clef --keystore ~bothnode/private/keystore --configdir ~bothnode/private/clef --chainid 11155111
+clef --keystore ~bothnode/private/keystore --configdir ~bothnode/private/clef --chainid $CHAIN_ID
 
 # start geth
 geth --$NETWORK_NAME \
