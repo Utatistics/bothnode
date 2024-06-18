@@ -14,6 +14,7 @@ AUTHRPC_PORT=$(jq -r --arg NETWORK_NAME "$NETWORK" '.NETWORK[$NETWORK].authrpc_p
 bash "$INSTALL_DIR/install_geth.sh"
 bash "$INSTALL_DIR/install_lighthouse.sh"
 
+echo $AUTHRPC_PORT
 # start geth
 geth --$NETWORK_NAME \
      --datadir ~/geth-tutorial \
