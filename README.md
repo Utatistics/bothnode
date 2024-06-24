@@ -16,8 +16,10 @@ What you can do with bothnode:
  - detect the anamolies and malpractiecs using the variety of methods
 
 ### Getting Started 
+Since bothnode needs to work with the Ethereum client running in your local machine, initial setups (e.g. hardware resource acquisition, client software installment, node synching, etc.) 
+The following instructions can be skipped if not necessary.
+
 #### Remote Settings 
-*Skip this step if not necessary.
 
 Use [bothnode-infra](https://github.com/Utatistics/bothnode-infra/tree/main) to automate cloud resources setup 
 
@@ -38,19 +40,47 @@ Then, set up ethereum client by running the following command:
 ```bash
 bothnode launch <network_name>
 ```
-'launch' activates the node of your choice, which will be running in the background. 
+The command launch the node of your choice: 
+ - ganache: local Ethereum emulator
+ - sepolia: Ethereum test network
+ - main: Ethereum main net
+
+After successful execution of `bothnode launch`, your node will be running in the background while starting the syncing process at the same time.
 
 ### Interact with Node
-bothnode implements multiple ways of node interaction. For example, to query network information:
+bothnode implements multiple ways of node interaction: get, tx, detect
+
+#### bothnode get
 ```bash
 bothnode get <network_name> <target> --options
 ```
 
+#### bothnode tx
 To send transaction to the network:
 ```bash
 bothnode tx <network_name> --options
+
+# regular transaction
+bothnode tx ganache -f <from_address>-t <to_address> --amount 1
+
+# transaction for smart contract deployment
+bothnode tx ganache -f <from_address> -b
+--contract-name Tokenization
+--contract-params '{
+  "name_": "My Token",
+  "symbol_": "MTK",
+  "decimals_": 18,
+  "initialSupply_": 1000000
+}'
+
+# transaction for smart contract calling
+bothnode tx ganache -f <address>
+--contract-name Tokenization
+--func-name transfer
+--func-params '{"recipient": "0xFaD6bF978fC43DD8Dc6084356012f80CB3Ff1b56", "amount": 1000}'
 ```
 
+#### bothnode detect
 Specify the method and apply detection algorithms to the living network!
 ```bash
 bothnode detect --method <method_name>
