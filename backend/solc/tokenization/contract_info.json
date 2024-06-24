@@ -9,7 +9,7 @@
     "path_to_contract": "/home/vagrant/base/bothnode/backend/solc/Tokenization",
     "path_to_sh": "/home/vagrant/base/bothnode/backend/solc/build.sh",
     "path_to_build": "/home/vagrant/base/bothnode/backend/solc/Tokenization/build_info.json",
-    "contract_address": "0x7755618908F347e7ed07B0334295833384AFff38",
+    "contract_address": "0x8D9Bb180089361C01963e4E9BFbc63c90f35c8EB",
     "abi": [
         {
             "inputs": [

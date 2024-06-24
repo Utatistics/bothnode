@@ -68,9 +68,11 @@ class ArgParse(object):
         self.parser.add_argument("-f", "--sender-address", help="The address for the sender")
         self.parser.add_argument("-t", "--recipient-address", help="The address for the recipient")
         self.parser.add_argument("-a", "--amount", type=int)
-        self.parser.add_argument("-c", "--contract-name")
         self.parser.add_argument("-b", "--build", action='store_true', default=False)
+        self.parser.add_argument("--contract-name")
         self.parser.add_argument("--contract-params", type=self._dict_parser, help="Constructor parameters in dictionary format")
+        self.parser.add_argument("--func-name", help="name of the function (i.e. method) to call")
+        self.parser.add_argument("--func-params", type=self._dict_parser, help="Smart contract method parameters in dictionary format")
 
         # detect related options
         self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])
@@ -197,9 +199,11 @@ def handler(args: argparse.Namespace, term: Terminal):
                                         sender_address=args.sender_address,
                                         recipient_address=args.recipient_address,
                                         amount=args.amount,
-                                        contract_name=args.contract_name,
                                         build=args.build,
-                                        contract_params=args.contract_params)
+                                        contract_name=args.contract_name,
+                                        contract_params=args.contract_params,
+                                        func_name=args.func_name,
+                                        func_params=args.func_params)
             
             elif args.command == 'detect':
                 if args.method:

@@ -49,23 +49,25 @@ def query_handler(net: Network, target: str, query_params: dict):
     else:
         raise ValueError(f'Invalid target: {target}')
     
-def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, build: bool, contract_params: dict):
+def send_transaction(net: Network, sender_address: str,recipient_address: str, amount: int,
+                     contract_name: str, build: bool, contract_params: dict, func_name: str, func_params: dict):
     logger.info("Sending TX...")
-
     sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
+
     if contract_name:
+        recipient = None
         contract = Contract(contract_name=contract_name, provider=net.provider, contract_params=contract_params)
         if build:
-            recipient = None
             contract.contract_builder()
+            contract.load_from_build()
         else:
-            recipient = Account(recipient_address, private_key=None, chain_id=net.chain_id)
-        contract.contract_generator()
+            contract.load_from_contract()
+
     else:
         contract = None
         recipient = Account(recipient_address, private_key=None, chain_id=net.chain_id)
     
-    net.send_tx(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build)
+    net.send_tx(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build, func_name=func_name, func_params=func_params)
 
 def detect_anamolies(method: str):
     logger.info("Let there be light")

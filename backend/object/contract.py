@@ -4,6 +4,7 @@ logger = getLogger(__name__)
 
 import json 
 import subprocess
+from pathlib import Path
 from backend.util import config
 
 class Contract(object):
@@ -13,6 +14,7 @@ class Contract(object):
         self.contract_params = contract_params
         self.path_to_contract = config.SOLC_DIR / contract_name
         self.path_to_sh = config.SOLC_DIR / 'build.sh'
+        self.path_to_contract_json = self.path_to_contract / 'contract_info.json'
 
     def contract_builder(self):
         logger.info(f"Building the contract: {self.contract_name}")
@@ -27,21 +29,7 @@ class Contract(object):
             logger.info(f'Generated build information: {self.path_to_build}')
         except subprocess.CalledProcessError as e:
             logger.error(f"Contract build failed with error: {e}")
-        
-    def contract_generator(self):
-        logger.info(f"Generating the contract...")
-  
-        with open(self.path_to_build, 'r') as f:
-            build_info = json.load(f)
-            k = next(iter(build_info['contracts']))
-            self.contract_address = None # address not neccesary for contract creation
-            self.abi = build_info['contracts'][k]['abi']
-            self.bytecode = build_info['contracts'][k]["bin"]
             
-        # define contract creation transaction
-        self.contract = self.provider.eth.contract(abi=self.abi, bytecode=self.bytecode)
-        logger.info(f"Build completed: {self.contract_name}")
-    
     def _to_dict(self) -> dict:
         return {
             "contract_name": self.contract_name,
@@ -55,9 +43,38 @@ class Contract(object):
         }
 
     def write_to_json(self, contract_address: str):
-        self.path_to_contract_json = self.path_to_contract / 'contract_info.json'
         self.contract_address = contract_address
         data = self._to_dict()
         with open(self.path_to_contract_json, 'w') as json_file:
             json.dump(data, json_file, indent=4)
         logger.info(f'contract info saved at: {self.path_to_contract_json}')
+    
+    def load_from_build(self):
+        if not self.path_to_build.exists():
+            logger.error(f'JSON file not found: {self.path_to_build}')
+            return
+
+        with open(self.path_to_build, 'r') as jf:
+            build_info = json.load(jf)
+            k = next(iter(build_info['contracts']))
+            self.abi = build_info['contracts'][k]['abi']
+            self.bytecode = build_info['contracts'][k]["bin"]
+            self.contract_address = None # address not neccesary for contract creation
+            
+        self.contract = self.provider.eth.contract(abi=self.abi, bytecode=self.bytecode, address=self.contract_address)
+        logger.info(f'Contract info loaded from: {self.path_to_build}')
+
+    def load_from_contract(self):
+        if not self.path_to_contract_json.exists():
+            logger.error(f'JSON file not found: {self.path_to_contract_json}')
+            return
+
+        with open(self.path_to_contract_json, 'r') as jf:
+            contract_info = json.load(jf)
+            self.abi = contract_info['abi']
+            self.bytecode = contract_info['bytecode']
+            self.contract_address = contract_info['contract_address']
+        
+        self.contract = self.provider.eth.contract(abi=self.abi, bytecode=self.bytecode, address=self.contract_address)
+        logger.info(f'Contract info loaded from: {self.path_to_contract_json}')
+

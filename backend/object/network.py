@@ -90,10 +90,9 @@ class Network(object):
         logger.info(f'{web3.geth.txpool.inspect=}')
         logger.info(f'{web3.geth.txpool.status=}')
  
-    def _create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
+    def _create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool, func_name: str, func_params: dict):
         nonce = self.get_nonce(address=sender.address)
         if contract:
-            # self.provider = contract.provider
             if build:
                 logger.info('>> Smart Contract Deployment')
                 payload = contract.contract.constructor(**contract.contract_params).build_transaction(
@@ -104,18 +103,18 @@ class Network(object):
                 )
             else:
                 logger.info('>> Smart Contract Transaction')
-                # UPDATE REQUIRED
-                # constructor_args = (sender.address, '') *constructor_args
-                payload = contract.contract.constructor(**contract.contract_params).build_transaction(
-                    {
-                        'from' : sender.address,
-                        'to': recipient.address,
-                        'value': amount,  # Value in Wei (for Ethereum), usually 0 for token transfers
-                        'data': contract.encode_function_call('transfer', [recipient.address, amount]),  # Encoded function call to transfer tokens
-                        'gasPrice': self.provider.eth.gas_price,  # Gas price
-                        'gas': 100000  # Gas limit
-                    }
-                )
+                logger.info(f'{func_name=}')
+                logger.info(f'{func_params=}')
+                function_call = contract.contract.encodeABI(fn_name=func_name, args=list(func_params.values()) if func_params else [])
+                payload = {
+                    'from': sender.address,
+                    'to': contract.contract_address,
+                    'value': 0,  # Value in Wei (for Ethereum), usually 0 for token transfers
+                    'data': function_call,  # Encoded function call
+                    'gasPrice': self.provider.eth.gas_price,  # Gas price
+                    'gas': 100000,  # Gas limit
+                    'nonce': nonce
+                }
         else:
             logger.info('>> Regular Transaction')
             payload = {
@@ -134,9 +133,9 @@ class Network(object):
             
         return payload
 
-    def send_tx(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
+    def send_tx(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool, func_name: str, func_params: dict):
         # create payload
-        payload = self._create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build)
+        payload = self._create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build, func_name=func_name, func_params=func_params)
 
         # sign & send the transaction
         sender_pk = sender.private_key
@@ -154,9 +153,12 @@ class Network(object):
             logger.error("The transaction failed or reverted.")
             logger_hexbytes(level='error', data=tx_receipt)
 
-        if contract and build:
-            logger.info("Post-deployment update of the contract attribute.")
-            contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.bytecode) 
-            contract_address = tx_receipt.contractAddress
-            logger.info(f'{contract_address=}')
-            contract.write_to_json(contract_address=contract_address)
+        if contract
+            if build:
+                logger.info("Post-deployment update of the contract attribute.")
+                contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.bytecode) 
+                contract_address = tx_receipt.contractAddress
+                logger.info(f'{contract_address=}')
+                contract.write_to_json(contract_address=contract_address)
+            else:
+                logger.info(f'{contract}')
