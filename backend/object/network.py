@@ -57,17 +57,10 @@ class Network(object):
         logger.info(f'>> Nonce={nonce} for {address=}')
         return nonce
     
-    def get_block_info(self, number: int, hash: str):
-        if number:
-            block_info = self.provider.eth.get_block(number)
-        elif hash:
-            block_info = self.provider.eth.get_block(hash)
-        else:
-            block_info = self.provider.eth.get_block('latest')
-
-        logger_hexbytes(level='info', data=block_info)
-
-        return block_info
+    def get_block_number(self):
+        number = self.provider.eth.get_block('latest').number
+        logger.info(f'>> Block Number={number}')
+        return number
 
     def get_chain_info(self):
         logger.info(f">> Chain ID: {self.provider.eth.chain_id}")
@@ -104,7 +97,7 @@ class Network(object):
             else:
                 logger.info('>> Smart Contract Transaction')
                 logger.info(f'{func_name=}')
-                logger.info(f'{func_params=}')
+                logger.info(f'{list(func_params.values()) if func_params else []}')
                 function_call = contract.contract.encodeABI(fn_name=func_name, args=list(func_params.values()) if func_params else [])
                 payload = {
                     'from': sender.address,
@@ -144,7 +137,6 @@ class Network(object):
 
         # store the result of transaction
         tx_receipt = self.provider.eth.wait_for_transaction_receipt(hashed_tx)
-        contract_address = tx_receipt.contractAddress
         
         if tx_receipt.status == 1:
             logger.info(f"Successfully completed the transaction.")
@@ -153,12 +145,15 @@ class Network(object):
             logger.error("The transaction failed or reverted.")
             logger_hexbytes(level='error', data=tx_receipt)
 
-        if contract
+        if contract:
+            contract_address = tx_receipt.contractAddress
             if build:
                 logger.info("Post-deployment update of the contract attribute.")
                 contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.bytecode) 
-                contract_address = tx_receipt.contractAddress
                 logger.info(f'{contract_address=}')
                 contract.write_to_json(contract_address=contract_address)
             else:
-                logger.info(f'{contract}')
+                # EXPERIMENTAL
+                block_number = self.get_block_number()
+                logs = contract.contract.events.Transfer().get_logs(fromBlock=block_number)
+                logger.info(f'{logs=}')
