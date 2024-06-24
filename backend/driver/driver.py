@@ -49,12 +49,12 @@ def query_handler(net: Network, target: str, query_params: dict):
     else:
         raise ValueError(f'Invalid target: {target}')
     
-def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, build: bool):
+def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, build: bool, contract_params: dict):
     logger.info("Sending TX...")
 
     sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
     if contract_name:
-        contract = Contract(contract_name=contract_name, provider=net.provider)
+        contract = Contract(contract_name=contract_name, provider=net.provider, contract_params=contract_params)
         if build:
             recipient = None
             contract.contract_builder()

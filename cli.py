@@ -70,6 +70,7 @@ class ArgParse(object):
         self.parser.add_argument("-a", "--amount", type=int)
         self.parser.add_argument("-c", "--contract-name")
         self.parser.add_argument("-b", "--build", action='store_true', default=False)
+        self.parser.add_argument("--contract-params", type=self._dict_parser, help="Constructor parameters in dictionary format")
 
         # detect related options
         self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])
@@ -197,7 +198,8 @@ def handler(args: argparse.Namespace, term: Terminal):
                                         recipient_address=args.recipient_address,
                                         amount=args.amount,
                                         contract_name=args.contract_name,
-                                        build=args.build)
+                                        build=args.build,
+                                        contract_params=args.contract_params)
             
             elif args.command == 'detect':
                 if args.method:

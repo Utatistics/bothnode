@@ -96,7 +96,7 @@ class Network(object):
             # self.provider = contract.provider
             if build:
                 logger.info('>> Smart Contract Deployment')
-                payload = contract.contract.constructor().build_transaction(
+                payload = contract.contract.constructor(**contract.contract_params).build_transaction(
                     {
                         "from": sender.address,
                         "nonce": nonce
@@ -106,7 +106,7 @@ class Network(object):
                 logger.info('>> Smart Contract Transaction')
                 # UPDATE REQUIRED
                 # constructor_args = (sender.address, '') *constructor_args
-                payload = contract.contract.constructor().build_transaction(
+                payload = contract.contract.constructor(**contract.contract_params).build_transaction(
                     {
                         'from' : sender.address,
                         'to': recipient.address,
@@ -159,3 +159,4 @@ class Network(object):
             contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.bytecode) 
             contract_address = tx_receipt.contractAddress
             logger.info(f'{contract_address=}')
+            contract.write_to_json(contract_address=contract_address)

@@ -2,15 +2,15 @@
 
 # set path
 ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
-INSTALL_DIR="$ROOT_DIR/ethnode/install"
 PATH_TO_CONFIG="$ROOT_DIR/config.json"
 PRIVATE_DIR="$ROOT_DIR/private"
+INSTALL_DIR="$ROOT_DIR/ethnode/install"
 
 # set parameters
 NETWORK=$(echo "$1" | tr '[:lower:]' '[:upper:]')
 NETWORK_NAME=$1
 AUTHRPC_PORT=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].authrpc_port' "$PATH_TO_CONFIG")
-SYNC_URL=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].checkpoint-sync-url' "$PATH_TO_CONFIG")
+SYNC_URL=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].checkpoint_sync_url' "$PATH_TO_CONFIG")
 CHAIN_ID=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].chain_id' "$PATH_TO_CONFIG")
 
 # install 
@@ -22,6 +22,9 @@ bash "$INSTALL_DIR/install_lighthouse.sh"
 sudo mkdir -p /secrets
 openssl rand -hex 32 | tr -d "\n" | sudo tee /secrets/jwt.hex
 
+# generate an account key pair while specifying where to store them
+clef newaccount --keystore $PRIVATE_DIR/keystore
+
 # start lighthouse
 lighthouse bn \
   --network $NETWORK_NAME \
@@ -31,7 +34,6 @@ lighthouse bn \
   --http
 
 # start clef
-clef newaccount --keystore $PRIVATE_DIR/keystore
 clef --keystore $PRIVATE_DIR/keystore --configdir $PRIVATE_DIR/clef --chainid $CHAIN_ID
 
 # start geth
