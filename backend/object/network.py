@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 import web3
 from web3 import Web3
 from backend.util import config
@@ -14,7 +13,7 @@ logger = getLogger(__name__)
 
 class Network(object):
     def __init__(self, net_config: dict) -> None:
-        """
+        """Network Interface object that allows user to interact with the network. 
 
         Args
         ----
@@ -157,3 +156,61 @@ class Network(object):
                 block_number = self.get_block_number()
                 logs = contract.contract.events.Transfer().get_logs(fromBlock=block_number)
                 logger.info(f'{logs=}')
+
+
+'''
+class Network(object):
+    def __init__(self, net_config: dict) -> None:
+        """Network Interface object that allows user to interact with the network. 
+
+        Args
+        ----
+        net_config : dict
+            Configuration dictionary with network details.
+        """
+        # set attributes
+        self.name = net_config['name']
+        self.local_rpc = net_config['local_rpc']
+        self.chain_id = net_config['chain_id']
+
+        # init instance 
+        self._check_connection()
+        if self.chain_id == 1337:
+            self._modify_ganache_account_keys()
+
+    def _run_geth_command(self, method: str, params: list = None) -> dict:
+        """Runs a Geth RPC command and returns the result as a dictionary.
+
+        Args
+        ----
+        method : str
+            The RPC method to call.
+        params : list, optional
+            Parameters to pass to the RPC method.
+
+        Returns
+        -------
+        dict
+            The result of the RPC call.
+        """
+        params = params or []
+        try:
+            result = subprocess.run(
+                ['curl', '-s', '--data-binary', json.dumps({'jsonrpc': '2.0', 'method': method, 'params': params, 'id': 1}), self.local_rpc],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True
+            )
+            return json.loads(result.stdout)
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error running Geth command: {e.stderr.decode()}")
+            raise
+
+    def get_queue(self):
+        result = self._run_geth_command('txpool_content')
+        logger.info(f'{result}')
+        result = self._run_geth_command('txpool_inspect')
+        logger.info(f'{result}')
+        result = self._run_geth_command('txpool_status')
+        logger.info(f'{result}')
+'''
