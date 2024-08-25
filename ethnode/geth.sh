@@ -17,7 +17,6 @@ CHAIN_ID=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].chain_id' "$PATH_T
 bash "$INSTALL_DIR/install_geth.sh"
 bash "$INSTALL_DIR/install_lighthouse.sh"
 
-
 # create a JWT secret file
 sudo mkdir -p /secrets
 openssl rand -hex 32 | tr -d "\n" | sudo tee /secrets/jwt.hex
@@ -25,25 +24,27 @@ openssl rand -hex 32 | tr -d "\n" | sudo tee /secrets/jwt.hex
 # generate an account key pair while specifying where to store them
 clef newaccount --keystore $PRIVATE_DIR/keystore
 
+echo 'Start processes in the background'
 # start lighthouse
 lighthouse bn \
   --network $NETWORK_NAME \
   --execution-endpoint http://localhost:$AUTHRPC_PORT \
   --execution-jwt $PRIVATE_DIR/jwtsecret \
   --checkpoint-sync-url $SYNC_URL \
-  --http
+  --http &
 
 # start clef
-clef --keystore $PRIVATE_DIR/keystore --configdir $PRIVATE_DIR/clef --chainid $CHAIN_ID
+clef --keystore $PRIVATE_DIR/keystore --configdir $PRIVATE_DIR/clef --chainid $CHAIN_ID &
 
 # start geth
 geth --$NETWORK_NAME \
-     --datadir $PRIVATE_DIR \
-     --authrpc.addr localhost \
-     --authrpc.port $AUTHRPC_PORT \
-     --authrpc.vhosts localhost \
-     --authrpc.jwtsecret $PRIVATE_DIR/jwtsecret \
-     --http \
-     --http.api eth,net \
-     --signer=$PRIVATE_DIR/clef/clef.ipc \
+  --datadir $PRIVATE_DIR \
+  --authrpc.addr localhost \
+  --authrpc.port $AUTHRPC_PORT \
+  --authrpc.vhosts localhost \
+  --authrpc.jwtsecret $PRIVATE_DIR/jwtsecret \
+  --http \
+  --http.api eth,net \
+  --signer=$PRIVATE_DIR/clef/clef.ipc &
 
+wait
