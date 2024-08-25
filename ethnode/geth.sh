@@ -24,7 +24,7 @@ openssl rand -hex 32 | tr -d "\n" | sudo tee /secrets/jwt.hex
 # generate an account key pair while specifying where to store them
 clef newaccount --keystore $PRIVATE_DIR/keystore
 
-echo 'Start processes in the background'
+echo '>>> Start processes in the background...'
 # start lighthouse
 lighthouse bn \
   --network $NETWORK_NAME \
@@ -32,9 +32,11 @@ lighthouse bn \
   --execution-jwt $PRIVATE_DIR/jwtsecret \
   --checkpoint-sync-url $SYNC_URL \
   --http &
+LIGHTHOUSE_PID=$!
 
 # start clef
 clef --keystore $PRIVATE_DIR/keystore --configdir $PRIVATE_DIR/clef --chainid $CHAIN_ID &
+CLEF_PID=$!
 
 # start geth
 geth --$NETWORK_NAME \
@@ -46,5 +48,6 @@ geth --$NETWORK_NAME \
   --http \
   --http.api eth,net \
   --signer=$PRIVATE_DIR/clef/clef.ipc &
+GETH_PID=$!
 
 wait
