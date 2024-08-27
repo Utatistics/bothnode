@@ -22,10 +22,10 @@ sudo mkdir -p /secrets
 openssl rand -hex 32 | tr -d "\n" | sudo tee /secrets/jwt.hex
 
 # generate an account key pair while specifying where to store them
-clef newaccount --keystore $PRIVATE_DIR/keystore
+# clef newaccount --keystore $PRIVATE_DIR/keystore
 
-echo '>>> Start processes in the background...'
-# start lighthouse
+echo '>> Start processes in the background.'
+echo '>>> Starting lighthouse...'
 nohup lighthouse bn \
   --network $NETWORK_NAME \
   --execution-endpoint http://localhost:$AUTHRPC_PORT \
@@ -33,10 +33,10 @@ nohup lighthouse bn \
   --checkpoint-sync-url $SYNC_URL \
   --http > $HOME/.bothnode/log/lighthouse.log 2>&1 &
 
-# start clef
+echo '>>> Starting clef...'
 nohup clef --keystore $PRIVATE_DIR/keystore --configdir $PRIVATE_DIR/clef --chainid $CHAIN_ID > $HOME/.bothnode/log/clef.log 2>&1 &
 
-# start geth
+echo '>>> Starting geth...'
 nohup geth --$NETWORK_NAME \
   --datadir $PRIVATE_DIR \
   --authrpc.addr localhost \
