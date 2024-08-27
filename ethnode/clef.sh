@@ -5,12 +5,13 @@ ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
 PRIVATE_DIR="$ROOT_DIR/private"
 PATH_TO_CONFIG="$ROOT_DIR/config.json"
 
-echo $ROOT_DIR
-echo $PATH_TO_CONFIG
-
 # set parameters
 NETWORK=$(echo "$1" | tr '[:lower:]' '[:upper:]')
 CHAIN_ID=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].chain_id' "$PATH_TO_CONFIG")
+
+echo 'CHAIN_ID'
+echo $CHAIN_ID
+
 
 mkdir -p $PRIVATE_DIR/keystore
 
