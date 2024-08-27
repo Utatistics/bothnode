@@ -3,6 +3,8 @@
 # set path
 ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
 PRIVATE_DIR="$ROOT_DIR/private"
+PATH_TO_CONFIG="$ROOT_DIR/config.json"
+
 
 # set parameters
 NETWORK=$(echo "$1" | tr '[:lower:]' '[:upper:]')
