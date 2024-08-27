@@ -39,7 +39,7 @@ def node_launcher(net_name: str):
 
         # Run the clef.sh script to handle interactive commands
         clef_sh = SCRIPT_DIR / "clef.sh"
-        clef_process = subprocess.run(["bash", str(clef_sh)], check=True)
+        clef_process = subprocess.run(["bash", str(clef_sh), net_name], check=True)
         if clef_process.returncode != 0:
             logger.error(f"Error executing {clef_sh}: {clef_process.stderr.decode('utf-8')}")
             return
