@@ -8,11 +8,6 @@ PATH_TO_CONFIG="$ROOT_DIR/config.json"
 # set parameters
 NETWORK=$(echo "$1" | tr '[:lower:]' '[:upper:]')
 CHAIN_ID=$(jq -r --arg NETWORK "$NETWORK" '.NETWORK[$NETWORK].chain_id' "$PATH_TO_CONFIG")
-
-echo 'CHAIN_ID'
-echo $CHAIN_ID
-
-
 mkdir -p $PRIVATE_DIR/keystore
 
 # generate an account key pair while specifying where to store them
