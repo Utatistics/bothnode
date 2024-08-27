@@ -16,12 +16,12 @@ def node_launcher(net_name: str):
         endpoint = 'ganache.sh'
     else:
         endpoint = 'geth.sh'
+        
     path_to_sh = SCRIPT_DIR / endpoint
-
     logger.info(f'Launching {net_name}')
     
     try:
-        subprocess.run(["bash", path_to_sh, net_name], check=True)
+        subprocess.Popen(["bash", path_to_sh, net_name])
         logger.info(f"Executed {path_to_sh} successfully.")
     except subprocess.CalledProcessError as e:
         print(f"Error executing shell script: {e}")

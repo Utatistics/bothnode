@@ -25,11 +25,11 @@ GANACHE_PORT=$(jq -r '.NETWORK.GANACHE.rpc_port' "$ROOT_DIR/config.json")
 bash "$INSTALL_DIR/install_ganache.sh"
 
 # launch ganache server
-ganache --chain.chainId=$GANACHE_CHAIN_ID \
+nohup ganache --chain.chainId=$GANACHE_CHAIN_ID \
         --port=$GANACHE_PORT \
         --wallet.accountKeysPath=$ACCOUNT_KEYS_PATH \
         --wallet.defaultBalance=1000000 \
         --chain.asyncRequestProcessing=true \
-        --miner.blockGasLimit=1000000000000 \
+        --miner.blockGasLimit=1000000000000 > ganache.log 2>&1 &
 
 echo ">>> private keys have been stored in: $ACCOUNT_KEYS_PATH"

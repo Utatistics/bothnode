@@ -1,0 +1,8 @@
+ganache v7.9.2 (@ganache/cli: 0.10.2, @ganache/core: 0.10.2)
+Starting RPC server
+Error: listen EADDRINUSE: address already in use 127.0.0.1:8545.
+    at /usr/local/lib/node_modules/ganache/dist/node/1.js:2:5133
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Promise.allSettled (index 1) {
+  code: 'EADDRINUSE'
+}

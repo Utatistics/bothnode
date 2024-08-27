@@ -26,20 +26,18 @@ clef newaccount --keystore $PRIVATE_DIR/keystore
 
 echo '>>> Start processes in the background...'
 # start lighthouse
-lighthouse bn \
+nohup lighthouse bn \
   --network $NETWORK_NAME \
   --execution-endpoint http://localhost:$AUTHRPC_PORT \
   --execution-jwt $PRIVATE_DIR/jwtsecret \
   --checkpoint-sync-url $SYNC_URL \
-  --http &
-LIGHTHOUSE_PID=$!
+  --http > $HOME/.bothnode/log/lighthouse.log 2>&1 &
 
 # start clef
-clef --keystore $PRIVATE_DIR/keystore --configdir $PRIVATE_DIR/clef --chainid $CHAIN_ID &
-CLEF_PID=$!
+nohup clef --keystore $PRIVATE_DIR/keystore --configdir $PRIVATE_DIR/clef --chainid $CHAIN_ID > $HOME/.bothnode/log/clef.log 2>&1 &
 
 # start geth
-geth --$NETWORK_NAME \
+nohup geth --$NETWORK_NAME \
   --datadir $PRIVATE_DIR \
   --authrpc.addr localhost \
   --authrpc.port $AUTHRPC_PORT \
@@ -47,7 +45,6 @@ geth --$NETWORK_NAME \
   --authrpc.jwtsecret $PRIVATE_DIR/jwtsecret \
   --http \
   --http.api eth,net \
-  --signer=$PRIVATE_DIR/clef/clef.ipc &
-GETH_PID=$!
+  --signer=$PRIVATE_DIR/clef/clef.ipc > $HOME/.bothnode/log/geth.log 2>&1 &
 
 wait
