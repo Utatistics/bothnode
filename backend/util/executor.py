@@ -11,6 +11,7 @@ with open('config.json') as f:
     config_json = json.load(f)
     SCRIPT_DIR = Path(config_json['CONFIG']['script_dir'])
     PRIVATE_DIR = Path(config_json['CONFIG']['private_dir'])
+    INSTALL_DIR = SCRIPT_DIR / 'install'
 
 
 def node_launcher(net_name: str):
@@ -22,14 +23,14 @@ def node_launcher(net_name: str):
     
     else:
         # installation scripts
-        install_geth_sh = SCRIPT_DIR / 'install_geth.sh'
+        install_geth_sh = INSTALL_DIR / 'install_geth.sh'
         install_geth_process = subprocess.run(["bash", str(install_geth_sh)], check=True)
         if install_geth_process.returncode != 0:
             logger.error(f"Error executing {install_geth_sh}: {install_geth_process.stderr.decode('utf-8')}")
             return
         logger.info(f"Executed {install_geth_sh} successfully.")
 
-        install_lighthouse_sh = SCRIPT_DIR / 'install_lighthouse.sh'
+        install_lighthouse_sh = INSTALL_DIR / 'install_lighthouse.sh'
         install_lighthouse_process = subprocess.run(["bash", str(install_lighthouse_sh)], check=True)
         if install_lighthouse_process.returncode != 0:
             logger.error(f"Error executing {install_lighthouse_sh}: {install_lighthouse_process.stderr.decode('utf-8')}")
