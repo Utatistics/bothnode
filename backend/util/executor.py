@@ -8,28 +8,22 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
+SYSTEM_DIR = Path('/etc/systemd/system/')
 
 with open('config.json') as f:
     config_json = json.load(f)
     SCRIPT_DIR = Path(config_json['CONFIG']['script_dir'])
     PRIVATE_DIR = Path(config_json['CONFIG']['private_dir'])
     INSTALL_DIR = SCRIPT_DIR / 'install'
-    
+    SERVICE_DIR = SCRIPT_DIR / 'service'
 
 def install_service(service_name: str, source_dir: Path, dest_dir: Path):
-    install_geth_sh = INSTALL_DIR / 'install_geth.sh'
-    install_geth_process = subprocess.run(["bash", str(install_geth_sh)], check=True)
-    if install_geth_process.returncode != 0:
-        logger.error(f"Error executing {install_geth_sh}: {install_geth_process.stderr.decode('utf-8')}")
+    install_sh = INSTALL_DIR / f'install_{service_name}.sh'
+    install_process = subprocess.run(["bash", str(install_sh)], check=True)
+    if install_process.returncode != 0:
+        logger.error(f"Error executing {install_sh}: {install_process.stderr.decode('utf-8')}")
         return
-    logger.info(f"Executed {install_geth_sh} successfully.")
-
-    install_lighthouse_sh = INSTALL_DIR / 'install_lighthouse.sh'
-    install_lighthouse_process = subprocess.run(["bash", str(install_lighthouse_sh)], check=True)
-    if install_lighthouse_process.returncode != 0:
-        logger.error(f"Error executing {install_lighthouse_sh}: {install_lighthouse_process.stderr.decode('utf-8')}")
-        return
-    logger.info(f"Executed {install_lighthouse_sh} successfully.")
+    logger.info(f"Executed {install_sh} successfully.")
 
     source_path = source_dir / f'{service_name}.service'
     dest_path = dest_dir / f'{service_name}.service'
@@ -39,21 +33,7 @@ def install_service(service_name: str, source_dir: Path, dest_dir: Path):
     logger.info(f'{service_name}.service copied to {dest_dir}')
 
     # Set the correct permissions
-    os.chmod(dest_path, 0o644)
- 
-def main():
-    # Define paths
-    script_dir = Path(__file__).resolve().parent
-    service_dir = script_dir / 'service'
-    systemd_dir = Path('/etc/systemd/system/')
-    
-    # List of services to install
-    services = ['geth', 'lighthouse']
-    
-    # Install each service
-    for service in services:
-        install_service(service, service_dir, systemd_dir)
-   
+    os.chmod(dest_path, 0o644)   
     
 def node_launcher(net_name: str):
     logger.info(f'Launching {net_name}')
@@ -62,7 +42,16 @@ def node_launcher(net_name: str):
         ganache_sh = SCRIPT_DIR / 'ganache.sh'
         subprocess.Popen(["bash", str(ganache_sh), net_name])
     
-    else:        
+    else:
+        
+        # List of services to install
+        services = ['geth', 'lighthouse']
+        
+        # Install each service
+        for service in services:
+            install_service(service, SERVICE_DIR, SYSTEM_DIR)
+
+        '''TO BE MODIFIED'''    
         # Run the clef.sh script to handle interactive commands
         clef_sh = SCRIPT_DIR / "clef.sh"
         clef_process = subprocess.run(["bash", str(clef_sh), net_name], check=True)
@@ -75,3 +64,4 @@ def node_launcher(net_name: str):
         geth_sh = SCRIPT_DIR / 'geth.sh'        
         start_services_process = subprocess.Popen(["bash", str(geth_sh), net_name])
         logger.info(f"Executed {geth_sh} successfully.")
+        ''''''
