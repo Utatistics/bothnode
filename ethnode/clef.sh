@@ -15,4 +15,3 @@ clef newaccount --keystore $PRIVATE_DIR/keystore
 
 echo '>>> Starting clef...'
 nohup clef --keystore $PRIVATE_DIR/keystore --configdir $PRIVATE_DIR/clef --chainid $CHAIN_ID > $HOME/.bothnode/log/clef.log 2>&1 &
-ok
