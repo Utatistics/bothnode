@@ -35,5 +35,3 @@ nohup geth --$NETWORK_NAME \
   --http \
   --http.api eth,net \
   --signer=$PRIVATE_DIR/clef/clef.ipc > $HOME/.bothnode/log/geth.log 2>&1 &
-
-wait
