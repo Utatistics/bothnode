@@ -45,6 +45,17 @@ The command launch the node of your choice:
  - sepolia: Ethereum test network
  - main: Ethereum main net
 
+Run the usual `systemctl` commands to manage the underlying services (e.g., geth, lighthouse)
+```bash
+sudo systemctl start <service_name>.service
+sudo systemctl stop <service_name>.service
+sudo systemctl status <service_name>.service
+
+sudo systemctl enable <service_name>.service
+sudo journalctl -u <service_name>.service -f
+```
+
+
 After successful execution of `bothnode launch`, your node will be running in the background while starting the syncing process at the same time.
 
 ### Interact with Node

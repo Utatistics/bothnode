@@ -52,3 +52,7 @@ Hardfork: shanghai
 Id:       1337
 
 RPC Listening on 127.0.0.1:8545
+
+Received shutdown signal: SIGTERM
+Shutting down…
+Server has been shut down

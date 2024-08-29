@@ -17,7 +17,7 @@ with open('config.json') as f:
     INSTALL_DIR = SCRIPT_DIR / 'install'
     SERVICE_DIR = SCRIPT_DIR / 'service'
 
-def install_service(service_name: str, source_dir: Path, dest_dir: Path):
+def install_service(service_name: str) -> None:
     install_sh = INSTALL_DIR / f'install_{service_name}.sh'
     install_process = subprocess.run(["bash", str(install_sh)], check=True)
     if install_process.returncode != 0:
@@ -25,33 +25,46 @@ def install_service(service_name: str, source_dir: Path, dest_dir: Path):
         return
     logger.info(f"Executed {install_sh} successfully.")
 
-    source_path = source_dir / f'{service_name}.service'
-    dest_path = dest_dir / f'{service_name}.service'
+def setup_service(service_name: str):
+    source_path = SCRIPT_DIR / f'{service_name}.service'
+    dest_path = SERVICE_DIR / f'{service_name}.service'
 
-    # Copy the service file to the systemd directory
-    shutil.copy2(source_path, dest_path)
-    logger.info(f'{service_name}.service copied to {dest_dir}')
-
-    # Set the correct permissions
-    os.chmod(dest_path, 0o644)   
+    # copying the .service file 
+    if dest_path.exists():
+        logger.warning(f"{dest_path} already exists.")
+    else:
+        try:
+            subprocess.run(['sudo', 'cp', str(source_path), str(dest_path)], check=True)
+            logger.info(f'{service_name}.service copied to {SYSTEM_DIR}')
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Failed to copy {service_name}.service to {SYSTEM_DIR}: {e}")    
     
-def node_launcher(net_name: str):
+    # set permissions for the .service file
+    try:
+        subprocess.run(['sudo', 'chmod', '644', str(dest_path)], check=True)
+        logger.info(f'Set permissions for {dest_path} to 644.')
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to set permissions for {dest_path}: {e}")
+
+    # reload the systemd configuration
+    try:
+        subprocess.run(['sudo', 'systemctl', 'daemon-reload'], check=True)
+        logger.info(f'Reloaded systemd configuration successfully.')
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to reload systemd configuration: {e}")
+                     
+def node_launcher(net_name: str) -> None: 
     logger.info(f'Launching {net_name}')
     
     if net_name.lower() == 'ganache':
         ganache_sh = SCRIPT_DIR / 'ganache.sh'
         subprocess.Popen(["bash", str(ganache_sh), net_name])
-    
     else:
-        
-        # List of services to install
-        services = ['geth', 'lighthouse']
-        
-        # Install each service
+        services = ['geth', 'lighthouse']        
         for service in services:
-            install_service(service, SERVICE_DIR, SYSTEM_DIR)
+            install_service(service_name=service)
+            setup_service(service_name=service)
 
-        '''TO BE MODIFIED'''    
         # Run the clef.sh script to handle interactive commands
         clef_sh = SCRIPT_DIR / "clef.sh"
         clef_process = subprocess.run(["bash", str(clef_sh), net_name], check=True)
@@ -60,8 +73,3 @@ def node_launcher(net_name: str):
             return
         logger.info(f"Executed {clef_sh} successfully.")
 
-        # Finally, start geth and lighthouse
-        geth_sh = SCRIPT_DIR / 'geth.sh'        
-        start_services_process = subprocess.Popen(["bash", str(geth_sh), net_name])
-        logger.info(f"Executed {geth_sh} successfully.")
-        ''''''
