@@ -12,10 +12,11 @@ SYSTEM_DIR = Path('/etc/systemd/system/')
 
 with open('config.json') as f:
     config_json = json.load(f)
-    SCRIPT_DIR = Path(config_json['CONFIG']['script_dir'])
+    INTERFACE_DIR = Path(config_json['CONFIG']['interface_dir'])
     PRIVATE_DIR = Path(config_json['CONFIG']['private_dir'])
-    INSTALL_DIR = SCRIPT_DIR / 'install'
-    SERVICE_DIR = SCRIPT_DIR / 'service'
+    SCRIPT_DIR = INTERFACE_DIR / 'scripts'
+    INSTALL_DIR = INTERFACE_DIR / 'install'
+    SERVICE_DIR = INTERFACE_DIR / 'service'
 
 def install_service(service_name: str) -> None:
     install_sh = INSTALL_DIR / f'install_{service_name}.sh'
@@ -26,7 +27,7 @@ def install_service(service_name: str) -> None:
     logger.info(f"Executed {install_sh} successfully.")
 
 def setup_service(service_name: str):
-    source_path = SCRIPT_DIR / f'{service_name}.service'
+    source_path = SERVICE_DIR / f'{service_name}.service'
     dest_path = SERVICE_DIR / f'{service_name}.service'
 
     # copying the .service file 

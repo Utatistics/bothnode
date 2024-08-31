@@ -111,14 +111,13 @@ def handler(args: argparse.Namespace):
         node_launcher(net_name=args.net)
     
     else:
-        logger.info(f"Initializing the network instance: {net.name}")
-        net = driver.init_net_instance(net_name=args.net, protocol=args.protocol)
-        logger.info(f"Successfully initiated network instance: {net.name}")
-
         logger.info(f"Executing the command: {args.command}")
+        net = driver.init_net_instance(net_name=args.net, protocol=args.protocol)
+
         if args.command == 'get':
             logger.info("Query the network")
             driver.query_handler(net=net, target=args.target, query_params=args.query_params)
+            
         elif args.command == 'tx':
             logger.info("Starting a transaction...")
             driver.send_transaction(net=net,
@@ -130,9 +129,11 @@ def handler(args: argparse.Namespace):
                                     contract_params=args.contract_params,
                                     func_name=args.func_name,
                                     func_params=args.func_params)
+     
         elif args.command == 'frun':
             logger.info("Commencing a front-run...")
-            driver.front_runner(net=net)
+            driver.front_runner(net=net, sender_address=args.sender_address)
+     
         elif args.command == 'detect':
             driver.detect_anamolies(method=args.method)
   

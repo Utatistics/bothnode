@@ -1,8 +1,8 @@
 {
     "CONFIG": {
         "root_dir": ".",
-        "script_dir": "./ethnode",
         "backend_dir": "./backend",
+        "interface_dir": "./ethnode",
         "private_dir": "./private"
     },
     "NETWORK": {
