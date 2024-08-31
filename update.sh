@@ -2,6 +2,7 @@
 
 # Define the config file and tag prefix
 CONFIG_FILE="config.json"
+README_FILE="README.md"
 TAG_PREFIX="v"
 
 # Function to increment the version number
@@ -49,6 +50,9 @@ current_version=$(jq -r '.CLI.version' "$CONFIG_FILE")
 # Increment the version based on the type
 new_version=$(increment_version "$current_version" "$UPDATE_TYPE")
 
+# update README.md
+sed -i "s/Welcome to bothnode.(v[0-9]*\.[0-9]*\.[0-9]*)/Welcome to bothnode.(v$new_version)/" "$README_FILE"
+
 # Update the version in config.json
 jq --arg version "$new_version" '.CLI.version = $version' "$CONFIG_FILE" > temp.json && mv temp.json "$CONFIG_FILE"
 
@@ -56,7 +60,7 @@ jq --arg version "$new_version" '.CLI.version = $version' "$CONFIG_FILE" > temp.
 git add .
 
 # Commit the changes
-git commit -m "update: $new_version; $COMMIT_MESSAGE"
+git commit -m "update: $COMMIT_MESSAGE"
 
 # Tag the commit with the new version
 git tag -a "${TAG_PREFIX}${new_version}" -m "Tagging version ${new_version}"
@@ -64,5 +68,6 @@ git tag -a "${TAG_PREFIX}${new_version}" -m "Tagging version ${new_version}"
 # Push the commit and tags to the remote repository
 git push
 git push origin "${TAG_PREFIX}${new_version}"
+
 
 echo "Version updated to $new_version and tagged successfully."

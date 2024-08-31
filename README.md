@@ -1,5 +1,5 @@
 # bothnode
-welcome to bothnode.
+Welcome to bothnode. (v0.1.2)
 ```                                                                                              
     )            )      )                  (            
  ( /(         ( /(   ( /(                  )\ )     (   
