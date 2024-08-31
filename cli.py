@@ -48,7 +48,7 @@ class ArgParse(object):
         self.parser = argparse.ArgumentParser(description="bothnode CLI")
     
         # command and args
-        self.cmd = ["launch", "init", "get", "tx", "detect"]
+        self.cmd = ["init", "get", "tx", "frontrun", "detect"]
         self.tgt = ["block_info", "nonce", 'chain_info', 'gas_price', 'queue']
         self.parser.add_argument("command", help="Command to execute", choices=self.cmd)
         self.parser.add_argument("net", help="Network name (e.g., ganache)")
@@ -104,7 +104,7 @@ def draw_ascii_art():
     print('\n')
     
 def handler(args: argparse.Namespace):
-    if args.command == 'launch':
+    if args.command == 'init':
         logger.info(f"Launching the network: {args.net}")
         node_launcher(net_name=args.net)
     
@@ -128,7 +128,7 @@ def handler(args: argparse.Namespace):
                                     func_name=args.func_name,
                                     func_params=args.func_params)
      
-        elif args.command == 'frun':
+        elif args.command == 'frontrun':
             logger.info("Commencing a front-run...")
             driver.front_runner(net=net, sender_address=args.sender_address)
      

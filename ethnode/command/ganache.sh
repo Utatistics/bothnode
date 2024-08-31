@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # set path
-ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
+ROOT_DIR=$1
 PRIVATE_DIR="$ROOT_DIR/private"
 INSTALL_DIR="$ROOT_DIR/ethnode/install"
-
-ACCOUNT_KEYS_PATH="$PRIVATE_DIR/ganache_pk.json"
 CONFIG_PATH="$ROOT_DIR/config.json"
+ACCOUNT_KEYS_PATH="$PRIVATE_DIR/ganache_pk.json"
+GANACHE_LOG_PATH="$PRIVATE_DIR/ganache.log"
 
 # create ganache_pk.json
 if [ ! -f "$ACCOUNT_KEYS_PATH" ]; then
@@ -30,6 +30,7 @@ nohup ganache --chain.chainId=$GANACHE_CHAIN_ID \
         --wallet.accountKeysPath=$ACCOUNT_KEYS_PATH \
         --wallet.defaultBalance=1000000 \
         --chain.asyncRequestProcessing=true \
-        --miner.blockGasLimit=1000000000000 > ganache.log 2>&1 &
+        --miner.blockGasLimit=1000000000000 > $GANACHE_LOG_PATH 2>&1 &
 
-echo ">>> private keys have been stored in: $ACCOUNT_KEYS_PATH"
+echo ">>> private keys have been stored in $ACCOUNT_KEYS_PATH"
+echo ">>> run 'tail -f $GANACHE_LOG_PATH' to monitor the process in real-time."

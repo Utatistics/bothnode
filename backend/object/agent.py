@@ -73,7 +73,7 @@ class FrontRunner(object):
                 logger.debug(f"Locked on transaction: {tx['hash']}")
                 return tx
         
-        logger.info("No matching transaction found.")
+        logger.warning("No matching transaction found.")
         return None
 
     def create_payload(self, target_tx: dict) -> dict:
@@ -106,7 +106,7 @@ class FrontRunner(object):
             }
             logger.info(f"Created payload: {frontrun_tx}")
             return frontrun_tx
-        logger.info("No transaction to create payload from.")
+        logger.warning("No transaction to create payload from.")
         return None
 
     def execute_frontrun(self, payload: dict) -> str:
@@ -122,8 +122,11 @@ class FrontRunner(object):
         -------
         None
         """
-        self.net.send_tx(sender=self.account.address, payload=payload)
-        logger.info(f"Front-running transaction sent.")
+        if payload:
+            self.net.send_tx(sender=self.account.address, payload=payload)
+            logger.info(f"Front-running transaction sent.")
+        else:
+            logger.info('FrontRunner DNS.')
 
 class Arbitrageur(object):
     def __init__(self) -> None:

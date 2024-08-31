@@ -4,18 +4,16 @@ import subprocess
 from web3 import Web3
 from backend.util import config
 
-from logging import getLogger
+from backend.util.config import Config
 from backend.object.account import Account
 from backend.object.contract import Contract
 from backend.util.tools import logger_hexbytes
 
+from logging import getLogger
+
+config = Config()
 logger = getLogger(__name__)
 
-with open('config.json') as f:
-    config_json = json.load(f)
-    BACKEND_DIR = Path(config_json['CONFIG']['backend_dir'])
-    OBJECT_DIR = BACKEND_DIR / 'object'
-    SCRIPT_DIR = OBJECT_DIR / 'scripts'
 
 class Network(object):
     def __init__(self, net_config: dict) -> None:
@@ -82,7 +80,8 @@ class Network(object):
             
     def get_queue(self) -> list:
         try:
-            mempool_sh = SCRIPT_DIR / "geth_mempool.sh"
+            mempool_sh = config.SCRIPT_DIR / "geth_mempool.sh"
+            # mempool_sh = config.SCRIPT_DIR / "curl_mempool.sh"
             mempool_process = subprocess.run(["bash", str(mempool_sh)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)            
             if mempool_process.returncode == 0:
                 mempool_data = json.loads(mempool_process.stdout)                

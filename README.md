@@ -40,7 +40,7 @@ pip install -e .
 #### Set up your Node
 Then, set up ethereum client by running the following command:
 ```bash
-bothnode launch <network_name>
+bothnode init <network_name>
 ```
 The command launch the node of your choice: 
  - ganache: local Ethereum emulator
@@ -58,7 +58,7 @@ sudo journalctl -u <service_name>.service -f
 ```
 
 
-After successful execution of `bothnode launch`, your node will be running in the background while starting the syncing process at the same time.
+After successful execution of `bothnode init`, your node will be running in the background while starting the syncing process at the same time.
 
 ### Interact with Node
 bothnode implements multiple ways of node interaction: get, tx, detect
