@@ -1,3 +1,11 @@
+import time
+import json
+import argparse
+import traceback
+
+from backend.driver import driver
+from backend.util.executor import node_launcher
+
 import logging
 from logging import getLogger
 from colorlog import ColoredFormatter
@@ -29,16 +37,6 @@ stream_handler.setFormatter(formatter)
 
 # Add the handler to the logger
 logger.addHandler(stream_handler)
-
-import time
-import json
-import argparse
-import readline
-import traceback
-
-from backend.driver import driver
-from backend.util.executor import node_launcher
-from backend.object.network import Network
         
 with open('config.json') as f:
     jf = json.load(f)

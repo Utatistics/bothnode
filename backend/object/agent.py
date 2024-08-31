@@ -124,3 +124,7 @@ class FrontRunner(object):
         """
         self.net.send_tx(sender=self.account.address, payload=payload)
         logger.info(f"Front-running transaction sent.")
+
+class Arbitrageur(object):
+    def __init__(self) -> None:
+        pass
