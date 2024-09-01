@@ -5,38 +5,19 @@ networks:
     driver: bridge
 
 services:
-  web-backend:
+  mongodb:
     build:
       context: .
-      dockerfile: Dockerfile.django-backend
-    container_name: my-django-app
+      dockerfile: docker/Dockerfile.mongodb
+    container_name: mongodb
     ports:
-      - "80:8000"
-    depends_on:
-      - db
-    env_file:
-      - private/.env
+      - "27017:27017"
     environment:
-      - DJANGO_DB_HOST=db
-      - DJANGO_DB_PORT=5432
-      - DJANGO_DB_NAME=my-postgresql
-      - DJANGO_DB_USER=my-user
-      - DJANGO_DB_PASSWORD=my-password
-  
-  web-frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.react-frontend
-    container_name: my-react-app
-    ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_API_URL=http://my-react-app:8000
-      
-  db:
-    image: postgres:latest
-    container_name: my-postgresql
-    environment:
-      - POSTGRES_DB=my-postgresql
-      - POSTGRES_USER=my-user
-      - POSTGRES_PASSWORD=my-password
+      MONGO_INITDB_ROOT_USERNAME: rootuser
+      MONGO_INITDB_ROOT_PASSWORD: rootpass
+      MONGO_INITDB_DATABASE: mydatabase
+    volumes:
+      - mongodb_data:/data/db
+volumes:
+  mongodb_data:
+    driver: local   # Use the local driver for persistent storage

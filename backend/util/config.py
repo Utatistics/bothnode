@@ -1,12 +1,16 @@
 import json
+import yaml
 from pathlib import Path
 
 class Config(object):
     def __init__(self) -> None:
         self.ROOT_DIR = Path.cwd()
-        self.SYSTEM_DIR = Path('/etc/systemd/system/')
+        self.SYSTEM_DIR = Path('/etc/systemd/system')
 
-        with open('config.json') as f:
+        self.path_to_config = Path('config.json')
+        self.path_to_docker = Path('docker-compose.yml')        
+            
+        with open(self.path_to_config) as f:
             config_json = json.load(f)
             
             # set path
@@ -22,8 +26,20 @@ class Config(object):
             self.INSTALL_DIR = self.INTERFACE_DIR / 'install'
             self.SERVICE_DIR = self.INTERFACE_DIR / 'service'
 
-            # load config data
+            # load network config data
             self.NET_CONFIG = config_json['NETWORK']
             
-            # get the version 
+            # load the CLI info
             self.CLI_VERSION = config_json['CLI']['version']
+            
+            # load DB config data
+            self.DB_CONFIG = config_json['DB']
+            
+        with open(self.path_to_docker) as f:
+            config_ymal = yaml.load(f, Loader=yaml.SafeLoader)
+            mongodb_service = config_ymal['services']['mongodb']
+            self.DB_CONFIG['init_username'] = mongodb_service['environment']['MONGO_INITDB_ROOT_USERNAME']
+            self.DB_CONFIG['init_password'] = mongodb_service['environment']['MONGO_INITDB_ROOT_PASSWORD']
+            self.DB_CONFIG['init_database'] = mongodb_service['environment']['MONGO_INITDB_DATABASE']
+            
+            

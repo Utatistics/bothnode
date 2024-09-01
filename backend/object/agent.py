@@ -29,7 +29,6 @@ class FrontRunner(object):
             The network object used to interact with the blockchain.
         sender : Account
             The account object representing the sender's address.
-
         Returns
         -------
         None

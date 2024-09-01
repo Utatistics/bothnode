@@ -1,19 +1,22 @@
 import json
-from logging import getLogger
+import datetime
 
-logger = getLogger(__name__)
-
-with open('config.json') as f:
-    config_json = json.load(f)
 
 from backend.object.network import Network
 from backend.object.account import Account
 from backend.object.contract import Contract
 from backend.object.agent import FrontRunner, target_criteria
+from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
+
+from backend.util.config import Config
+from logging import getLogger
+
+config = Config()
+logger = getLogger(__name__)
 
 def init_net_instance(net_name: str, protocol: str):
     logger.info(f"Creating Network instance of {net_name}...")
-    net_config = config_json['NETWORK'][net_name.upper()] 
+    net_config = config.NET_CONFIG[net_name.upper()] 
     net = Network(net_config=net_config)
 
     return net
@@ -99,13 +102,31 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
 
 def front_runner(net: Network, sender_address: str):   
     logger.info("Sending TX...")
-    
+
     sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
     agent = FrontRunner(net=net, sender=sender)
     mempool = agent.query_mempool 
     target_tx = agent.lockon_tx(mempool=mempool, target_criteria=target_criteria)
     payload = agent.create_payload(target_tx=target_tx)
     agent.execute_frontrun(payload=payload)
+
+    db_config = config.DB_CONFIG
+    connection_string = add_auth_to_mongo_connection_string(connection_string=db_config['connection_string'], username=db_config['init_username'], password=db_config['init_password'])
+    db_client = MongoDBClient(uri=connection_string, database_name='transaction_db')
+    
+    # Prepare the data to be stored
+    transaction_data = {
+        "sender_address": sender_address,
+        "target_transaction": target_tx,
+        "payload": payload,
+        "timestamp": datetime.datetime.now()
+    }
+    
+    # Insert data into MongoDB
+    try:
+        db_client.insert_document(collection_name='transactions', document=transaction_data)
+    except Exception as e:
+        logger.error(f"Failed to store data in MongoDB: {e}")
 
 def detect_anamolies(method: str):
     logger.info("Let there be light")
