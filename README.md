@@ -18,12 +18,11 @@ What you can do with bothnode:
  - detect the anamolies and malpractiecs using the variety of methods
 
 ### Getting Started 
-Since bothnode needs to work with the Ethereum client running in your local machine, initial setups (e.g. hardware resource acquisition, client software installment, node synching, etc.) 
-The following instructions can be skipped if not necessary.
+Since bothnode needs to work with the Ethereum client running in your local machine, initial setups (e.g. hardware resource acquisition, client software installment, node synching, etc.) can be time-consuming.
 
 #### Remote Settings 
-
-Use [bothnode-infra](https://github.com/Utatistics/bothnode-infra/tree/main) to automate cloud resources setup 
+Use [bothnode-infra](https://github.com/Utatistics/bothnode-infra/tree/main) to automate cloud resources setup. (If this is not neccessary, The following instructions can be skipped.)
+ 
 
 #### Install bothnode
 First, clone the repository. 
