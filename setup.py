@@ -11,6 +11,8 @@ setup(
     install_requires=[
         'blessed==1.20.0'
         ,'colorlog'
+        ,'fastapi'
+        ,'uvicorn'
         ,'pymongo'
         ,'PyYAML'],  # web3==6.16.0',   
     entry_points={

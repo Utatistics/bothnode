@@ -1,7 +1,6 @@
 import json
 import datetime
 
-
 from backend.object.network import Network
 from backend.object.account import Account
 from backend.object.contract import Contract
@@ -11,8 +10,12 @@ from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
 from backend.util.config import Config
 from logging import getLogger
 
-config = Config()
 logger = getLogger(__name__)
+
+config = Config()
+db_config = config.DB_CONFIG
+connection_string = add_auth_to_mongo_connection_string(connection_string=db_config['connection_string'], username=db_config['init_username'], password=db_config['init_password'])
+db_client = MongoDBClient(uri=connection_string, database_name='transaction_db')
 
 def init_net_instance(net_name: str, protocol: str):
     logger.info(f"Creating Network instance of {net_name}...")
@@ -110,10 +113,7 @@ def front_runner(net: Network, sender_address: str):
     payload = agent.create_payload(target_tx=target_tx)
     agent.execute_frontrun(payload=payload)
 
-    db_config = config.DB_CONFIG
-    connection_string = add_auth_to_mongo_connection_string(connection_string=db_config['connection_string'], username=db_config['init_username'], password=db_config['init_password'])
-    db_client = MongoDBClient(uri=connection_string, database_name='transaction_db')
-    
+        
     # Prepare the data to be stored
     transaction_data = {
         "sender_address": sender_address,
