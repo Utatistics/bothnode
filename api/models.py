@@ -1,36 +1,38 @@
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, Field
+from typing import Optional
 from bson import ObjectId
+from datetime import datetime
 
-# Utility class to handle ObjectId in Pydantic models
 class PyObjectId(ObjectId):
     @classmethod
     def __get_validators__(cls):
         yield cls.validate
 
     @classmethod
-    def validate(cls, v):
+    def validate(cls, v, context=None):
         if not ObjectId.is_valid(v):
             raise ValueError('Invalid ObjectId')
         return ObjectId(v)
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
+    def __get_pydantic_json_schema__(cls, schema):
+        schema.update(type="string")
+        return schema
 
 class Transaction(BaseModel):
-    id: Optional[PyObjectId] = None
+    id: str
     sender_address: str
-    target_transaction: str
-    payload: dict
-    timestamp: str
+    target_transaction: Optional[str]  # Allow target_transaction to be None
+    payload: Optional[dict]  # Allow payload to be None
+    timestamp: datetime
 
     class Config:
         json_encoders = {
-            ObjectId: str
+            datetime: lambda v: v.isoformat(),
         }
 
 class TransactionCreate(BaseModel):
     sender_address: str
-    target_transaction: str
-    payload: dict
+    target_transaction: Optional[str] = None
+    payload: Optional[dict] = None
+    timestamp: datetime
