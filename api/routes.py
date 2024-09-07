@@ -11,6 +11,7 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
+# init router instance, which will be included in FastAPI application instance
 router = APIRouter()
 
 # Database setup 
