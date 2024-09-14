@@ -1,10 +1,13 @@
+import sys
 import time
 import json
 import argparse
-import traceback
+import threading
+import itertools 
 
 from backend.driver import driver
-from backend.util.executor import node_launcher
+from ethnode.executor import node_launcher
+from backend.util.bothnode import start_bothnode
 
 import logging
 from logging import getLogger
@@ -48,11 +51,16 @@ class ArgParse(object):
         self.parser = argparse.ArgumentParser(description="bothnode CLI")
     
         # command and args
-        self.cmd = ["init", "get", "tx", "frontrun", "detect"]
-        self.tgt = ["block_info", "nonce", 'chain_info', 'gas_price', 'queue']
-        self.parser.add_argument("command", help="Command to execute", choices=self.cmd)
-        self.parser.add_argument("net", help="Network name (e.g., ganache)")
-        self.parser.add_argument("target", nargs='?', help="Target for the comamnd", choices=self.tgt)
+        self.cmd = ['run', 'init', 'get', 'tx', 'frontrun', 'detect']
+        self.tgt = ['block_info', 'nonce', 'chain_info', 'gas_price', 'queue'] 
+
+        self.parser.add_argument("command", help="Command to execute", choices=self.cmd)       
+        partial_args, _ = self.parser.parse_known_args()
+        
+        if partial_args.command != 'run':
+            self.parser.add_argument("net", help="Network name (e.g., ganache)")
+        if partial_args.command == 'get':
+            self.parser.add_argument("target", nargs='?', help="Target for the comamnd", choices=self.tgt)
 
         # common options
         self.parser.add_argument("-v", "--version", action='version', version=f"bothnode v{version}")
@@ -88,23 +96,52 @@ class ArgParse(object):
         except json.JSONDecodeError:
             raise argparse.ArgumentTypeError(f"Invalid dictionary format: {value}")
 
+class Spinner:
+    def __init__(self, message="Processing..."):
+        self.spinner = itertools.cycle(['|', '/', '-', '\\'])
+        self.stop_running = False
+        self.message = message
+
+    def start(self):
+        def spin():
+            while not self.stop_running:
+                sys.stdout.write(f'\r{self.message} {next(self.spinner)}')
+                sys.stdout.flush()
+                time.sleep(0.1)
+            sys.stdout.write(f'\r{self.message} {" " * (len(self.message) + 2)}')  # Clear spinner
+            sys.stdout.flush()
+
+        self.spinner_thread = threading.Thread(target=spin)
+        self.spinner_thread.start()
+
+    def stop(self):
+        self.stop_running = True
+        self.spinner_thread.join()
+
 def draw_ascii_art():
     pattern = [
-        "__.           __  .__                      .___       ",
-        "\_ |__   _____/  |_|  |__   ____   ____   __| _/____  ",
-        " | __ \ /  _ \   __\  |  \ /    \ /  _ \ / __ |/ __ \ ",
-        " | \_\ (  <_> )  | |   Y  \   |  (  <_> ) /_/ \  ___/ ",
-        " |___  /\____/|__| |___|  /___|  /\____/\____ |\___  >",
-        "     \/                 \/     \/            \/    \/ ",
-     ]
-
-    for i, line in enumerate(pattern):
-            print(line)
-            time.sleep(.025)
+        "    )            )      )                  (            ",
+        " ( /(         ( /(   ( /(                  )\ )     (   ",
+        " )\())   (    )\())  )\())   (       (    (()/(    ))\  ",
+        "((_)\    )\  (_))/  ((_)\    )\ )    )\    ((_))  /((_) ",
+        "| |(_)  ((_) | |_   | |(_)  _(_/(   ((_)   _| |  (_))   ",
+        "| '_ \ / _ \ |  _|  | ' \  | ' \)) / _ \ / _` |  / -_)  ",
+        "|_.__/ \___/  \__|  |_||_| |_||_|  \___/ \__,_|  \___|  ",
+    ]
+    print(f">>> Welcome to bothnode {version}")
+    for line in pattern:
+        print(line)
+        time.sleep(0.1)
     print('\n')
     
 def handler(args: argparse.Namespace):
-    if args.command == 'init':
+    logger.warning(args.command)
+    if args.command == 'run':
+        logger.info(f"Starting bothnode application.")       
+        draw_ascii_art()
+        start_bothnode()
+        
+    elif args.command == 'init':
         logger.info(f"Launching the network: {args.net}")
         node_launcher(net_name=args.net)
     

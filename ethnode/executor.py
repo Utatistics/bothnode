@@ -7,6 +7,16 @@ config = Config()
 logger = getLogger(__name__)
 
 def install_service(service_name: str) -> None:
+    """
+    Install the service by running its installation script.
+
+    Args
+    ----
+    service_name : str
+        The name of the service to install.
+    Returns
+    -------
+    """
     install_sh = config.INSTALL_DIR / f'install_{service_name}.sh'
     install_process = subprocess.run(["bash", str(install_sh)], check=True)
     if install_process.returncode != 0:
@@ -15,6 +25,18 @@ def install_service(service_name: str) -> None:
     logger.info(f"Executed {install_sh} successfully.")
 
 def setup_service(service_name: str):
+    """
+    Set up a systemd service by copying the .service file.
+
+    Args
+    ----
+    service_name : str
+        The name of the service to set up. This should match the .service file in the service directory.
+
+    Returns
+    -------
+    """
+
     source_path = config.SERVICE_DIR / f'{service_name}.service'
     dest_path = config.SERVICE_DIR / f'{service_name}.service'
 
@@ -43,6 +65,18 @@ def setup_service(service_name: str):
         logger.error(f"Failed to reload systemd configuration: {e}")
                      
 def node_launcher(net_name: str) -> None: 
+    """
+    Launch the appropriate network node based on the specified network name.
+    *currently utilize syhstem.d rather than calling .sh (bothnode/ethnode/command)
+    
+    Args
+    ----
+    net_name : str
+        The name of the network to launch (i.e. ganache, geth & lighthouse)
+
+    Returns
+    -------
+    """
     logger.info(f'Launching {net_name}')
     
     if net_name.lower() == 'ganache':

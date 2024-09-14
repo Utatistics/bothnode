@@ -104,15 +104,15 @@ class Network(object):
         sender : Account
             The account object representing the sender's address.
         recipient : Account
-            The account object representing the recipient's address. Can be None if interacting with a contract.
+            The account object representing the recipient's address. None if interacting with a contract.
         amount : int
             The amount of cryptocurrency to transfer (in wei). Ignored if interacting with a contract.
         contract : Contract
-            The contract object for interaction or deployment. Can be None for regular transactions.
+            The contract object for interaction or deployment. None for regular transactions.
         build : bool
-            Whether to build and deploy the contract or interact with an existing contract.
+            Whether to build and deploy the contract.
         func_name : str
-            The name of the function to call on the smart contract, or an empty string if not using a contract function.
+            The name of the function to call on the smart contract
         func_params : dict
             The parameters for the contract function call, if applicable.
 

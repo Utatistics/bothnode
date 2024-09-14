@@ -20,7 +20,7 @@ class Config(object):
             
             self.OBJECT_DIR = self.BACKEND_DIR / 'object'
             self.SOLC_DIR = self.BACKEND_DIR / 'solc'
-            self.SCRIPT_DIR = self.OBJECT_DIR / 'scripts'
+            self.SCRIPT_DIR = self.BACKEND_DIR / 'scripts'
             
             self.COMMAND_DIR = self.INTERFACE_DIR / 'command'
             self.INSTALL_DIR = self.INTERFACE_DIR / 'install'
