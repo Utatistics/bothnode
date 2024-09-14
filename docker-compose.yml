@@ -17,7 +17,14 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: rootpass
       MONGO_INITDB_DATABASE: mydatabase
     volumes:
-      - mongodb_data:/data/db
+      - mongo-config:/data/config
+      - mongo-configdb:/data/configdb
+      - mongo-db:/data/db
 volumes:
-  mongodb_data:
-    driver: local   # Use the local driver for persistent storage
+  mongo-config:
+    driver: local
+  mongo-configdb:
+    driver: local
+  mongo-db:
+    driver: local
+    
