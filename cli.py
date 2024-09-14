@@ -7,7 +7,7 @@ import itertools
 
 from backend.driver import driver
 from ethnode.executor import node_launcher
-from backend.util.bothnode import start_bothnode
+from backend.util.bothnode import start_bothnode, sync_mongodb
 
 import logging
 from logging import getLogger
@@ -51,37 +51,38 @@ class ArgParse(object):
         self.parser = argparse.ArgumentParser(description="bothnode CLI")
     
         # command and args
-        self.cmd = ['run', 'init', 'get', 'tx', 'frontrun', 'detect']
-        self.tgt = ['block_info', 'nonce', 'chain_info', 'gas_price', 'queue'] 
-
+        self.cmd = ['run', 'init', 'db_sync', 'get', 'tx', 'frontrun', 'detect']
         self.parser.add_argument("command", help="Command to execute", choices=self.cmd)       
-        partial_args, _ = self.parser.parse_known_args()
         
-        if partial_args.command != 'run':
+        partial_args, _ = self.parser.parse_known_args()
+
+        self.parser.add_argument("-v", "--verbose")
+        
+        if partial_args.command == 'db_sync':
+            self.parser.add_argument("instance_id")            
+            self.parser.add_argument("instance_region", help="region name (e.g., eu-east-2)")            
+            self.parser.add_argument("db_name", help="database name (e.g., transaction)")               
+        elif partial_args.command != 'run':
             self.parser.add_argument("net", help="Network name (e.g., ganache)")
-        if partial_args.command == 'get':
-            self.parser.add_argument("target", nargs='?', help="Target for the comamnd", choices=self.tgt)
-
-        # common options
-        self.parser.add_argument("-v", "--version", action='version', version=f"bothnode v{version}")
-        self.parser.add_argument("-p", "--protocol", default='HTTPS')
-
-        # get related options
-        self.parser.add_argument("-q", "--query-params", type=self._dict_parser, help="Query parameters in dictionary format")
-
-        # tx related options
-        self.parser.add_argument("-f", "--sender-address", help="The address for the sender")
-        self.parser.add_argument("-t", "--recipient-address", help="The address for the recipient")
-        self.parser.add_argument("-a", "--amount", type=int)
-        self.parser.add_argument("-b", "--build", action='store_true', default=False)
-        self.parser.add_argument("--contract-name")
-        self.parser.add_argument("--contract-params", type=self._dict_parser, help="Constructor parameters in dictionary format")
-        self.parser.add_argument("--func-name", help="name of the function (i.e. method) to call")
-        self.parser.add_argument("--func-params", type=self._dict_parser, help="Smart contract method parameters in dictionary format")
-
-        # detect related options
-        self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])
-
+            self.parser.add_argument("-p", "--protocol", default='HTTPS')
+            if partial_args.command == 'get':
+                tgt = ['block_info', 'nonce', 'chain_info', 'gas_price', 'queue'] 
+                self.parser.add_argument("target", nargs='?', help="Target for the comamnd", choices=tgt)
+                self.parser.add_argument("-q", "--query-params", type=self._dict_parser, help="Query parameters in dictionary format")
+            if partial_args.command == 'tx':
+                self.parser.add_argument("-f", "--sender-address", help="The address for the sender")
+                self.parser.add_argument("-t", "--recipient-address", help="The address for the recipient")
+                self.parser.add_argument("-a", "--amount", type=int)
+                self.parser.add_argument("-b", "--build", action='store_true', default=False)
+                self.parser.add_argument("--contract-name")
+                self.parser.add_argument("--contract-params", type=self._dict_parser, help="Constructor parameters in dictionary format")
+                self.parser.add_argument("--func-name", help="name of the function (i.e. method) to call")
+                self.parser.add_argument("--func-params", type=self._dict_parser, help="Smart contract method parameters in dictionary format")
+            if partial_args.command == 'frontrun':
+                self.parser.add_argument("sender_address", help="The address for the sender")
+                self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])        
+        
+          
         # parse the args
         self._parse_args()
 
@@ -135,7 +136,6 @@ def draw_ascii_art():
     print('\n')
     
 def handler(args: argparse.Namespace):
-    logger.warning(args.command)
     if args.command == 'run':
         logger.info(f"Starting bothnode application.")       
         draw_ascii_art()
@@ -144,7 +144,10 @@ def handler(args: argparse.Namespace):
     elif args.command == 'init':
         logger.info(f"Launching the network: {args.net}")
         node_launcher(net_name=args.net)
-    
+        
+    elif args.command == 'db_sync':
+        sync_mongodb(instance_id=args.instance_id, region=args.instance_region, container_name='mongodb', db_name=args.db_name)
+        
     else:
         logger.info(f"Executing the command: {args.command}")
         net = driver.init_net_instance(net_name=args.net, protocol=args.protocol)

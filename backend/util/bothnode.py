@@ -24,5 +24,8 @@ def start_bothnode():
     run_uvicorn()
     run_docker_compose()
 
-if __name__ == "__main__":
-    start_bothnode()
+def sync_mongodb(instance_id: str, region: str, container_name: str, db_name: str):
+    mongodb_sh = config.SCRIPT_DIR / 'sync_mongodb.sh'
+    logger.info("Sync mongodb instances...")    
+    subprocess.run(["bash", str(mongodb_sh), instance_id, region, container_name, db_name], check=True)
+    
