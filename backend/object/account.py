@@ -3,10 +3,10 @@ from pathlib import Path
 import web3
 from web3 import Web3
 
+from backend.util.config import Config
 from logging import getLogger
-from backend.util.config import PRIVATE_DIR
-# from backend.object.network import Network
 
+config = Config()
 logger = getLogger(__name__)
 
 class Account(object):
@@ -24,7 +24,7 @@ class Account(object):
     def _get_private_key(self):
         private_key = None
         if self.chain_id == 1337:
-            with open(PRIVATE_DIR / 'ganache_pk.json') as jf:
+            with open(config.PRIVATE_DIR / 'ganache_pk.json') as jf:
                 account_keys = json.load(jf)
                 private_key = account_keys["private_keys"][self.address]
 

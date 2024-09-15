@@ -1,20 +1,23 @@
-import json
 from pathlib import Path
-import web3
+import json
+import subprocess
 from web3 import Web3
 from backend.util import config
-from hexbytes import HexBytes 
 
-from logging import getLogger
+from backend.util.config import Config
 from backend.object.account import Account
 from backend.object.contract import Contract
 from backend.util.tools import logger_hexbytes
 
+from logging import getLogger
+
+config = Config()
 logger = getLogger(__name__)
+
 
 class Network(object):
     def __init__(self, net_config: dict) -> None:
-        """
+        """Network Interface object that allows user to interact with the network. 
 
         Args
         ----
@@ -23,7 +26,7 @@ class Network(object):
         """
         # set attributes
         self.name = net_config['name']
-        self.url = net_config['url']
+        self.local_rpc = net_config['local_rpc']
         self.chain_id = net_config['chain_id']
 
         # init instance 
@@ -33,7 +36,7 @@ class Network(object):
 
     def _connector(self):
         logger.info(f"The instance connecting to {self.name}...")
-        self.provider = Web3(Web3.HTTPProvider(self.url))
+        self.provider = Web3(Web3.HTTPProvider(self.local_rpc))
         if self.provider.is_connected():
             logger.info(f"Successfully connected to {self.name}!")
         else:
@@ -57,65 +60,91 @@ class Network(object):
         logger.info(f'>> Nonce={nonce} for {address=}')
         return nonce
     
-    def get_block_info(self, number: int, hash: str):
-        if number:
-            block_info = self.provider.eth.get_block(number)
-        elif hash:
-            block_info = self.provider.eth.get_block(hash)
-        else:
-            block_info = self.provider.eth.get_block('latest')
-
-        logger_hexbytes(level='info', data=block_info)
-
-        return block_info
+    def get_block_number(self):
+        number = self.provider.eth.get_block('latest').number
+        logger.info(f'>> Block Number={number}')
+        return number
 
     def get_chain_info(self):
         logger.info(f">> Chain ID: {self.provider.eth.chain_id}")
         logger.info(f">> Chain hashrate: {self.provider.eth.hashrate}")
         logger.info(f">> Chain syncing status: {self.provider.eth.syncing}")
 
-    def get_gas_price(self):
+    def get_gas_price(self) -> int:
         gas_price = self.provider.eth.gas_price
-        max_priority_fee = self.provider.eth.max_priority_fee 
-        gas_price_gwei = self.provider.from_wei(gas_price, 'gwei')
-        max_priority_fee_gwei = self.provider.from_wei(max_priority_fee, 'gwei')
-        
-        logger.info(f"Current gas price: {gas_price}")
-        logger.info(f"Current gas price (gwei): {gas_price_gwei}")
-        logger.info(f"Max priority fee: {max_priority_fee}")
-        logger.info(f"Max priority fee (gwei): {max_priority_fee_gwei}")
+        return gas_price
+    
+    def get_max_priority_fee(self) -> int:
+        max_priority_fee = self.provider.eth.max_priority_fee
+        return max_priority_fee
+            
+    def get_queue(self) -> list:
+        try:
+            mempool_sh = config.SCRIPT_DIR / "geth_mempool.sh"
+            # mempool_sh = config.SCRIPT_DIR / "curl_mempool.sh"
+            mempool_process = subprocess.run(["bash", str(mempool_sh)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)            
+            if mempool_process.returncode == 0:
+                mempool_data = json.loads(mempool_process.stdout)                
+                pending_txs = mempool_data.get('result', {}).get('pending', {})                
+                flattened_txs = [tx for txs in pending_txs.values() for tx in txs.values()]
+                logger.info(f"Retrieved {len(flattened_txs)} pending transactions from the mempool.")
+                return flattened_txs
+            else:
+                logger.error(f"Error executing script: {mempool_process.stderr}")
+                return []
+        except Exception as e:
+            logger.error(f"An error occurred while querying the mempool: {str(e)}")
+            return []
 
-    def get_queue(self):
-        logger.info(f'{web3.geth.txpool.content=}')
-        logger.info(f'{web3.geth.txpool.inspect=}')
-        logger.info(f'{web3.geth.txpool.status=}')
- 
-    def _create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
+    def create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool, func_name: str, func_params: dict) -> dict:
+        """Create a payload for a transaction or smart contract interaction.
+
+        Args
+        ----
+        sender : Account
+            The account object representing the sender's address.
+        recipient : Account
+            The account object representing the recipient's address. None if interacting with a contract.
+        amount : int
+            The amount of cryptocurrency to transfer (in wei). Ignored if interacting with a contract.
+        contract : Contract
+            The contract object for interaction or deployment. None for regular transactions.
+        build : bool
+            Whether to build and deploy the contract.
+        func_name : str
+            The name of the function to call on the smart contract
+        func_params : dict
+            The parameters for the contract function call, if applicable.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the transaction payload, including fields such as 'from', 'to', 'value', 'gasPrice', 'gas', and 'data'.
+        """
         nonce = self.get_nonce(address=sender.address)
         if contract:
-            # self.provider = contract.provider
-            if build:
-                logger.info('>> Smart Contract Deployment')
-                payload = contract.contract.constructor().build_transaction(
-                    {
-                        "from": sender.address,
-                        "nonce": nonce
-                    }
-                )
-            else:
-                logger.info('>> Smart Contract Transaction')
-                # UPDATE REQUIRED
-                # constructor_args = (sender.address, '') *constructor_args
-                payload = contract.contract.constructor().build_transaction(
-                    {
-                        'from' : sender.address,
-                        'to': recipient.address,
-                        'value': amount,  # Value in Wei (for Ethereum), usually 0 for token transfers
-                        'data': contract.encode_function_call('transfer', [recipient.address, amount]),  # Encoded function call to transfer tokens
+                if build:
+                    logger.info('>> Smart Contract Deployment')
+                    payload = contract.contract.constructor(**contract.contract_params).build_transaction(
+                        {
+                            "from": sender.address,
+                            "nonce": nonce
+                        }
+                    )
+                else:
+                    logger.info('>> Smart Contract Transaction')
+                    logger.info(f'{func_name=}')
+                    logger.info(f'{list(func_params.values()) if func_params else []}')
+                    function_call = contract.contract.encodeABI(fn_name=func_name, args=list(func_params.values()) if func_params else [])
+                    payload = {
+                        'from': sender.address,
+                        'to': contract.contract_address,
+                        'value': 0,  # Value in Wei (for Ethereum), usually 0 for token transfers
+                        'data': function_call,  # Encoded function call
                         'gasPrice': self.provider.eth.gas_price,  # Gas price
-                        'gas': 100000  # Gas limit
+                        'gas': 100000,  # Gas limit
+                        'nonce': nonce
                     }
-                )
         else:
             logger.info('>> Regular Transaction')
             payload = {
@@ -134,10 +163,24 @@ class Network(object):
             
         return payload
 
-    def send_tx(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool):
-        # create payload
-        payload = self._create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build)
+    def send_tx(self, sender: Account, payload: dict, contract: Contract, build: bool):
+        """Sign and send a transaction, and handle the post-transaction steps.
 
+        Args
+        ----
+        sender : Account
+            The account object representing the sender's address, including private key.
+        payload : dict
+            The transaction payload to be signed and sent.
+        contract : Contract
+            The contract object related to the transaction. Used for post-transaction contract updates.
+        build : bool
+            Whether the transaction involves contract deployment (build=True) or interaction with an existing contract (build=False).
+
+        Returns
+        -------
+        None
+        """
         # sign & send the transaction
         sender_pk = sender.private_key
         signed_tx = self.provider.eth.account.sign_transaction(payload, sender_pk)
@@ -145,7 +188,6 @@ class Network(object):
 
         # store the result of transaction
         tx_receipt = self.provider.eth.wait_for_transaction_receipt(hashed_tx)
-        contract_address = tx_receipt.contractAddress
         
         if tx_receipt.status == 1:
             logger.info(f"Successfully completed the transaction.")
@@ -154,8 +196,15 @@ class Network(object):
             logger.error("The transaction failed or reverted.")
             logger_hexbytes(level='error', data=tx_receipt)
 
-        if contract and build:
-            logger.info("Post-deployment update of the contract attribute.")
-            contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.bytecode) 
+        if contract:
             contract_address = tx_receipt.contractAddress
-            logger.info(f'{contract_address=}')
+            if build:
+                logger.info("Post-deployment update of the contract attribute.")
+                contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.bytecode) 
+                logger.info(f'{contract_address=}')
+                contract.write_to_json(contract_address=contract_address)
+            else:
+                # EXPERIMENTAL
+                block_number = self.get_block_number()
+                logs = contract.contract.events.Transfer().get_logs(fromBlock=block_number)
+                logger.info(f'{logs=}')
