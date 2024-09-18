@@ -21,9 +21,25 @@ MONGODB_DB_NAME="$4"
 MONGODB_USERNAME="$5"
 MONGODB_PASSWORD="$6"
 
+# Select the correct SSH key based on the region
+if [ "$REGION" == "ap-northeast-1" ]; then
+    SSH_KEY_PATH="$SSH_KEY_TOKYO"
+elif [ "$region" == "eu-west-2" ]; then
+    SSH_KEY_PATH="$SSH_KEY_LONDON"
+else
+    echo "Error: Unsupported region $region"
+    exit 1
+fi
+
 EC2_IP_ADDRESS=$($SCRIPT_DIR/get_ec2_ip.sh "$INSTANCE_ID" "$REGION")
 EC2_USER="ubuntu" # Change this to your EC2 user
 EC2_DUMP_PATH="/tmp/mongo_backup" 
+
+# ----- DEBUG ----- #
+echo $SSH_KEY_PATH
+echo $EC2_USER
+echo $EC2_IP_ADDRESS
+# ----- DEBUG ----- #
 
 # Dump the remote MongoDB database
 echo "Dumping MongoDB from remote EC2 instance..."
