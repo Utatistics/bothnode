@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
+ROOT_DIR=$(dirname "$(dirname "$(dirname "$(readlink -f "$0")")")")
 PRIVATE_DIR="$ROOT_DIR/private"
 SCRIPT_DIR="$ROOT_DIR/backend/scripts"
 
