@@ -17,14 +17,14 @@ db_config = config.DB_CONFIG
 connection_string = add_auth_to_mongo_connection_string(connection_string=db_config['connection_string'], username=db_config['init_username'], password=db_config['init_password'])
 db_client = MongoDBClient(uri=connection_string, database_name='transaction_db')
 
-def init_net_instance(net_name: str, protocol: str):
+def init_net_instance(net_name: str, protocol: str) -> None:
     logger.info(f"Creating Network instance of {net_name}...")
     net_config = config.NET_CONFIG[net_name.upper()] 
     net = Network(net_config=net_config)
 
     return net
 
-def query_handler(net: Network, target: str, query_params: dict):
+def query_handler(net: Network, target: str, query_params: dict) -> None:
     logger.debug(f'Querying {target}...')
     logger.debug(f'{query_params=}')
 
@@ -56,7 +56,7 @@ def query_handler(net: Network, target: str, query_params: dict):
     else:
         raise ValueError(f'Invalid target: {target}')
     
-def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, build: bool, contract_params: dict, func_name: str, func_params: dict):
+def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, build: bool, contract_params: dict, func_name: str, func_params: dict) -> None:
     """Send a transaction, which may involve interacting with a smart contract.
 
     Args
@@ -103,7 +103,7 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
     payload = net.create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build, func_name=func_name, func_params=func_params)
     net.send_tx(sender=sender, payload=payload, contract=contract, build=build)
 
-def front_runner(net: Network, sender_address: str):   
+def front_runner(net: Network, sender_address: str) -> None:   
     logger.info("Sending TX...")
 
     sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
@@ -113,7 +113,6 @@ def front_runner(net: Network, sender_address: str):
     payload = agent.create_payload(target_tx=target_tx)
     agent.execute_frontrun(payload=payload)
 
-        
     # Prepare the data to be stored
     transaction_data = {
         "sender_address": sender_address,
