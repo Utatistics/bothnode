@@ -1,3 +1,4 @@
+import sys
 import subprocess
 
 from backend.util.config import Config
@@ -48,5 +49,15 @@ def sync_mongodb(instance_id: str, region: str, container_name: str, db_name: st
     
     mongodb_sh = config.SCRIPT_DIR / 'sync_mongodb.sh'
     logger.info("Sync mongodb instances...")    
-    subprocess.run(["bash", str(mongodb_sh), instance_id, region, container_name, db_name, username, password], check=True)
+    
+    try:
+        # Running the shell script and capturing output while printing it
+        subprocess.run(["bash", str(mongodb_sh), instance_id, region, container_name, db_name, username, password],
+            check=True, text=True, stdout=sys.stdout, stderr=sys.stderr
+        )
+        logger.info("MongoDB sync completed successfully.")
+    except subprocess.CalledProcessError as e:
+        # Error handling with real-time stderr capture
+        logger.error(f"Error occurred during MongoDB sync: {e.stderr}")
+        raise
     
