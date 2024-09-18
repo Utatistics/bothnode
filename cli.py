@@ -14,7 +14,7 @@ from logging import getLogger
 from colorlog import ColoredFormatter
 
 logger = getLogger(__name__)
-level = logging.DEBUG
+level = logging.INFO
 
 formatter = ColoredFormatter(
     "%(log_color)s%(asctime)s [%(levelname)s] %(message)s%(reset)s",

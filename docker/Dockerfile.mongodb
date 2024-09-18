@@ -4,13 +4,12 @@ FROM mongo:latest
 # Install MongoDB client tools
 USER root
 RUN apt-get update && \
-    apt-get install -y gnupg && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 && \
-    # echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu $(lsb_release -cs) 10gen" | tee /etc/apt/sources.list.d/mongodb.list && \
-    echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu $(lsb_release -cs) 10gen" | tee /etc/apt/sources.list.d/mongodb.list || echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu focal 10gen" | tee /etc/apt/sources.list.d/mongodb.list && \
+    apt-get install -y wget gnupg && \
+    wget -qO- https://www.mongodb.org/static/pgp/server-7.0.asc | tee /etc/apt/trusted.gpg.d/server-7.0.asc && \
+    mkdir -p /etc/apt/sources.list.d && \
+    echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list && \
     apt-get update && \
-    apt-get install -y mongodb-tools && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y mongodb-mongosh
 
 # Expose the default MongoDB port
 EXPOSE 27017
