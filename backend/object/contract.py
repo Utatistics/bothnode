@@ -5,7 +5,10 @@ logger = getLogger(__name__)
 import json 
 import subprocess
 from pathlib import Path
-from backend.util import config
+from backend.util.config import Config
+
+config = Config()
+
 
 class Contract(object):
     def __init__(self, contract_name: str, provider, contract_params: dict) -> None:
@@ -19,7 +22,7 @@ class Contract(object):
     def contract_builder(self):
         logger.info(f"Building the contract: {self.contract_name}")
         self.path_to_build = config.SOLC_DIR / self.contract_name / 'build_info.json'
-        logger.debug(f'{self.path_to_build=}')
+        logger.info(f'{self.path_to_build=}')
         cmd = f"{self.path_to_sh} {self.contract_name}"
   
         try:
@@ -27,8 +30,10 @@ class Contract(object):
             if result.stderr:
                 logger.error(f"Build errors: {result.stderr}")
             logger.info(f'Generated build information: {self.path_to_build}')
+            
         except subprocess.CalledProcessError as e:
             logger.error(f"Contract build failed with error: {e}")
+            print(e.stderr)
             
     def _to_dict(self) -> dict:
         return {

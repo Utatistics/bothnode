@@ -11,7 +11,7 @@ CONTRACT_NAME="$1"
 BACKEND_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
 SOLC_DIR="$BACKEND_DIR/solc"
 CONTRACT_DIR="$SOLC_DIR/$CONTRACT_NAME"
-PATH_TO_SOLC="$CONTRACT_DIR/$CONTRACT_NAME.sol"
+PATH_TO_SOLC="$CONTRACT_DIR/Main.sol"
 PATH_TO_JSON="$CONTRACT_DIR/build_info.json"
 
 # execute the build command
