@@ -129,3 +129,4 @@ def front_runner(net: Network, sender_address: str) -> None:
 
 def detect_anamolies(method: str):
     logger.info("Let there be light")
+    
