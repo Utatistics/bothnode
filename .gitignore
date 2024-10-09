@@ -12,6 +12,8 @@ package-lock.json
 package.json
 yarn.lock
 
+**build_info.json
+**contract_info.json
 
 # pdf
 *.pdf
