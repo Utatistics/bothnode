@@ -9,10 +9,9 @@ private/
 # Node
 node_modules
 package-lock.json
+package.json
 yarn.lock
 
-# frontend
-frontend/
 
 # pdf
 *.pdf

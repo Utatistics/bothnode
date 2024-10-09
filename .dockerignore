@@ -1,6 +1,6 @@
 # frontend local dev context
-./frontend/node_modules
-./frontend/package-lock.json
+./node_modules
+./package-lock.json
 
 # docker context
 ./Dockerfile*
