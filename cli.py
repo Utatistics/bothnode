@@ -22,7 +22,7 @@ formatter = ColoredFormatter(
     reset=True,
     log_colors={
         'DEBUG': 'light_black',
-        'INFO': 'green',
+        'INFO': 'light_green',
         'WARNING': 'yellow',
         'ERROR': 'red',
         'CRITICAL': 'red,bg_white',

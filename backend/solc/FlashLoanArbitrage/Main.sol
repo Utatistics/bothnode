@@ -3,9 +3,10 @@ pragma solidity ^0.8.0;
 
 import "./CompoundInterface.sol"; 
 import "./bZxInterface.sol";
-import "./UniswapInterface.sol";
-import "./FlashLoanProvider.sol";  // Aave or dYdX interface
+import "./UniswapInterface.sol"; // Import Uniswap interface 
+import "./FlashLoanProvider.sol"; // Aave or dYdX interface
 
+/** define interface for Aave Lending Pool**/
 interface ILendingPool {
     function flashLoan(
         address receiverAddress,
@@ -18,23 +19,27 @@ interface ILendingPool {
     ) external;
 }
 
-contract FlashLoanArbitrage is FlashLoanReceiverBase {
-    using SafeMath for uint256; // attach a library's functions to a data type
+/** inheriting from Aave's flashlaon exec logic **/
+contract FlashLoanArbitrage is FlashLoanReceiverBase { 
+    using SafeMath for uint256;
 
-    ILendingPool public POOL;
-
-    constructor(address _addressProvider) FlashLoanReceiverBase(_addressProvider) {
-        POOL = ILendingPool(_addressProvider);  // Initialize POOL to Aave Lending Pool
+    // state variables
+    ILendingPool public POOL; 
+    UniswapInteraction public uniswapInteraction;
+    constructor(address _addressProvider, address _uniswapAddress, address _WBTC, address _WETH) {
+        POOL = ILendingPool(_addressProvider);  // Initialize Aave Lending Pool 
+        uniswapInteraction = new UniswapInteraction(_uniswapAddress, _WBTC, _WETH);
     }
 
-    function executeOperation(
+    /** main (i.e. body) function required, which will be called by AAVE once the flashloan is granted **/
+    function executeOperation( // function signature 
         address[] calldata assets,
         uint256[] calldata amounts,
         uint256[] calldata premiums,
         address initiator,
         bytes calldata params
-    ) external override returns (bool) /** function signature **/  
-    { 
+    ) external override returns (bool) 
+    { // function body
         uint256 loanAmount = amounts[0];
         uint256 repaymentAmount = loanAmount.add(premiums[0]);
 
@@ -44,24 +49,25 @@ contract FlashLoanArbitrage is FlashLoanReceiverBase {
         // Step 3: Open short position on bZx
         _openShortPosition(1300 ether);
 
-        // Step 4: Swap WBTC for ETH
-        _swapWbtcForEth();
+        // Step 4: Swap WBTC for ETH via Uniswap *defined below
+        uniswapInteraction._swapWbtcForEth(loanAmount);  // Pass in the loan amount or WBTC amount to swap
 
         // Step 5: Repay flash loan
         _repayFlashLoan(repaymentAmount);
 
-        return true; // AAVE requires this boolean to finalize the transaction.
+        return true; // return true upon successful completion of flashloan
     }
 
+    /** endpoint of the smart contract: will be called externally*/
     function executeFlashLoan(uint256 amount) external {
         address;
         assets[0] = address(WETH);  // WETH for ETH loans
-        
+
         uint256;
         amounts[0] = amount;
 
         uint256;
-        modes[0] = 0; // Flash loan mode
+        modes[0] = 0;  // Flash loan mode (0 = no debt)
 
         bytes memory params = "";
 
