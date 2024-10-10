@@ -18,29 +18,30 @@ contract UniswapInteraction {
     
     // State variables for WBTC and WETH addresses
     address[] public path; // SHOULD THESE BE PUBLIC?
-    address public WBTC;
-    address public WETH;
+    address private WBTC;
+    address private WETH;
 
     // Constructor to initialize Uniswap and token addresses
     constructor(address _uniswapAddress, address _WBTC, address _WETH) {
-        uniswap = UniswapInterface(_uniswapAddress);
-        WBTC = _WBTC;
-        WETH = _WETH;
+        uniswap = UniswapInterface(_uniswapAddress);  // Uniswap contract interface
+        WBTC = _WBTC;  // Store WBTC address
+        WETH = _WETH;  // Store WETH address
     }
 
-    // Internal function to swap WBTC for ETH
-    function _swapWbtcForEth(uint256 WBTCAmount) internal {
-        // Declare and initialize the path variable for WBTC -> ETH
-        path[0] = WBTC;  // Use the WBTC address stored in the state variable
-        path[1] = WETH;  // Use the WETH address stored in the state variable
+    // External function to swap WBTC for ETH (WETH)
+    function swapWbtcForEth(uint256 WBTCAmount) external {
+        // Dynamically declare and initialize the path for the token swap
+        address;
+        path[0] = WBTC;  // WBTC as the input token
+        path[1] = WETH;  // WETH (ETH) as the output token
 
         // Perform the token swap via Uniswap
         uniswap.swapExactTokensForTokens(
-            WBTCAmount,       // Amount of WBTC to swap
-            0,                // Accept any amount of ETH (can be adjusted based on strategy)
-            path,
-            address(this),    // Address receiving ETH
-            block.timestamp   // Deadline for transaction
+            WBTCAmount,      // Amount of WBTC to swap
+            0,               // Accept any amount of WETH (can be adjusted based on strategy)
+            path,            // The path of the swap (WBTC -> WETH)
+            address(this),   // Address receiving the WETH
+            block.timestamp  // Deadline for transaction
         );
     }
 }

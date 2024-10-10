@@ -1,0 +1,2984 @@
+{
+    "contracts": {
+        "@aave/core-v3/contracts/flashloan/base/FlashLoanReceiverBase.sol:FlashLoanReceiverBase": {
+            "abi": [
+                {
+                    "inputs": [],
+                    "name": "ADDRESSES_PROVIDER",
+                    "outputs": [
+                        {
+                            "internalType": "contract IPoolAddressesProvider",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "POOL",
+                    "outputs": [
+                        {
+                            "internalType": "contract IPool",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address[]",
+                            "name": "assets",
+                            "type": "address[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "amounts",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "premiums",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "initiator",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "bytes",
+                            "name": "params",
+                            "type": "bytes"
+                        }
+                    ],
+                    "name": "executeOperation",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": ""
+        },
+        "@aave/core-v3/contracts/flashloan/interfaces/IFlashLoanReceiver.sol:IFlashLoanReceiver": {
+            "abi": [
+                {
+                    "inputs": [],
+                    "name": "ADDRESSES_PROVIDER",
+                    "outputs": [
+                        {
+                            "internalType": "contract IPoolAddressesProvider",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "POOL",
+                    "outputs": [
+                        {
+                            "internalType": "contract IPool",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address[]",
+                            "name": "assets",
+                            "type": "address[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "amounts",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "premiums",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "initiator",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "bytes",
+                            "name": "params",
+                            "type": "bytes"
+                        }
+                    ],
+                    "name": "executeOperation",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": ""
+        },
+        "@aave/core-v3/contracts/interfaces/IPool.sol:IPool": {
+            "abi": [
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "backer",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "fee",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "BackUnbacked",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "enum DataTypes.InterestRateMode",
+                            "name": "interestRateMode",
+                            "type": "uint8"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "borrowRate",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "Borrow",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "target",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "address",
+                            "name": "initiator",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "enum DataTypes.InterestRateMode",
+                            "name": "interestRateMode",
+                            "type": "uint8"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "premium",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "FlashLoan",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "totalDebt",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "IsolationModeTotalDebtUpdated",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "collateralAsset",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "debtAsset",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "debtToCover",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "liquidatedCollateralAmount",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "address",
+                            "name": "liquidator",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "bool",
+                            "name": "receiveAToken",
+                            "type": "bool"
+                        }
+                    ],
+                    "name": "LiquidationCall",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "MintUnbacked",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "amountMinted",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "MintedToTreasury",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "RebalanceStableBorrowRate",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "repayer",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "bool",
+                            "name": "useATokens",
+                            "type": "bool"
+                        }
+                    ],
+                    "name": "Repay",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "liquidityRate",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "stableBorrowRate",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "variableBorrowRate",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "liquidityIndex",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "variableBorrowIndex",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "ReserveDataUpdated",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "ReserveUsedAsCollateralDisabled",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "ReserveUsedAsCollateralEnabled",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "Supply",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "enum DataTypes.InterestRateMode",
+                            "name": "interestRateMode",
+                            "type": "uint8"
+                        }
+                    ],
+                    "name": "SwapBorrowRateMode",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint8",
+                            "name": "categoryId",
+                            "type": "uint8"
+                        }
+                    ],
+                    "name": "UserEModeSet",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "reserve",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "Withdraw",
+                    "type": "event"
+                },
+                {
+                    "inputs": [],
+                    "name": "ADDRESSES_PROVIDER",
+                    "outputs": [
+                        {
+                            "internalType": "contract IPoolAddressesProvider",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "BRIDGE_PROTOCOL_FEE",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "FLASHLOAN_PREMIUM_TOTAL",
+                    "outputs": [
+                        {
+                            "internalType": "uint128",
+                            "name": "",
+                            "type": "uint128"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "FLASHLOAN_PREMIUM_TO_PROTOCOL",
+                    "outputs": [
+                        {
+                            "internalType": "uint128",
+                            "name": "",
+                            "type": "uint128"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "MAX_NUMBER_RESERVES",
+                    "outputs": [
+                        {
+                            "internalType": "uint16",
+                            "name": "",
+                            "type": "uint16"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "MAX_STABLE_RATE_BORROW_SIZE_PERCENT",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "fee",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "backUnbacked",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "interestRateMode",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "borrow",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint8",
+                            "name": "id",
+                            "type": "uint8"
+                        },
+                        {
+                            "components": [
+                                {
+                                    "internalType": "uint16",
+                                    "name": "ltv",
+                                    "type": "uint16"
+                                },
+                                {
+                                    "internalType": "uint16",
+                                    "name": "liquidationThreshold",
+                                    "type": "uint16"
+                                },
+                                {
+                                    "internalType": "uint16",
+                                    "name": "liquidationBonus",
+                                    "type": "uint16"
+                                },
+                                {
+                                    "internalType": "address",
+                                    "name": "priceSource",
+                                    "type": "address"
+                                },
+                                {
+                                    "internalType": "string",
+                                    "name": "label",
+                                    "type": "string"
+                                }
+                            ],
+                            "internalType": "struct DataTypes.EModeCategory",
+                            "name": "config",
+                            "type": "tuple"
+                        }
+                    ],
+                    "name": "configureEModeCategory",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "deposit",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "dropReserve",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "from",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "balanceFromBefore",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "balanceToBefore",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "finalizeTransfer",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "receiverAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address[]",
+                            "name": "assets",
+                            "type": "address[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "amounts",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "interestRateModes",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "bytes",
+                            "name": "params",
+                            "type": "bytes"
+                        },
+                        {
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "flashLoan",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "receiverAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "bytes",
+                            "name": "params",
+                            "type": "bytes"
+                        },
+                        {
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "flashLoanSimple",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "getConfiguration",
+                    "outputs": [
+                        {
+                            "components": [
+                                {
+                                    "internalType": "uint256",
+                                    "name": "data",
+                                    "type": "uint256"
+                                }
+                            ],
+                            "internalType": "struct DataTypes.ReserveConfigurationMap",
+                            "name": "",
+                            "type": "tuple"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint8",
+                            "name": "id",
+                            "type": "uint8"
+                        }
+                    ],
+                    "name": "getEModeCategoryData",
+                    "outputs": [
+                        {
+                            "components": [
+                                {
+                                    "internalType": "uint16",
+                                    "name": "ltv",
+                                    "type": "uint16"
+                                },
+                                {
+                                    "internalType": "uint16",
+                                    "name": "liquidationThreshold",
+                                    "type": "uint16"
+                                },
+                                {
+                                    "internalType": "uint16",
+                                    "name": "liquidationBonus",
+                                    "type": "uint16"
+                                },
+                                {
+                                    "internalType": "address",
+                                    "name": "priceSource",
+                                    "type": "address"
+                                },
+                                {
+                                    "internalType": "string",
+                                    "name": "label",
+                                    "type": "string"
+                                }
+                            ],
+                            "internalType": "struct DataTypes.EModeCategory",
+                            "name": "",
+                            "type": "tuple"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint16",
+                            "name": "id",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "getReserveAddressById",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "getReserveData",
+                    "outputs": [
+                        {
+                            "components": [
+                                {
+                                    "components": [
+                                        {
+                                            "internalType": "uint256",
+                                            "name": "data",
+                                            "type": "uint256"
+                                        }
+                                    ],
+                                    "internalType": "struct DataTypes.ReserveConfigurationMap",
+                                    "name": "configuration",
+                                    "type": "tuple"
+                                },
+                                {
+                                    "internalType": "uint128",
+                                    "name": "liquidityIndex",
+                                    "type": "uint128"
+                                },
+                                {
+                                    "internalType": "uint128",
+                                    "name": "currentLiquidityRate",
+                                    "type": "uint128"
+                                },
+                                {
+                                    "internalType": "uint128",
+                                    "name": "variableBorrowIndex",
+                                    "type": "uint128"
+                                },
+                                {
+                                    "internalType": "uint128",
+                                    "name": "currentVariableBorrowRate",
+                                    "type": "uint128"
+                                },
+                                {
+                                    "internalType": "uint128",
+                                    "name": "currentStableBorrowRate",
+                                    "type": "uint128"
+                                },
+                                {
+                                    "internalType": "uint40",
+                                    "name": "lastUpdateTimestamp",
+                                    "type": "uint40"
+                                },
+                                {
+                                    "internalType": "uint16",
+                                    "name": "id",
+                                    "type": "uint16"
+                                },
+                                {
+                                    "internalType": "address",
+                                    "name": "aTokenAddress",
+                                    "type": "address"
+                                },
+                                {
+                                    "internalType": "address",
+                                    "name": "stableDebtTokenAddress",
+                                    "type": "address"
+                                },
+                                {
+                                    "internalType": "address",
+                                    "name": "variableDebtTokenAddress",
+                                    "type": "address"
+                                },
+                                {
+                                    "internalType": "address",
+                                    "name": "interestRateStrategyAddress",
+                                    "type": "address"
+                                },
+                                {
+                                    "internalType": "uint128",
+                                    "name": "accruedToTreasury",
+                                    "type": "uint128"
+                                },
+                                {
+                                    "internalType": "uint128",
+                                    "name": "unbacked",
+                                    "type": "uint128"
+                                },
+                                {
+                                    "internalType": "uint128",
+                                    "name": "isolationModeTotalDebt",
+                                    "type": "uint128"
+                                }
+                            ],
+                            "internalType": "struct DataTypes.ReserveData",
+                            "name": "",
+                            "type": "tuple"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "getReserveNormalizedIncome",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "getReserveNormalizedVariableDebt",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "getReservesList",
+                    "outputs": [
+                        {
+                            "internalType": "address[]",
+                            "name": "",
+                            "type": "address[]"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "getUserAccountData",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "totalCollateralBase",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "totalDebtBase",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "availableBorrowsBase",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "currentLiquidationThreshold",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "ltv",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "healthFactor",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "getUserConfiguration",
+                    "outputs": [
+                        {
+                            "components": [
+                                {
+                                    "internalType": "uint256",
+                                    "name": "data",
+                                    "type": "uint256"
+                                }
+                            ],
+                            "internalType": "struct DataTypes.UserConfigurationMap",
+                            "name": "",
+                            "type": "tuple"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "getUserEMode",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "aTokenAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "stableDebtAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "variableDebtAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "interestRateStrategyAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "initReserve",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "collateralAsset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "debtAsset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "debtToCover",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "receiveAToken",
+                            "type": "bool"
+                        }
+                    ],
+                    "name": "liquidationCall",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address[]",
+                            "name": "assets",
+                            "type": "address[]"
+                        }
+                    ],
+                    "name": "mintToTreasury",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "mintUnbacked",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "user",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "rebalanceStableBorrowRate",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "interestRateMode",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "repay",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "interestRateMode",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "repayWithATokens",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "interestRateMode",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "deadline",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint8",
+                            "name": "permitV",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "bytes32",
+                            "name": "permitR",
+                            "type": "bytes32"
+                        },
+                        {
+                            "internalType": "bytes32",
+                            "name": "permitS",
+                            "type": "bytes32"
+                        }
+                    ],
+                    "name": "repayWithPermit",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "token",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "rescueTokens",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "resetIsolationModeTotalDebt",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "components": [
+                                {
+                                    "internalType": "uint256",
+                                    "name": "data",
+                                    "type": "uint256"
+                                }
+                            ],
+                            "internalType": "struct DataTypes.ReserveConfigurationMap",
+                            "name": "configuration",
+                            "type": "tuple"
+                        }
+                    ],
+                    "name": "setConfiguration",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "rateStrategyAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setReserveInterestRateStrategyAddress",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint8",
+                            "name": "categoryId",
+                            "type": "uint8"
+                        }
+                    ],
+                    "name": "setUserEMode",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "bool",
+                            "name": "useAsCollateral",
+                            "type": "bool"
+                        }
+                    ],
+                    "name": "setUserUseReserveAsCollateral",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        }
+                    ],
+                    "name": "supply",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint16",
+                            "name": "referralCode",
+                            "type": "uint16"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "deadline",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint8",
+                            "name": "permitV",
+                            "type": "uint8"
+                        },
+                        {
+                            "internalType": "bytes32",
+                            "name": "permitR",
+                            "type": "bytes32"
+                        },
+                        {
+                            "internalType": "bytes32",
+                            "name": "permitS",
+                            "type": "bytes32"
+                        }
+                    ],
+                    "name": "supplyWithPermit",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "interestRateMode",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "swapBorrowRateMode",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "bridgeProtocolFee",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "updateBridgeProtocolFee",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint128",
+                            "name": "flashLoanPremiumTotal",
+                            "type": "uint128"
+                        },
+                        {
+                            "internalType": "uint128",
+                            "name": "flashLoanPremiumToProtocol",
+                            "type": "uint128"
+                        }
+                    ],
+                    "name": "updateFlashloanPremiums",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "withdraw",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": ""
+        },
+        "@aave/core-v3/contracts/interfaces/IPoolAddressesProvider.sol:IPoolAddressesProvider": {
+            "abi": [
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "oldAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "newAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "ACLAdminUpdated",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "oldAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "newAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "ACLManagerUpdated",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "bytes32",
+                            "name": "id",
+                            "type": "bytes32"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "oldAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "newAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "AddressSet",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "bytes32",
+                            "name": "id",
+                            "type": "bytes32"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "proxyAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "address",
+                            "name": "oldImplementationAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "newImplementationAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "AddressSetAsProxy",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "string",
+                            "name": "oldMarketId",
+                            "type": "string"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "string",
+                            "name": "newMarketId",
+                            "type": "string"
+                        }
+                    ],
+                    "name": "MarketIdSet",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "oldAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "newAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "PoolConfiguratorUpdated",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "oldAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "newAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "PoolDataProviderUpdated",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "oldAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "newAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "PoolUpdated",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "oldAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "newAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "PriceOracleSentinelUpdated",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "oldAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "newAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "PriceOracleUpdated",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "bytes32",
+                            "name": "id",
+                            "type": "bytes32"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "proxyAddress",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "implementationAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "ProxyCreated",
+                    "type": "event"
+                },
+                {
+                    "inputs": [],
+                    "name": "getACLAdmin",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "getACLManager",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "bytes32",
+                            "name": "id",
+                            "type": "bytes32"
+                        }
+                    ],
+                    "name": "getAddress",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "getMarketId",
+                    "outputs": [
+                        {
+                            "internalType": "string",
+                            "name": "",
+                            "type": "string"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "getPool",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "getPoolConfigurator",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "getPoolDataProvider",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "getPriceOracle",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "getPriceOracleSentinel",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "newAclAdmin",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setACLAdmin",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "newAclManager",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setACLManager",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "bytes32",
+                            "name": "id",
+                            "type": "bytes32"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "newAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setAddress",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "bytes32",
+                            "name": "id",
+                            "type": "bytes32"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "newImplementationAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setAddressAsProxy",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "string",
+                            "name": "newMarketId",
+                            "type": "string"
+                        }
+                    ],
+                    "name": "setMarketId",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "newPoolConfiguratorImpl",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setPoolConfiguratorImpl",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "newDataProvider",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setPoolDataProvider",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "newPoolImpl",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setPoolImpl",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "newPriceOracle",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setPriceOracle",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "newPriceOracleSentinel",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "setPriceOracleSentinel",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": ""
+        },
+        "@aave/core-v3/contracts/protocol/libraries/types/DataTypes.sol:DataTypes": {
+            "abi": [],
+            "bin": "6055604b600b8282823980515f1a607314603f577f4e487b71000000000000000000000000000000000000000000000000000000005f525f60045260245ffd5b305f52607381538281f3fe730000000000000000000000000000000000000000301460806040525f80fdfea264697066735822122082eed16ab2f710be9365bb004a884eb314537ff3b9f00c9a28d87ba0865411d664736f6c63430008170033"
+        },
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20": {
+            "abi": [
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "owner",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "spender",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "value",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "Approval",
+                    "type": "event"
+                },
+                {
+                    "anonymous": false,
+                    "inputs": [
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "from",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": true,
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "indexed": false,
+                            "internalType": "uint256",
+                            "name": "value",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "Transfer",
+                    "type": "event"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "owner",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "spender",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "allowance",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "spender",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "value",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "approve",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "account",
+                            "type": "address"
+                        }
+                    ],
+                    "name": "balanceOf",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "totalSupply",
+                    "outputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "value",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "transfer",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "from",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "value",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "transferFrom",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": ""
+        },
+        "CompoundInterface.sol:CompoundInteraction": {
+            "abi": [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "_compoundAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "constructor"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "wbtcAmount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "borrowWBTC",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "repayBorrowedWBTC",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "ethAmount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "supplyCollateralToCompound",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": "608060405234801561000f575f80fd5b50604051610465380380610465833981810160405281019061003191906100d4565b805f806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506100ff565b5f80fd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6100a38261007a565b9050919050565b6100b381610099565b81146100bd575f80fd5b50565b5f815190506100ce816100aa565b92915050565b5f602082840312156100e9576100e8610076565b5b5f6100f6848285016100c0565b91505092915050565b6103598061010c5f395ff3fe608060405234801561000f575f80fd5b506004361061003f575f3560e01c80631c02ab4c146100435780636562dd3a1461005f578063ee2005ef1461007b575b5f80fd5b61005d6004803603810190610058919061026a565b610097565b005b6100796004803603810190610074919061026a565b610121565b005b6100956004803603810190610090919061026a565b6101ab565b005b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663f2b9fdb830836040518363ffffffff1660e01b81526004016100f19291906102e3565b5f604051808303815f87803b158015610108575f80fd5b505af115801561011a573d5f803e3d5ffd5b5050505050565b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16634b8a352930836040518363ffffffff1660e01b815260040161017b9291906102e3565b5f604051808303815f87803b158015610192575f80fd5b505af11580156101a4573d5f803e3d5ffd5b5050505050565b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16630e752702826040518263ffffffff1660e01b8152600401610203919061030a565b5f604051808303815f87803b15801561021a575f80fd5b505af115801561022c573d5f803e3d5ffd5b5050505050565b5f80fd5b5f819050919050565b61024981610237565b8114610253575f80fd5b50565b5f8135905061026481610240565b92915050565b5f6020828403121561027f5761027e610233565b5b5f61028c84828501610256565b91505092915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6102be82610295565b9050919050565b6102ce816102b4565b82525050565b6102dd81610237565b82525050565b5f6040820190506102f65f8301856102c5565b61030360208301846102d4565b9392505050565b5f60208201905061031d5f8301846102d4565b9291505056fea26469706673582212200763e6d811f6879c7a0565a65104cdab310cb0a7b0c9c32732b05f9503c3e1f364736f6c63430008170033"
+        },
+        "CompoundInterface.sol:CompoundInterface": {
+            "abi": [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "borrow",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "repayBorrow",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "asset",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "supply",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": ""
+        },
+        "Main.sol:FlashLoanProvider": {
+            "abi": [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "_poolAddressesProvider",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "_compoundAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "_bzxAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "_uniswapAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "_WBTC",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "_WETH",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "constructor"
+                },
+                {
+                    "inputs": [],
+                    "name": "ADDRESSES_PROVIDER",
+                    "outputs": [
+                        {
+                            "internalType": "contract IPoolAddressesProvider",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "POOL",
+                    "outputs": [
+                        {
+                            "internalType": "contract IPool",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "bzx",
+                    "outputs": [
+                        {
+                            "internalType": "contract bZxInteraction",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "compound",
+                    "outputs": [
+                        {
+                            "internalType": "contract CompoundInteraction",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address[]",
+                            "name": "assets",
+                            "type": "address[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "amounts",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "modes",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "onBehalfOf",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "bytes",
+                            "name": "params",
+                            "type": "bytes"
+                        }
+                    ],
+                    "name": "executeFlashLoan",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address[]",
+                            "name": "assets",
+                            "type": "address[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "amounts",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "uint256[]",
+                            "name": "premiums",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "initiator",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "bytes",
+                            "name": "params",
+                            "type": "bytes"
+                        }
+                    ],
+                    "name": "executeOperation",
+                    "outputs": [
+                        {
+                            "internalType": "bool",
+                            "name": "",
+                            "type": "bool"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "uniswap",
+                    "outputs": [
+                        {
+                            "internalType": "contract UniswapInteraction",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                }
+            ],
+            "bin": "60c060405234801562000010575f80fd5b50604051620023963803806200239683398181016040528101906200003691906200030c565b858073ffffffffffffffffffffffffffffffffffffffff1660808173ffffffffffffffffffffffffffffffffffffffff16815250508073ffffffffffffffffffffffffffffffffffffffff1663026b1d5f6040518163ffffffff1660e01b8152600401602060405180830381865afa158015620000b5573d5f803e3d5ffd5b505050506040513d601f19601f82011682018060405250810190620000db9190620003a4565b73ffffffffffffffffffffffffffffffffffffffff1660a08173ffffffffffffffffffffffffffffffffffffffff16815250505082828260405162000120906200027d565b6200012e93929190620003e5565b604051809103905ff08015801562000148573d5f803e3d5ffd5b5060025f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508460405162000197906200028b565b620001a3919062000420565b604051809103905ff080158015620001bd573d5f803e3d5ffd5b505f806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550836040516200020b9062000299565b62000217919062000420565b604051809103905ff08015801562000231573d5f803e3d5ffd5b5060015f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505050505050506200043b565b61095b806200129783390190565b6104658062001bf283390190565b61033f806200205783390190565b5f80fd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f620002d682620002ab565b9050919050565b620002e881620002ca565b8114620002f3575f80fd5b50565b5f815190506200030681620002dd565b92915050565b5f805f805f8060c08789031215620003295762000328620002a7565b5b5f6200033889828a01620002f6565b96505060206200034b89828a01620002f6565b95505060406200035e89828a01620002f6565b94505060606200037189828a01620002f6565b93505060806200038489828a01620002f6565b92505060a06200039789828a01620002f6565b9150509295509295509295565b5f60208284031215620003bc57620003bb620002a7565b5b5f620003cb84828501620002f6565b91505092915050565b620003df81620002ca565b82525050565b5f606082019050620003fa5f830186620003d4565b620004096020830185620003d4565b620004186040830184620003d4565b949350505050565b5f602082019050620004355f830184620003d4565b92915050565b60805160a051610e2c6200046b5f395f81816101d101528181610425015261050901525f6101630152610e2c5ff3fe608060405234801561000f575f80fd5b506004361061007b575f3560e01c80637535d246116100595780637535d246146100d9578063920f5c84146100f757806396dffa9e14610127578063f69e2046146101435761007b565b80630542975c1461007f5780631fbf7fa51461009d5780632681f7e4146100bb575b5f80fd5b610087610161565b6040516100949190610605565b60405180910390f35b6100a5610185565b6040516100b2919061063e565b60405180910390f35b6100c36101aa565b6040516100d09190610677565b60405180910390f35b6100e16101cf565b6040516100ee91906106b0565b60405180910390f35b610111600480360381019061010c9190610817565b6101f3565b60405161011e9190610927565b60405180910390f35b610141600480360381019061013c9190610817565b610423565b005b61014b6104c8565b6040516101589190610960565b60405180910390f35b7f000000000000000000000000000000000000000000000000000000000000000081565b60015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60025f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b7f000000000000000000000000000000000000000000000000000000000000000081565b5f8088885f81811061020857610207610979565b5b9050602002013590505f87875f81811061022557610224610979565b5b905060200201358261023791906109dc565b90505f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16631c02ab4c69012a27d53bc0487000006040518263ffffffff1660e01b815260040161029b9190610a48565b5f604051808303815f87803b1580156102b2575f80fd5b505af11580156102c4573d5f803e3d5ffd5b5050505060015f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663b39ffb6b6846791fc84e07d000006040518263ffffffff1660e01b815260040161032b9190610a9a565b5f604051808303815f87803b158015610342575f80fd5b505af1158015610354573d5f803e3d5ffd5b5050505060025f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166354513b68836040518263ffffffff1660e01b81526004016103b29190610ac2565b5f604051808303815f87803b1580156103c9575f80fd5b505af11580156103db573d5f803e3d5ffd5b505050506104108c8c5f8181106103f5576103f4610979565b5b905060200201602081019061040a9190610adb565b826104eb565b6001925050509998505050505050505050565b7f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff1663ab9c4b5d308b8b8b8b8b8b8b8b8b5f6040518c63ffffffff1660e01b81526004016104909b9a99989796959493929190610ce9565b5f604051808303815f87803b1580156104a7575f80fd5b505af11580156104b9573d5f803e3d5ffd5b50505050505050505050505050565b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b8173ffffffffffffffffffffffffffffffffffffffff1663095ea7b37f0000000000000000000000000000000000000000000000000000000000000000836040518363ffffffff1660e01b8152600401610546929190610d7a565b6020604051808303815f875af1158015610562573d5f803e3d5ffd5b505050506040513d601f19601f820116820180604052508101906105869190610dcb565b505050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f819050919050565b5f6105cd6105c86105c38461058b565b6105aa565b61058b565b9050919050565b5f6105de826105b3565b9050919050565b5f6105ef826105d4565b9050919050565b6105ff816105e5565b82525050565b5f6020820190506106185f8301846105f6565b92915050565b5f610628826105d4565b9050919050565b6106388161061e565b82525050565b5f6020820190506106515f83018461062f565b92915050565b5f610661826105d4565b9050919050565b61067181610657565b82525050565b5f60208201905061068a5f830184610668565b92915050565b5f61069a826105d4565b9050919050565b6106aa81610690565b82525050565b5f6020820190506106c35f8301846106a1565b92915050565b5f80fd5b5f80fd5b5f80fd5b5f80fd5b5f80fd5b5f8083601f8401126106f2576106f16106d1565b5b8235905067ffffffffffffffff81111561070f5761070e6106d5565b5b60208301915083602082028301111561072b5761072a6106d9565b5b9250929050565b5f8083601f840112610747576107466106d1565b5b8235905067ffffffffffffffff811115610764576107636106d5565b5b6020830191508360208202830111156107805761077f6106d9565b5b9250929050565b5f6107918261058b565b9050919050565b6107a181610787565b81146107ab575f80fd5b50565b5f813590506107bc81610798565b92915050565b5f8083601f8401126107d7576107d66106d1565b5b8235905067ffffffffffffffff8111156107f4576107f36106d5565b5b6020830191508360018202830111156108105761080f6106d9565b5b9250929050565b5f805f805f805f805f60a08a8c031215610834576108336106c9565b5b5f8a013567ffffffffffffffff811115610851576108506106cd565b5b61085d8c828d016106dd565b995099505060208a013567ffffffffffffffff8111156108805761087f6106cd565b5b61088c8c828d01610732565b975097505060408a013567ffffffffffffffff8111156108af576108ae6106cd565b5b6108bb8c828d01610732565b955095505060606108ce8c828d016107ae565b93505060808a013567ffffffffffffffff8111156108ef576108ee6106cd565b5b6108fb8c828d016107c2565b92509250509295985092959850929598565b5f8115159050919050565b6109218161090d565b82525050565b5f60208201905061093a5f830184610918565b92915050565b5f61094a826105d4565b9050919050565b61095a81610940565b82525050565b5f6020820190506109735f830184610951565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52603260045260245ffd5b5f819050919050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f6109e6826109a6565b91506109f1836109a6565b9250828201905080821115610a0957610a086109af565b5b92915050565b5f819050919050565b5f610a32610a2d610a2884610a0f565b6105aa565b6109a6565b9050919050565b610a4281610a18565b82525050565b5f602082019050610a5b5f830184610a39565b92915050565b5f819050919050565b5f610a84610a7f610a7a84610a61565b6105aa565b6109a6565b9050919050565b610a9481610a6a565b82525050565b5f602082019050610aad5f830184610a8b565b92915050565b610abc816109a6565b82525050565b5f602082019050610ad55f830184610ab3565b92915050565b5f60208284031215610af057610aef6106c9565b5b5f610afd848285016107ae565b91505092915050565b610b0f81610787565b82525050565b5f82825260208201905092915050565b5f819050919050565b610b3781610787565b82525050565b5f610b488383610b2e565b60208301905092915050565b5f610b6260208401846107ae565b905092915050565b5f602082019050919050565b5f610b818385610b15565b9350610b8c82610b25565b805f5b85811015610bc457610ba18284610b54565b610bab8882610b3d565b9750610bb683610b6a565b925050600181019050610b8f565b5085925050509392505050565b5f82825260208201905092915050565b5f80fd5b82818337505050565b5f610bf98385610bd1565b93507f07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff831115610c2c57610c2b610be1565b5b602083029250610c3d838584610be5565b82840190509392505050565b5f82825260208201905092915050565b828183375f83830152505050565b5f601f19601f8301169050919050565b5f610c828385610c49565b9350610c8f838584610c59565b610c9883610c67565b840190509392505050565b5f819050919050565b5f61ffff82169050919050565b5f610cd3610cce610cc984610ca3565b6105aa565b610cac565b9050919050565b610ce381610cb9565b82525050565b5f60e082019050610cfc5f83018e610b06565b8181036020830152610d0f818c8e610b76565b90508181036040830152610d24818a8c610bee565b90508181036060830152610d3981888a610bee565b9050610d486080830187610b06565b81810360a0830152610d5b818587610c77565b9050610d6a60c0830184610cda565b9c9b505050505050505050505050565b5f604082019050610d8d5f830185610b06565b610d9a6020830184610ab3565b9392505050565b610daa8161090d565b8114610db4575f80fd5b50565b5f81519050610dc581610da1565b92915050565b5f60208284031215610de057610ddf6106c9565b5b5f610ded84828501610db7565b9150509291505056fea2646970667358221220250008aa85878f58a4cd85487c4e5e46e0c01a1537697a9fdc6f90ad1d63762164736f6c63430008170033608060405234801561000f575f80fd5b5060405161095b38038061095b83398181016040528101906100319190610156565b825f806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508160025f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508060035f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505050506101a6565b5f80fd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f610125826100fc565b9050919050565b6101358161011b565b811461013f575f80fd5b50565b5f815190506101508161012c565b92915050565b5f805f6060848603121561016d5761016c6100f8565b5b5f61017a86828701610142565b935050602061018b86828701610142565b925050604061019c86828701610142565b9150509250925092565b6107a8806101b35f395ff3fe608060405234801561000f575f80fd5b506004361061003f575f3560e01c80632681f7e41461004357806354513b6814610061578063af6d1fe41461007d575b5f80fd5b61004b6100ad565b6040516100589190610323565b60405180910390f35b61007b60048036038101906100769190610380565b6100d0565b005b61009760048036038101906100929190610380565b61026e565b6040516100a491906103cb565b60405180910390f35b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60025f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1660015f81548110610106576101056103e4565b5b905f5260205f20015f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060035f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1660018081548110610181576101806103e4565b5b905f5260205f20015f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166338ed1739825f600130426040518663ffffffff1660e01b815260040161022795949392919061056f565b5f604051808303815f875af1158015610242573d5f803e3d5ffd5b505050506040513d5f823e3d601f19601f8201168201806040525081019061026a919061072b565b5050565b6001818154811061027d575f80fd5b905f5260205f20015f915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f819050919050565b5f6102eb6102e66102e1846102a9565b6102c8565b6102a9565b9050919050565b5f6102fc826102d1565b9050919050565b5f61030d826102f2565b9050919050565b61031d81610303565b82525050565b5f6020820190506103365f830184610314565b92915050565b5f604051905090565b5f80fd5b5f80fd5b5f819050919050565b61035f8161034d565b8114610369575f80fd5b50565b5f8135905061037a81610356565b92915050565b5f6020828403121561039557610394610345565b5b5f6103a28482850161036c565b91505092915050565b5f6103b5826102a9565b9050919050565b6103c5816103ab565b82525050565b5f6020820190506103de5f8301846103bc565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52603260045260245ffd5b61041a8161034d565b82525050565b5f819050919050565b5f61044361043e61043984610420565b6102c8565b61034d565b9050919050565b61045381610429565b82525050565b5f81549050919050565b5f82825260208201905092915050565b5f819050815f5260205f209050919050565b61048e816103ab565b82525050565b5f61049f8383610485565b60208301905092915050565b5f815f1c9050919050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6104e76104e2836104ab565b6104b6565b9050919050565b5f6104f982546104d5565b9050919050565b5f600182019050919050565b5f61051682610459565b6105208185610463565b935061052b83610473565b805f5b838110156105625761053f826104ee565b6105498882610494565b975061055483610500565b92505060018101905061052e565b5085935050505092915050565b5f60a0820190506105825f830188610411565b61058f602083018761044a565b81810360408301526105a1818661050c565b90506105b060608301856103bc565b6105bd6080830184610411565b9695505050505050565b5f80fd5b5f601f19601f8301169050919050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52604160045260245ffd5b610611826105cb565b810181811067ffffffffffffffff821117156106305761062f6105db565b5b80604052505050565b5f61064261033c565b905061064e8282610608565b919050565b5f67ffffffffffffffff82111561066d5761066c6105db565b5b602082029050602081019050919050565b5f80fd5b5f8151905061069081610356565b92915050565b5f6106a86106a384610653565b610639565b905080838252602082019050602084028301858111156106cb576106ca61067e565b5b835b818110156106f457806106e08882610682565b8452602084019350506020810190506106cd565b5050509392505050565b5f82601f830112610712576107116105c7565b5b8151610722848260208601610696565b91505092915050565b5f602082840312156107405761073f610345565b5b5f82015167ffffffffffffffff81111561075d5761075c610349565b5b610769848285016106fe565b9150509291505056fea2646970667358221220fb4c9339c71bab93bd08325073a7948566c50d2f9c4f5a6c984990cce74e48ce64736f6c63430008170033608060405234801561000f575f80fd5b50604051610465380380610465833981810160405281019061003191906100d4565b805f806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506100ff565b5f80fd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6100a38261007a565b9050919050565b6100b381610099565b81146100bd575f80fd5b50565b5f815190506100ce816100aa565b92915050565b5f602082840312156100e9576100e8610076565b5b5f6100f6848285016100c0565b91505092915050565b6103598061010c5f395ff3fe608060405234801561000f575f80fd5b506004361061003f575f3560e01c80631c02ab4c146100435780636562dd3a1461005f578063ee2005ef1461007b575b5f80fd5b61005d6004803603810190610058919061026a565b610097565b005b6100796004803603810190610074919061026a565b610121565b005b6100956004803603810190610090919061026a565b6101ab565b005b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663f2b9fdb830836040518363ffffffff1660e01b81526004016100f19291906102e3565b5f604051808303815f87803b158015610108575f80fd5b505af115801561011a573d5f803e3d5ffd5b5050505050565b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16634b8a352930836040518363ffffffff1660e01b815260040161017b9291906102e3565b5f604051808303815f87803b158015610192575f80fd5b505af11580156101a4573d5f803e3d5ffd5b5050505050565b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16630e752702826040518263ffffffff1660e01b8152600401610203919061030a565b5f604051808303815f87803b15801561021a575f80fd5b505af115801561022c573d5f803e3d5ffd5b5050505050565b5f80fd5b5f819050919050565b61024981610237565b8114610253575f80fd5b50565b5f8135905061026481610240565b92915050565b5f6020828403121561027f5761027e610233565b5b5f61028c84828501610256565b91505092915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6102be82610295565b9050919050565b6102ce816102b4565b82525050565b6102dd81610237565b82525050565b5f6040820190506102f65f8301856102c5565b61030360208301846102d4565b9392505050565b5f60208201905061031d5f8301846102d4565b9291505056fea26469706673582212200763e6d811f6879c7a0565a65104cdab310cb0a7b0c9c32732b05f9503c3e1f364736f6c63430008170033608060405234801561000f575f80fd5b5060405161033f38038061033f833981810160405281019061003191906100d4565b805f806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506100ff565b5f80fd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6100a38261007a565b9050919050565b6100b381610099565b81146100bd575f80fd5b50565b5f815190506100ce816100aa565b92915050565b5f602082840312156100e9576100e8610076565b5b5f6100f6848285016100c0565b91505092915050565b6102338061010c5f395ff3fe608060405234801561000f575f80fd5b5060043610610029575f3560e01c8063b39ffb6b1461002d575b5f80fd5b6100476004803603810190610042919061010d565b610049565b005b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c5654acc306005846040518463ffffffff1660e01b81526004016100a6939291906101c8565b5f604051808303815f87803b1580156100bd575f80fd5b505af11580156100cf573d5f803e3d5ffd5b5050505050565b5f80fd5b5f819050919050565b6100ec816100da565b81146100f6575f80fd5b50565b5f81359050610107816100e3565b92915050565b5f60208284031215610122576101216100d6565b5b5f61012f848285016100f9565b91505092915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f61016182610138565b9050919050565b61017181610157565b82525050565b5f819050919050565b5f819050919050565b5f6101a361019e61019984610177565b610180565b6100da565b9050919050565b6101b381610189565b82525050565b6101c2816100da565b82525050565b5f6060820190506101db5f830186610168565b6101e860208301856101aa565b6101f560408301846101b9565b94935050505056fea264697066735822122089dfe7dd0eb80c8365f08ca1b40111f163a801aa09fa2ab82be28e300ac27cbe64736f6c63430008170033"
+        },
+        "UniswapInterface.sol:UniswapInteraction": {
+            "abi": [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "_uniswapAddress",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "_WBTC",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "_WETH",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "constructor"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "path",
+                    "outputs": [
+                        {
+                            "internalType": "address",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "WBTCAmount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "swapWbtcForEth",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                },
+                {
+                    "inputs": [],
+                    "name": "uniswap",
+                    "outputs": [
+                        {
+                            "internalType": "contract UniswapInterface",
+                            "name": "",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "view",
+                    "type": "function"
+                }
+            ],
+            "bin": "608060405234801561000f575f80fd5b5060405161095b38038061095b83398181016040528101906100319190610156565b825f806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508160025f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055508060035f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505050506101a6565b5f80fd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f610125826100fc565b9050919050565b6101358161011b565b811461013f575f80fd5b50565b5f815190506101508161012c565b92915050565b5f805f6060848603121561016d5761016c6100f8565b5b5f61017a86828701610142565b935050602061018b86828701610142565b925050604061019c86828701610142565b9150509250925092565b6107a8806101b35f395ff3fe608060405234801561000f575f80fd5b506004361061003f575f3560e01c80632681f7e41461004357806354513b6814610061578063af6d1fe41461007d575b5f80fd5b61004b6100ad565b6040516100589190610323565b60405180910390f35b61007b60048036038101906100769190610380565b6100d0565b005b61009760048036038101906100929190610380565b61026e565b6040516100a491906103cb565b60405180910390f35b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60025f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1660015f81548110610106576101056103e4565b5b905f5260205f20015f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060035f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1660018081548110610181576101806103e4565b5b905f5260205f20015f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166338ed1739825f600130426040518663ffffffff1660e01b815260040161022795949392919061056f565b5f604051808303815f875af1158015610242573d5f803e3d5ffd5b505050506040513d5f823e3d601f19601f8201168201806040525081019061026a919061072b565b5050565b6001818154811061027d575f80fd5b905f5260205f20015f915054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f819050919050565b5f6102eb6102e66102e1846102a9565b6102c8565b6102a9565b9050919050565b5f6102fc826102d1565b9050919050565b5f61030d826102f2565b9050919050565b61031d81610303565b82525050565b5f6020820190506103365f830184610314565b92915050565b5f604051905090565b5f80fd5b5f80fd5b5f819050919050565b61035f8161034d565b8114610369575f80fd5b50565b5f8135905061037a81610356565b92915050565b5f6020828403121561039557610394610345565b5b5f6103a28482850161036c565b91505092915050565b5f6103b5826102a9565b9050919050565b6103c5816103ab565b82525050565b5f6020820190506103de5f8301846103bc565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52603260045260245ffd5b61041a8161034d565b82525050565b5f819050919050565b5f61044361043e61043984610420565b6102c8565b61034d565b9050919050565b61045381610429565b82525050565b5f81549050919050565b5f82825260208201905092915050565b5f819050815f5260205f209050919050565b61048e816103ab565b82525050565b5f61049f8383610485565b60208301905092915050565b5f815f1c9050919050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6104e76104e2836104ab565b6104b6565b9050919050565b5f6104f982546104d5565b9050919050565b5f600182019050919050565b5f61051682610459565b6105208185610463565b935061052b83610473565b805f5b838110156105625761053f826104ee565b6105498882610494565b975061055483610500565b92505060018101905061052e565b5085935050505092915050565b5f60a0820190506105825f830188610411565b61058f602083018761044a565b81810360408301526105a1818661050c565b90506105b060608301856103bc565b6105bd6080830184610411565b9695505050505050565b5f80fd5b5f601f19601f8301169050919050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52604160045260245ffd5b610611826105cb565b810181811067ffffffffffffffff821117156106305761062f6105db565b5b80604052505050565b5f61064261033c565b905061064e8282610608565b919050565b5f67ffffffffffffffff82111561066d5761066c6105db565b5b602082029050602081019050919050565b5f80fd5b5f8151905061069081610356565b92915050565b5f6106a86106a384610653565b610639565b905080838252602082019050602084028301858111156106cb576106ca61067e565b5b835b818110156106f457806106e08882610682565b8452602084019350506020810190506106cd565b5050509392505050565b5f82601f830112610712576107116105c7565b5b8151610722848260208601610696565b91505092915050565b5f602082840312156107405761073f610345565b5b5f82015167ffffffffffffffff81111561075d5761075c610349565b5b610769848285016106fe565b9150509291505056fea2646970667358221220fb4c9339c71bab93bd08325073a7948566c50d2f9c4f5a6c984990cce74e48ce64736f6c63430008170033"
+        },
+        "UniswapInterface.sol:UniswapInterface": {
+            "abi": [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "amountIn",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "amountOutMin",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "address[]",
+                            "name": "path",
+                            "type": "address[]"
+                        },
+                        {
+                            "internalType": "address",
+                            "name": "to",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "deadline",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "swapExactTokensForTokens",
+                    "outputs": [
+                        {
+                            "internalType": "uint256[]",
+                            "name": "amounts",
+                            "type": "uint256[]"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": ""
+        },
+        "bZxInterface.sol:bZxInteraction": {
+            "abi": [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "_bZxAddress",
+                            "type": "address"
+                        }
+                    ],
+                    "stateMutability": "nonpayable",
+                    "type": "constructor"
+                },
+                {
+                    "inputs": [
+                        {
+                            "internalType": "uint256",
+                            "name": "ethAmount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "openShortPosition",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": "608060405234801561000f575f80fd5b5060405161033f38038061033f833981810160405281019061003191906100d4565b805f806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550506100ff565b5f80fd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6100a38261007a565b9050919050565b6100b381610099565b81146100bd575f80fd5b50565b5f815190506100ce816100aa565b92915050565b5f602082840312156100e9576100e8610076565b5b5f6100f6848285016100c0565b91505092915050565b6102338061010c5f395ff3fe608060405234801561000f575f80fd5b5060043610610029575f3560e01c8063b39ffb6b1461002d575b5f80fd5b6100476004803603810190610042919061010d565b610049565b005b5f8054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c5654acc306005846040518463ffffffff1660e01b81526004016100a6939291906101c8565b5f604051808303815f87803b1580156100bd575f80fd5b505af11580156100cf573d5f803e3d5ffd5b5050505050565b5f80fd5b5f819050919050565b6100ec816100da565b81146100f6575f80fd5b50565b5f81359050610107816100e3565b92915050565b5f60208284031215610122576101216100d6565b5b5f61012f848285016100f9565b91505092915050565b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f61016182610138565b9050919050565b61017181610157565b82525050565b5f819050919050565b5f819050919050565b5f6101a361019e61019984610177565b610180565b6100da565b9050919050565b6101b381610189565b82525050565b6101c2816100da565b82525050565b5f6060820190506101db5f830186610168565b6101e860208301856101aa565b6101f560408301846101b9565b94935050505056fea264697066735822122089dfe7dd0eb80c8365f08ca1b40111f163a801aa09fa2ab82be28e300ac27cbe64736f6c63430008170033"
+        },
+        "bZxInterface.sol:bZxInterface": {
+            "abi": [
+                {
+                    "inputs": [
+                        {
+                            "internalType": "address",
+                            "name": "loanToken",
+                            "type": "address"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "leverage",
+                            "type": "uint256"
+                        },
+                        {
+                            "internalType": "uint256",
+                            "name": "loanAmount",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "openPosition",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function"
+                }
+            ],
+            "bin": ""
+        }
+    },
+    "version": "0.8.23+commit.f704f362.Linux.g++"
+}

@@ -12,7 +12,7 @@ contract bZxInteraction {
         bZx = bZxInterface(_bZxAddress);
     }
 
-    function _openShortPosition(uint256 ethAmount) internal {
+    function openShortPosition(uint256 ethAmount) external {
         bZx.openPosition(address(this), 5, ethAmount);  // 5x leverage
     }
 }

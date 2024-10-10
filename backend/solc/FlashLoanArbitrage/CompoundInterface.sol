@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+// Interface for Compound
 interface CompoundInterface {
     function supply(address asset, uint256 amount) external;
     function borrow(address asset, uint256 amount) external;
@@ -14,15 +15,16 @@ contract CompoundInteraction {
         compound = CompoundInterface(_compoundAddress);
     }
 
-    function _supplyCollateralToCompound(uint256 ethAmount) internal {
+    // Change visibility to public so it can be called externally
+    function supplyCollateralToCompound(uint256 ethAmount) external {
         compound.supply(address(this), ethAmount);
     }
 
-    function _borrowWBTC(uint256 wbtcAmount) internal {
+    function borrowWBTC(uint256 wbtcAmount) external {
         compound.borrow(address(this), wbtcAmount);
     }
 
-    function _repayBorrowedWBTC(uint256 amount) internal {
+    function repayBorrowedWBTC(uint256 amount) external {
         compound.repayBorrow(amount);
     }
 }

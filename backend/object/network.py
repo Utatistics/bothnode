@@ -123,28 +123,29 @@ class Network(object):
         """
         nonce = self.get_nonce(address=sender.address)
         if contract:
-                if build:
-                    logger.info('>> Smart Contract Deployment')
-                    payload = contract.contract.constructor(**contract.contract_params).build_transaction(
-                        {
-                            "from": sender.address,
-                            "nonce": nonce
-                        }
-                    )
-                else:
-                    logger.info('>> Smart Contract Transaction')
-                    logger.info(f'{func_name=}')
-                    logger.info(f'{list(func_params.values()) if func_params else []}')
-                    function_call = contract.contract.encodeABI(fn_name=func_name, args=list(func_params.values()) if func_params else [])
-                    payload = {
-                        'from': sender.address,
-                        'to': contract.contract_address,
-                        'value': 0,  # Value in Wei (for Ethereum), usually 0 for token transfers
-                        'data': function_call,  # Encoded function call
-                        'gasPrice': self.provider.eth.gas_price,  # Gas price
-                        'gas': 100000,  # Gas limit
-                        'nonce': nonce
+            if build:
+                logger.info('>> Smart Contract Deployment')
+                logger.info(f'>> Contract params: {contract.contract_params}')
+                payload = contract.contract.constructor(**contract.contract_params).build_transaction(
+                    {
+                        "from": sender.address,
+                        "nonce": nonce
                     }
+                )
+            else:
+                logger.info('>> Smart Contract Transaction')
+                logger.info(f'{func_name=}')
+                logger.info(f'{list(func_params.values()) if func_params else []}')
+                function_call = contract.contract.encodeABI(fn_name=func_name, args=list(func_params.values()) if func_params else [])
+                payload = {
+                    'from': sender.address,
+                    'to': contract.contract_address,
+                    'value': 0,  # Value in Wei (for Ethereum), usually 0 for token transfers
+                    'data': function_call,  # Encoded function call
+                    'gasPrice': self.provider.eth.gas_price,  # Gas price
+                    'gas': 100000,  # Gas limit
+                    'nonce': nonce
+                }
         else:
             logger.info('>> Regular Transaction')
             payload = {
