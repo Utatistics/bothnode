@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@aave/core-v3/contracts/flashloan/base/FlashLoanReceiverBase.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./PriceFeed.sol";
 import "./UniswapInterface.sol";
 import "./CompoundInterface.sol";
 import "./bZxInterface.sol";
@@ -13,22 +14,33 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
     UniswapInteraction public uniswap;
 
     constructor(
-        address _poolAddressesProvider,  // Add the required argument
-        address _compoundAddress,
-        address _bzxAddress,
-        address _uniswapAddress,
+        // Aave (i.e flashloan provider)
+        address _poolAddressesProvider,
         
+        // Compund (i.e. lending and burrowing)
+        address payable _cEtherAddress,
+        address _cWBTCAddress,
+        address _comptrollerAddress,
+        uint256 _ethAmountAsCollateral,
+
+        // bZx (i.e. leveraged short position) 
+        address _bzxAddress,
+        
+        // Uniswap (i.e. currency swap)
+        address _uniswapAddress,
+        address _cETHAddres,
+        address _cWBTCAddress,
         address _WBTC,
         address _WETH
 
     )
         FlashLoanReceiverBase(IPoolAddressesProvider(_poolAddressesProvider))
     {
+        compound = CompoundInteraction(_cEtherAddress, _wbtcAddress, _comptrollerAddress, _underlyingAddress, _underlyingToSupplyAsCollateral);
+        priceFeed = new Chainlink(_ethPriceFeedAddress, _wbtcPriceFeedAddress);
         uniswap = new UniswapInteraction(_uniswapAddress, _WBTC, _WETH);
-        compound = new CompoundInteraction(_compoundAddress);
         bzx = new bZxInteraction(_bzxAddress);
     }
-
 
     // Function to execute flash loan
     function executeFlashLoan(
@@ -62,7 +74,7 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
         uint256 repaymentAmount = loanAmount + premiums[0];  // Loan amount + fees
 
         // Step 2: Supply ETH as collateral and borrow WBTC
-        compound.supplyCollateralToCompound(5500 ether);
+        compound.supplyETHAndBorrowWBTC(5500 ether);
 
         // Step 3: Open short position on bZx
         bzx.openShortPosition(1300 ether);

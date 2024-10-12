@@ -31,6 +31,7 @@ nohup ganache --chain.chainId=$GANACHE_CHAIN_ID \
         --wallet.defaultBalance=1000000 \
         --chain.asyncRequestProcessing=true \
         --miner.blockGasLimit=1000000000000 > $GANACHE_LOG_PATH 2>&1 &
-
+      # --fork https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID@BLOCK_NUMBER
+      
 echo ">>> private keys have been stored in $ACCOUNT_KEYS_PATH"
 echo ">>> run 'tail -f $GANACHE_LOG_PATH' to monitor the process in real-time."
