@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-// Interface for Uniswap
+import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
+
+// Interface for Uniswap *NOT NECESSARY AS IMPORTED INTERFACE WILL BE USED
 interface UniswapInterface {
     function swapExactTokensForTokens(
         uint amountIn,
@@ -14,37 +17,37 @@ interface UniswapInterface {
 
 // Contract for interacting with Uniswap
 contract UniswapInteraction {
-    UniswapInterface public uniswap;
-    
-    // State variables for WBTC and WETH addresses
-    address[] public path; // SHOULD THESE BE PUBLIC?
-    address private WBTC;
-    address private WETH;
+    ISwapRouter public immutable swapRouter;
+    address public constant wbtcAddress;
+    address public constant wethAddress;
 
-    // Constructor to initialize Uniswap and token addresses
-    constructor(address _uniswapAddress, address _WBTC, address _WETH) {
-        uniswap = UniswapInterface(_uniswapAddress);  // Uniswap contract interface
-        WBTC = _WBTC;  // Store WBTC address
-        WETH = _WETH;  // Store WETH address
+    uint24 public constant poolFee = 3000;
+
+    constructor(ISwapRouter _swapRouter) {
+        wbtcAddress = _wbtcAddress;
+        wethAddress = _wethAddress;
     }
+    function swapWbtcForEth(uint256 wbtcAmountIn) external returns (uint256 ethAmountOut) {
+        // Transfer the specified amount of DAI to this contract.
+        TransferHelper.safeTransferFrom(DAI, msg.sender, address(this), amountIn);
 
-    // External function to swap WBTC for ETH (WETH)
-    function swapWbtcForEth(uint256 WBTCAmount) external {
-        // Dynamically declare and initialize the path for the token swap
-        address;
-        path[0] = WBTC;  // WBTC as the input token
-        path[1] = WETH;  // WETH (ETH) as the output token
+        // Approve the router to spend DAI.
+        TransferHelper.safeApprove(DAI, address(swapRouter), amountIn);
+        
+        ISwapRouter.ExactInputSingleParams memory params =
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: DAI,
+                tokenOut: WETH9,
+                fee: poolFee,
+                recipient: msg.sender,
+                deadline: block.timestamp,
+                amountIn: wbtcAmountIn,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+                });
 
-        // Perform the token swap via Uniswap
-        uniswap.swapExactTokensForTokens(
-            WBTCAmount,      // Amount of WBTC to swap
-            0,               // Accept any amount of WETH (can be adjusted based on strategy)
-            path,            // The path of the swap (WBTC -> WETH)
-            address(this),   // Address receiving the WETH
-            block.timestamp  // Deadline for transaction
-        );
-    }
+        // The call to `exactInputSingle` executes the swap.
+        ethAmountOut = swapRouter.exactInputSingle(params);
 }
-
-
+}
 

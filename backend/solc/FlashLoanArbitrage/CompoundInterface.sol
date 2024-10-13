@@ -34,32 +34,24 @@ interface PriceFeed {
     function getUnderlyingPrice(address cToken) external view returns (uint);
 }
 
-contract CompundInteraction {
+contract CompoundInteraction {
     event CompundLog(string, uint256);
 
     // State variables 
-    address payable public cEtherAddress;
-    address public cWBTCAddress;
     address public comptrollerAddress;
-    uint256 public ethAmountAsCollateral; // value in wei (i.e. ether)
+    address payable public cEthAddress;
+    address public cWBTCAddress;
     
-    constructor(
-        address payable _cEtherAddress,
-        address _cWBTCAddress,
-        address _comptrollerAddress,
-        uint256 _ethAmountAsCollateral
-    )
-    {
-        cEtherAddress = _cEtherAddress;
-        cWBTCAddress = _cWBTCAddress;
+    constructor(address _comptrollerAddress, address payable _cEthAddress, address _cWBTCAddress){
         comptrollerAddress = _comptrollerAddress;
-        ethAmountAsCollateral = _ethAmountAsCollateral;
+        cEthAddress = _cEthAddress;
+        cWBTCAddress = _cWBTCAddress;
     }
 
-    function supplyETHAndBorrowWBTC(
-) public returns (uint) {
+    // External function to burrow wbtc with eth as collateral
+    function supplyETHAndBorrowWBTC(uint256 ethAmountAsCollateral) external returns (uint256 wbtcBurrowAmount) {
         // initialize contract interfaces
-        CEth cEth = CEth(cEtherAddress);
+        CEth cEth = CEth(cEthAddress);
         CErc20 cWbtcToken = CErc20(cWBTCAddress);
         Comptroller comptroller = Comptroller(comptrollerAddress);
 
@@ -68,7 +60,7 @@ contract CompundInteraction {
         
         // enter the market
         address[] memory markets = new address[](2); // initialize an address array with size of 2
-        markets[0] = cEtherAddress;
+        markets[0] = cEthAddress;
         markets[1] = cWBTCAddress;
         
         uint256[] memory errorCodeArray = comptroller.enterMarkets(markets);
@@ -88,7 +80,7 @@ contract CompundInteraction {
         emit CompundLog("Maximum ETH Borrow (borrow far less!)", liquidity);
 
         // Get the collateral factor for our collateral
-        (bool _isListed, uint collateralFactorMantissa) = comptroller.markets(cEtherAddress);
+        (bool _isListed, uint collateralFactorMantissa) = comptroller.markets(cEthAddress);
         emit CompundLog('Collateral Factor', collateralFactorMantissa);
 
         // Calculate a safe borrowing amount (e.g., 90% of available liquidity)
@@ -101,7 +93,7 @@ contract CompundInteraction {
         uint256 borrows = cEth.borrowBalanceCurrent(address(this));
         emit CompundLog("Current ETH borrow amount", borrows);
 
-        return borrows;
+        return wbtcBurrowAmount;
 
     }
     // Need this to receive ETH when `borrowEthExample` executes

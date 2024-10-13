@@ -3,49 +3,49 @@ pragma solidity ^0.8.0;
 
 import "@aave/core-v3/contracts/flashloan/base/FlashLoanReceiverBase.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./PriceFeed.sol";
-import "./UniswapInterface.sol";
+import "@openzeppelin/contracts/access/Ownable.sol"; // Import Ownable for access control
+
 import "./CompoundInterface.sol";
-import "./bZxInterface.sol";
+import "./OokiDAO.sol";
+import "./UniswapInterface.sol";
 
 contract FlashLoanProvider is FlashLoanReceiverBase {
     CompoundInteraction public compound;
-    bZxInteraction public bzx;
+    OokiDAOInteraction public ookidao;
     UniswapInteraction public uniswap;
 
     constructor(
+        /* Smart contract address */
         // Aave (i.e flashloan provider)
         address _poolAddressesProvider,
         
         // Compund (i.e. lending and burrowing)
-        address payable _cEtherAddress,
-        address _cWBTCAddress,
         address _comptrollerAddress,
-        uint256 _ethAmountAsCollateral,
-
-        // bZx (i.e. leveraged short position) 
-        address _bzxAddress,
+        address payable _cEthAddress,
+        address _cWBTCAddress,
+ 
+        // OokiDAO (i.e. leveraged short position) 
+        address _ookiAddress,
         
         // Uniswap (i.e. currency swap)
-        address _uniswapAddress,
-        address _cETHAddres,
-        address _cWBTCAddress,
-        address _WBTC,
-        address _WETH
+        address _uniswapAddress, // address for swapRouter contract?
+        
+        // ERC20 token address
+        address _wbtcAddress,
+        address _wethAddress
 
     )
         FlashLoanReceiverBase(IPoolAddressesProvider(_poolAddressesProvider))
     {
-        compound = CompoundInteraction(_cEtherAddress, _wbtcAddress, _comptrollerAddress, _underlyingAddress, _underlyingToSupplyAsCollateral);
-        priceFeed = new Chainlink(_ethPriceFeedAddress, _wbtcPriceFeedAddress);
-        uniswap = new UniswapInteraction(_uniswapAddress, _WBTC, _WETH);
-        bzx = new bZxInteraction(_bzxAddress);
+        compound = new CompoundInteraction(_comptrollerAddress, _cEthAddress, _cWBTCAddress);
+        ookidao = new OokiDAOInteraction(_ookiAddress, _cEthAddress, _wbtcAddress);
+        uniswap = new UniswapInteraction(_wbtcAddress, _wethAddress);
     }
 
-    // Function to execute flash loan
+    // Emdpoint function to execute flash loan
     function executeFlashLoan(
         address[] calldata assets,
-        uint256[] calldata amounts,
+        uint256[] calldata flashLoanAmounts,
         uint256[] calldata modes,
         address onBehalfOf,
         bytes calldata params
@@ -55,7 +55,7 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
     }
 
     // Internal function to repay flash loan
-    function _repayFlashLoan(address asset, uint256 amount) internal {
+    function _repayFlashLoan(address asset, uint256 repayAmount) internal {
         // Approve the lending pool to pull the repayment
         IERC20(asset).approve(address(POOL), amount);
 
@@ -70,20 +70,20 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
         address initiator,
         bytes calldata params
     ) external override returns (bool) {
-        uint256 loanAmount = amounts[0];
-        uint256 repaymentAmount = loanAmount + premiums[0];  // Loan amount + fees
+        uint256 loanAmount = amounts[0]; // The amount you burrow for the flashloan as whole
+        uint256 repayAmount = loanAmount + premiums[0];  // Loan amount + fees
 
         // Step 2: Supply ETH as collateral and borrow WBTC
-        compound.supplyETHAndBorrowWBTC(5500 ether);
+        wbtcBurrowAmount = compound.supplyETHAndBorrowWBTC(5500 ether); // uint256 ethAmountAsCollateral -> uint256 wbtcBurrowAmount
 
-        // Step 3: Open short position on bZx
-        bzx.openShortPosition(1300 ether);
+        // Step 3: Open short position on OokiDAO
+        ookidao.openShortPosition(1300 ether, 5); // uint256 ethAmShortAmount
 
         // Step 4: Swap WBTC for ETH via Uniswap
-        uniswap.swapWbtcForEth(loanAmount);  // Pass in the loan amount or WBTC amount to swap
+        uniswap.swapWbtcForEth(wbtcBurrowAmmount);  // 
 
         // Step 5: Repay flash loan
-        _repayFlashLoan(assets[0], repaymentAmount);
+        _repayFlashLoan(assets[0], repaytAmount);
 
         return true;
     }

@@ -22,4 +22,6 @@ yarn.lock
 *.log
 
 
-
+# temp 
+backend/solc/contractAddress.sol
+backend/solc/npm_install.sh
