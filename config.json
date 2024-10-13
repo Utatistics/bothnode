@@ -15,6 +15,10 @@
       "network_port": 30303,
       "authrpc_port": 8551
     },
+    "INFURA": {
+      "name": "infura",
+      "http": "https://mainnet.infura.io/v3/"
+    },
     "MAIN": {
       "name": "main",
       "local_rpc": "http://127.0.0.1:8545",
