@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import json
@@ -89,13 +90,23 @@ class ArgParse(object):
     def _parse_args(self):
         self.args = self.parser.parse_args()
         logger.debug(f'{self.args=}')
-    
+   
     def _dict_parser(self, value):
-        try:
-            parsed_dict = json.loads(value)
-            return parsed_dict
-        except json.JSONDecodeError:
-            raise argparse.ArgumentTypeError(f"Invalid dictionary format: {value}")
+            # Check if the input is a valid file path
+            if os.path.isfile(value):
+                try:
+                    with open(value, 'r') as file:
+                        parsed_dict = json.load(file)
+                        return parsed_dict
+                except (IOError, json.JSONDecodeError) as e:
+                    raise argparse.ArgumentTypeError(f"Error reading file: {e}")
+            
+            # Otherwise, try to parse it as a JSON string
+            try:
+                parsed_dict = json.loads(value)
+                return parsed_dict
+            except json.JSONDecodeError:
+                raise argparse.ArgumentTypeError(f"Invalid dictionary format: {value}")
 
 class Spinner:
     def __init__(self, message="Processing..."):
