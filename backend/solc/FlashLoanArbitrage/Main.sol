@@ -28,18 +28,18 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
         address _ookiAddress,
         
         // Uniswap (i.e. currency swap)
-        address _uniswapAddress, // address for swapRouter contract?
+        address _swapRouterAddress,  // multiple versions 
         
         // ERC20 token address
         address _wbtcAddress,
-        address _wethAddress
+        address _wethAddress // WETH9
 
     )
         FlashLoanReceiverBase(IPoolAddressesProvider(_poolAddressesProvider))
     {
         compound = new CompoundInteraction(_comptrollerAddress, _cEthAddress, _cWBTCAddress);
         ookidao = new OokiDAOInteraction(_ookiAddress, _cEthAddress, _wbtcAddress);
-        uniswap = new UniswapInteraction(_wbtcAddress, _wethAddress);
+        uniswap = new UniswapInteraction(_swapRouterAddress, _wbtcAddress, _wethAddress);
     }
 
     // Emdpoint function to execute flash loan
@@ -51,7 +51,7 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
         bytes calldata params
     ) external {
         // Initiate the flash loan
-        POOL.flashLoan(address(this), assets, amounts, modes, onBehalfOf, params, 0);
+        POOL.flashLoan(address(this), assets, flashLoanAmounts, modes, onBehalfOf, params, 0);
     }
 
     // Internal function to repay flash loan
@@ -70,22 +70,22 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
         address initiator,
         bytes calldata params
     ) external override returns (bool) {
-        uint256 loanAmount = amounts[0]; // The amount you burrow for the flashloan as whole
+        uint256 loanAmount = amounts[0];  // The amount you borrow for the flashloan as a whole
         uint256 repayAmount = loanAmount + premiums[0];  // Loan amount + fees
 
-        // Step 2: Supply ETH as collateral and borrow WBTC
-        wbtcBurrowAmount = compound.supplyETHAndBorrowWBTC(5500 ether); // uint256 ethAmountAsCollateral -> uint256 wbtcBurrowAmount
+        // Step 2: Supply ETH as collateral and borrow WBTC from Compound
+        uint256 wbtcBurrowAmount = compound.supplyETHAndBorrowWBTC(5500 ether);  // uint256 ethAmountAsCollateral -> uint256 wbtcBurrowAmount
 
         // Step 3: Open short position on OokiDAO
-        ookidao.openShortPosition(1300 ether, 5); // uint256 ethAmShortAmount
+        ookidao.openShortPosition(1300 ether, 5);  // uint256 ethAmShortAmount, uint256 leverage
 
         // Step 4: Swap WBTC for ETH via Uniswap
-        uniswap.swapWbtcForEth(wbtcBurrowAmmount);  // 
+        uniswap.swapWbtcForEth(wbtcBurrowAmount);  // uint256 amountIn
 
         // Step 5: Repay flash loan
-        _repayFlashLoan(assets[0], repaytAmount);
+        _repayFlashLoan(assets[0], repayAmount);
 
         return true;
     }
-
 }
+
