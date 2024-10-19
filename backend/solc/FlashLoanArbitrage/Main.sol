@@ -25,7 +25,7 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
         address _cWBTCAddress,
  
         // OokiDAO (i.e. leveraged short position) 
-        address _ookiAddress,
+        address _bzxAddress,
         
         // Uniswap (i.e. currency swap)
         address _swapRouterAddress,  // multiple versions 
@@ -38,7 +38,7 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
         FlashLoanReceiverBase(IPoolAddressesProvider(_poolAddressesProvider))
     {
         compound = new CompoundInteraction(_comptrollerAddress, _cEthAddress, _cWBTCAddress);
-        ookidao = new OokiDAOInteraction(_ookiAddress, _cEthAddress, _wbtcAddress);
+        ookidao = new OokiDAOInteraction(_bzxAddress, _cEthAddress, _wbtcAddress);
         uniswap = new UniswapInteraction(_swapRouterAddress, _wbtcAddress, _wethAddress);
     }
 
@@ -57,7 +57,7 @@ contract FlashLoanProvider is FlashLoanReceiverBase {
     // Internal function to repay flash loan
     function _repayFlashLoan(address asset, uint256 repayAmount) internal {
         // Approve the lending pool to pull the repayment
-        IERC20(asset).approve(address(POOL), amount);
+        IERC20(asset).approve(address(POOL), repayAmount);
 
         // POOL will automatically pull the repayment from the contract once approved
     }

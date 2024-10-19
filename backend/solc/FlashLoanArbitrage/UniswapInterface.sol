@@ -4,17 +4,6 @@ pragma solidity ^0.8.0;
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 
-// Interface for Uniswap *NOT NECESSARY AS IMPORTED INTERFACE WILL BE USED
-interface UniswapInterface {
-    function swapExactTokensForTokens(
-        uint amountIn,
-        uint amountOutMin, 
-        address[] calldata path, // an array of paths to tokens
-        address to, // recipient address
-        uint deadline // transaction will be reverted if not met
-    ) external returns (uint[] memory amounts);
-}
-
 interface IWETH {
     function deposit() external payable;
     function withdraw(uint256 amount) external;
@@ -23,17 +12,21 @@ interface IWETH {
 // Contract for interacting with Uniswap
 contract UniswapInteraction {
     // state variables
-    ISwapRouter public immutable swapRouter;
+    address public swapRouterAddress;
     address public WBTC;
     address public WETH;
+
+    ISwapRouter public immutable swapRouter;
 
     // Pool fee for WBTC/WETH on Uniswap (0.3% fee tier)
     uint24 public constant poolFee = 3000;
 
-    constructor(ISwapRouter _swapRouter, address _wbtcAddress, address _wethAddress) {
-        swapRouter = _swapRouter;
+    constructor(address _swapRouterAddress, address _wbtcAddress, address _wethAddress) {
+        swapRouterAddress = _swapRouterAddress;
         WBTC = _wbtcAddress;
         WETH = _wethAddress;
+
+        swapRouter = ISwapRouter(swapRouterAddress);
     }
     function swapWbtcForEth(uint256 amountIn) external returns (uint256 amountOut) {
         // msg.sender must approve this contract to transfer WBTC

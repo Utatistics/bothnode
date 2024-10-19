@@ -16,6 +16,10 @@ interface ERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
+interface IBZX{
+    function underlyingToLoanPool(address) external view returns (address);
+}
+
 interface ILoanTokenLogicStandard {
     struct LoanOpenData {
         bytes32 loanId; // Unique loan identifier, 0 if new loan
@@ -40,15 +44,20 @@ interface ILoanTokenLogicStandard {
 }
 
 contract OokiDAOInteraction {
-    address public loanTokenAddress;
     address public wethAddress; // Address of WETH token
     address public wbtcAddress; // Address of WBTC token
+    address public underlyingTokenAddress;
+
+    IBZX public bzx;
     ILoanTokenLogicStandard public loanTokenLogic;
 
-    constructor(address _ookiAddress, address _wethAddress, address _wbtcAddress) {
-        loanTokenLogic = ILoanTokenLogicStandard(_ookiAddress);
+    constructor(address _bzxAddress, address _wethAddress, address _wbtcAddress) {
         wethAddress = _wethAddress;
         wbtcAddress = _wbtcAddress;
+
+        bzx = IBZX(_bzxAddress);
+        underlyingTokenAddress = bzx.underlyingToLoanPool(wbtcAddress); // return the address to the pool for the underlying asset.
+        loanTokenLogic = ILoanTokenLogicStandard(underlyingTokenAddress);
     }
 
     function openShortPosition(uint256 ethAmount, uint256 leverage) external {
