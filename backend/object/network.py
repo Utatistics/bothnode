@@ -74,6 +74,12 @@ class Network(object):
         gas_price = self.provider.eth.gas_price
         return gas_price
     
+    def get_max_fee_per_gas(self):
+        block = self.provider.eth.get_block('latest')
+        base_fee = block['baseFeePerGas']  # Get current block's base fee
+        max_fee_per_gas = base_fee * 2  # Set maxFeePerGas to 2x the base fee to be safe
+        return max_fee_per_gas
+    
     def get_max_priority_fee(self) -> int:
         max_priority_fee = self.provider.eth.max_priority_fee
         return max_priority_fee
@@ -122,16 +128,20 @@ class Network(object):
             A dictionary containing the transaction payload, including fields such as 'from', 'to', 'value', 'gasPrice', 'gas', and 'data'.
         """
         nonce = self.get_nonce(address=sender.address)
+        
         if contract:
             if build:
                 logger.info('>> Smart Contract Deployment')
                 logger.info(f'>> Contract params: {contract.contract_params}')
-                payload = contract.contract.constructor(**contract.contract_params).build_transaction(
-                    {
-                        "from": sender.address,
-                        "nonce": nonce
-                    }
-                )
+                payload = contract.contract.constructor(**contract.contract_params).build_transaction({
+                    "from": sender.address,
+                    'value': 0,
+                    'gas': 2000000,  # Gas limit
+                    "nonce": nonce,
+                    'maxFeePerGas': self.get_max_fee_per_gas(),  # Set higher than base fee
+                    'maxPriorityFeePerGas': Web3.to_wei('2', 'gwei')
+                })
+                
             else:
                 logger.info('>> Smart Contract Transaction')
                 logger.info(f'{func_name=}')

@@ -9,7 +9,7 @@ import "./CompoundInterface.sol";
 import "./OokiDAO.sol";
 import "./UniswapInterface.sol";
 
-contract FlashLoanProvider is FlashLoanReceiverBase {
+contract FlashLoanArbitrage is FlashLoanReceiverBase {
     CompoundInteraction public compound;
     OokiDAOInteraction public ookidao;
     UniswapInteraction public uniswap;

@@ -13,6 +13,7 @@ from backend.util.bothnode import start_bothnode, sync_mongodb
 import logging
 from logging import getLogger
 from colorlog import ColoredFormatter
+from web3 import Web3
 
 logger = getLogger(__name__)
 level = logging.INFO
@@ -90,7 +91,7 @@ class ArgParse(object):
     def _parse_args(self):
         self.args = self.parser.parse_args()
         logger.debug(f'{self.args=}')
-   
+
     def _dict_parser(self, value):
             # Check if the input is a valid file path
             if os.path.isfile(value):
@@ -107,7 +108,7 @@ class ArgParse(object):
                 return parsed_dict
             except json.JSONDecodeError:
                 raise argparse.ArgumentTypeError(f"Invalid dictionary format: {value}")
-
+            
 class Spinner:
     def __init__(self, message="Processing..."):
         self.spinner = itertools.cycle(['|', '/', '-', '\\'])
@@ -169,13 +170,17 @@ def handler(args: argparse.Namespace):
             
         elif args.command == 'tx':
             logger.info("Starting a transaction...")
+            if args.contract_params:
+                contract_params = args.contract_params 
+            else:
+                contract_params = {}
             driver.send_transaction(net=net,
                                     sender_address=args.sender_address,
                                     recipient_address=args.recipient_address,
                                     amount=args.amount,
                                     build=args.build,
                                     contract_name=args.contract_name,
-                                    contract_params=args.contract_params,
+                                    contract_params=contract_params,
                                     func_name=args.func_name,
                                     func_params=args.func_params)
      

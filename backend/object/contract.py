@@ -1,4 +1,5 @@
 from logging import getLogger
+from web3 import Web3
 
 logger = getLogger(__name__)
 
@@ -61,12 +62,13 @@ class Contract(object):
 
         with open(self.path_to_build, 'r') as jf:
             build_info = json.load(jf)
-            k = next(iter(build_info['contracts']))
+            k = f'Main.sol:{self.contract_name}'
             self.abi = build_info['contracts'][k]['abi']
             self.bytecode = build_info['contracts'][k]["bin"]
             self.contract_address = None # address not neccesary for contract creation
             
-        self.contract = self.provider.eth.contract(abi=self.abi, bytecode=self.bytecode, address=self.contract_address)
+        # self.contract = self.provider.eth.contract(abi=self.abi, bytecode=bytes(self.bytecode.encode()), address=self.contract_address)
+        self.contract = self.provider.eth.contract(abi=self.abi, bytecode=Web3.to_bytes(hexstr=self.bytecode), address=self.contract_address)
         logger.info(f'Contract info loaded from: {self.path_to_build}')
 
     def load_from_contract(self):
@@ -80,6 +82,7 @@ class Contract(object):
             self.bytecode = contract_info['bytecode']
             self.contract_address = contract_info['contract_address']
         
-        self.contract = self.provider.eth.contract(abi=self.abi, bytecode=self.bytecode, address=self.contract_address)
+        # self.contract = self.provider.eth.contract(abi=self.abi, bytecode=self.bytecode, address=self.contract_address)
+        self.contract = self.provider.eth.contract(abi=self.abi, bytecode=Web3.to_bytes(hexstr=self.bytecode), address=self.contract_address)
         logger.info(f'Contract info loaded from: {self.path_to_contract_json}')
 
