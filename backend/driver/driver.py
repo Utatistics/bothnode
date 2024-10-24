@@ -56,7 +56,7 @@ def query_handler(net: Network, target: str, query_params: dict) -> None:
     else:
         raise ValueError(f'Invalid target: {target}')
     
-def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, build: bool, contract_params: dict, func_name: str, func_params: dict) -> None:
+def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, contract_params: dict, func_name: str, func_params: dict) -> None:
     """Send a transaction, which may involve interacting with a smart contract.
 
     Args
@@ -71,8 +71,6 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
         The amount of cryptocurrency to send (in wei).
     contract_name : str
         The name of the smart contract to interact with, or an empty string if not using a contract.
-    build : bool
-        Whether to build and deploy the contract or just interact with an existing contract.
     contract_params : dict
         The parameters required for contract deployment or interaction.
     func_name : str
@@ -90,18 +88,13 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
     if contract_name:
         recipient = None
         contract = Contract(contract_name=contract_name, provider=net.provider, contract_params=contract_params)
-        if build:
-            contract.contract_builder()
-            contract.load_from_build()
-        else:
-            contract.load_from_contract()
 
     else:
         contract = None
         recipient = Account(recipient_address, private_key=None, chain_id=net.chain_id)
     
-    payload = net.create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, build=build, func_name=func_name, func_params=func_params)
-    net.send_tx(sender=sender, payload=payload, contract=contract, build=build)
+    payload = net.create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, func_name=func_name, func_params=func_params)
+    net.send_tx(sender=sender, payload=payload, contract=contract)
 
 def front_runner(net: Network, sender_address: str) -> None:   
     logger.info("Sending TX...")

@@ -102,7 +102,7 @@ class Network(object):
             logger.error(f"An error occurred while querying the mempool: {str(e)}")
             return []
 
-    def create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool, func_name: str, func_params: dict) -> dict:
+    def create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, func_name: str, func_params: dict) -> dict:
         """Create a payload for a transaction or smart contract interaction.
 
         Args
@@ -115,8 +115,6 @@ class Network(object):
             The amount of cryptocurrency to transfer (in wei). Ignored if interacting with a contract.
         contract : Contract
             The contract object for interaction or deployment. None for regular transactions.
-        build : bool
-            Whether to build and deploy the contract.
         func_name : str
             The name of the function to call on the smart contract
         func_params : dict
@@ -130,32 +128,19 @@ class Network(object):
         nonce = self.get_nonce(address=sender.address)
         
         if contract:
-            if build:
-                logger.info('>> Smart Contract Deployment')
-                logger.info(f'>> Contract params: {contract.contract_params}')
-                payload = contract.contract.constructor(**contract.contract_params).build_transaction({
-                    "from": sender.address,
-                    'value': 0,
-                    'gas': 2000000,  # Gas limit
-                    "nonce": nonce,
-                    'maxFeePerGas': self.get_max_fee_per_gas(),  # Set higher than base fee
-                    'maxPriorityFeePerGas': Web3.to_wei('2', 'gwei')
-                })
-                
-            else:
-                logger.info('>> Smart Contract Transaction')
-                logger.info(f'{func_name=}')
-                logger.info(f'{list(func_params.values()) if func_params else []}')
-                function_call = contract.contract.encodeABI(fn_name=func_name, args=list(func_params.values()) if func_params else [])
-                payload = {
-                    'from': sender.address,
-                    'to': contract.contract_address,
-                    'value': 0,  # Value in Wei (for Ethereum), usually 0 for token transfers
-                    'data': function_call,  # Encoded function call
-                    'gasPrice': self.provider.eth.gas_price,  # Gas price
-                    'gas': 100000,  # Gas limit
-                    'nonce': nonce
-                }
+            logger.info('>> Smart Contract Transaction')
+            logger.info(f'{func_name=}')
+            logger.info(f'{list(func_params.values()) if func_params else []}')
+            function_call = contract.contract.encodeABI(fn_name=func_name, args=list(func_params.values()) if func_params else [])
+            payload = {
+                'from': sender.address,
+                'to': contract.contract_address,
+                'value': 0,  # Value in Wei (for Ethereum), usually 0 for token transfers
+                'data': function_call,  # Encoded function call
+                'gasPrice': self.provider.eth.gas_price,  # Gas price
+                'gas': 100000,  # Gas limit
+                'nonce': nonce
+            }
         else:
             logger.info('>> Regular Transaction')
             payload = {
@@ -174,7 +159,7 @@ class Network(object):
             
         return payload
 
-    def send_tx(self, sender: Account, payload: dict, contract: Contract, build: bool):
+    def send_tx(self, sender: Account, payload: dict, contract: Contract):
         """Sign and send a transaction, and handle the post-transaction steps.
 
         Args
@@ -185,8 +170,6 @@ class Network(object):
             The transaction payload to be signed and sent.
         contract : Contract
             The contract object related to the transaction. Used for post-transaction contract updates.
-        build : bool
-            Whether the transaction involves contract deployment (build=True) or interaction with an existing contract (build=False).
 
         Returns
         -------
@@ -209,13 +192,3 @@ class Network(object):
 
         if contract:
             contract_address = tx_receipt.contractAddress
-            if build:
-                logger.info("Post-deployment update of the contract attribute.")
-                contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.bytecode) 
-                logger.info(f'{contract_address=}')
-                contract.write_to_json(contract_address=contract_address)
-            else:
-                # EXPERIMENTAL
-                block_number = self.get_block_number()
-                logs = contract.contract.events.Transfer().get_logs(fromBlock=block_number)
-                logger.info(f'{logs=}')
