@@ -12,7 +12,7 @@ services:
     container_name: mongodb
     ports:
       - "27017:27017"
-    environment:
+    environment: # mirror from config.json
       MONGO_INITDB_ROOT_USERNAME: rootuser
       MONGO_INITDB_ROOT_PASSWORD: rootpass
       MONGO_INITDB_DATABASE: mydatabase

@@ -39,16 +39,6 @@
       "authrpc_port": 8551,
       "block_explorer_url": "https://ropsten.etherscan.io/"
     },
-    "RINKEBY": {
-      "name": "rinkeby",
-      "local_rpc": "http://127.0.0.1:8545",
-      "remote_rpc": "https://rinkeby.infura.io/v3/<ProjectID>",
-      "chain_id": 4,
-      "rpc_port": 8545,
-      "network_port": 30303,
-      "authrpc_port": 8551,
-      "block_explorer_url": "https://rinkeby.etherscan.io/"
-    },
     "GOERLI": {
       "name": "goerli",
       "local_rpc": "http://127.0.0.1:8545",
@@ -58,16 +48,6 @@
       "network_port": 30303,
       "authrpc_port": 8551,
       "block_explorer_url": "https://goerli.etherscan.io/"
-    },
-    "KOVAN": {
-      "name": "kovan",
-      "local_rpc": "http://127.0.0.1:8545",
-      "remote_rpc": "https://kovan.infura.io/v3/<ProjectID>",
-      "chain_id": 42,
-      "rpc_port": 8545,
-      "network_port": 30303,
-      "authrpc_port": 8551,
-      "block_explorer_url": "https://kovan.etherscan.io/"
     },
     "SEPOLIA": {
       "name": "sepolia",
@@ -85,6 +65,9 @@
     "version": "0.2.0"
   },
   "DB": {
-    "connection_string": "mongodb://localhost:27017"
+    "connection_string": "mongodb://localhost:27017",
+    "init_username": "rootuser",
+    "init_password": "rootpass",
+    "init_database": "mydatabase"
   }
 }
