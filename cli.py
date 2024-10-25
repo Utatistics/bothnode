@@ -75,8 +75,7 @@ class ArgParse(object):
                 self.parser.add_argument("-f", "--sender-address", help="The address for the sender")
                 self.parser.add_argument("-t", "--recipient-address", help="The address for the recipient")
                 self.parser.add_argument("-a", "--amount", type=int)
-                self.parser.add_argument("--contract-name")
-                self.parser.add_argument("--contract-params", type=self._dict_parser, help="Constructor parameters in dictionary format")
+                self.parser.add_argument("--contract-address", type=str)
                 self.parser.add_argument("--func-name", help="name of the function (i.e. method) to call")
                 self.parser.add_argument("--func-params", type=self._dict_parser, help="Smart contract method parameters in dictionary format")
             if partial_args.command == 'frontrun':
