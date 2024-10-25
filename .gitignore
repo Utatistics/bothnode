@@ -5,6 +5,7 @@ private/
 .ipynb*
 **__pycache__/
 **.egg-info/
+update.sh
 
 # Node
 node_modules
