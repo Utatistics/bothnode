@@ -149,8 +149,7 @@ class Network(object):
             logger.info('>> Smart Contract Transaction')
             logger.info(f'{func_name=}')
             logger.info(f'{func_params=}')
-            
-            logger.warning(f'{self.chain_id=}')
+        
             encoded_params = self._encode_nested_dict_to_bytes(func_params)
             function_call = contract.contract.encodeABI(fn_name=func_name, args=encoded_params)
             payload = {
