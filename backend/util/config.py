@@ -34,12 +34,4 @@ class Config(object):
             
             # load DB config data
             self.DB_CONFIG = config_json['DB']
-            
-        with open(self.path_to_docker) as f:
-            config_ymal = yaml.load(f, Loader=yaml.SafeLoader)
-            mongodb_service = config_ymal['services']['mongodb']
-            self.DB_CONFIG['init_username'] = mongodb_service['environment']['MONGO_INITDB_ROOT_USERNAME']
-            self.DB_CONFIG['init_password'] = mongodb_service['environment']['MONGO_INITDB_ROOT_PASSWORD']
-            self.DB_CONFIG['init_database'] = mongodb_service['environment']['MONGO_INITDB_DATABASE']
-            
-            
+      

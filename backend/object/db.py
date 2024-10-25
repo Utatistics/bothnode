@@ -35,7 +35,7 @@ class MongoDBClient:
         except Exception as e:
             logger.error(f"An error occurred: {e}")
 
-    def insert_document(self, collection_name: str, document: dict):
+    def insert_document(self, collection_name: str, document: dict) -> None:
         """Insert a single document into a collection.
         
         Args
@@ -52,7 +52,7 @@ class MongoDBClient:
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")
 
-    def find_document(self, collection_name: str, query: dict):
+    def find_document(self, collection_name: str, query: dict) -> dict:
         """Find a single document in a collection.
         
         Args
@@ -152,4 +152,6 @@ class GraphQLClient(object):
         
 class MerkelTree(object):
     def __init__(self) -> None:
+        pass 
+    
         pass

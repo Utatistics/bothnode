@@ -76,21 +76,11 @@ bothnode tx <network_name> --options
 # regular transaction
 bothnode tx ganache -f <from_address>-t <to_address> --amount 1
 
-# transaction for smart contract deployment
-bothnode tx ganache -f <from_address> -b
---contract-name Tokenization
---contract-params '{
-  "name_": "My Token",
-  "symbol_": "MTK",
-  "decimals_": 18,
-  "initialSupply_": 1000000
-}'
-
 # transaction for smart contract calling
-bothnode tx ganache -f <address>
---contract-name Tokenization
---func-name transfer
---func-params '{"recipient": "0xFaD6bF978fC43DD8Dc6084356012f80CB3Ff1b56", "amount": 1000}'
+bothnode tx ganache -f <from_address>
+--contract-address <contract_address>
+--func-name transfer # e.g. 
+--func-params '{"recipient": "0xFaD6bF978fC43DD8Dc6084356012f80CB3Ff1b56", "amount": 1000}' # e.g.
 ```
 
 #### bothnode detect
