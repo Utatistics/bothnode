@@ -14,7 +14,8 @@ setup(
         ,'fastapi'
         ,'uvicorn'
         ,'pymongo'
-        ,'PyYAML'],  # web3==6.16.0',   
+        ,'PyYAML'
+        ,'eth-abi'],  # web3==6.16.0',   
     entry_points={
         "console_scripts": [
             "bothnode = cli:main",

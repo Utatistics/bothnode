@@ -2,8 +2,9 @@ from pathlib import Path
 import json
 import subprocess
 from web3 import Web3
-from backend.util import config
+from eth_abi import encode
 
+from backend.util import config
 from backend.util.config import Config
 from backend.object.account import Account
 from backend.object.contract import Contract
@@ -74,6 +75,12 @@ class Network(object):
         gas_price = self.provider.eth.gas_price
         return gas_price
     
+    def get_max_fee_per_gas(self):
+        block = self.provider.eth.get_block('latest')
+        base_fee = block['baseFeePerGas']  # Get current block's base fee
+        max_fee_per_gas = base_fee * 2  # Set maxFeePerGas to 2x the base fee to be safe
+        return max_fee_per_gas
+    
     def get_max_priority_fee(self) -> int:
         max_priority_fee = self.provider.eth.max_priority_fee
         return max_priority_fee
@@ -96,7 +103,25 @@ class Network(object):
             logger.error(f"An error occurred while querying the mempool: {str(e)}")
             return []
 
-    def create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, build: bool, func_name: str, func_params: dict) -> dict:
+    def _encode_nested_dict_to_bytes(self, data: dict):
+        """Recursively encodes any nested dictionaries with 'types' and 'values'into bytes using solidityPack
+        """
+        if isinstance(data, dict):
+            # Check if the dict contains 'types' and 'values' keys for encoding
+            if 'types' in data and 'values' in data:
+                # Convert 'types' and 'values' to bytes using solidityPack
+                return encode(data['types'], data['values'])
+            else:
+                # Recursively apply to all values in the dictionary
+                return {key: self._encode_nested_dict_to_bytes(value) for key, value in data.items()}
+        elif isinstance(data, list):
+            # Apply encoding to each item if it's a list
+            return [self._encode_nested_dict_to_bytes(item) for item in data]
+        else:
+            # Return the data as-is if it's neither dict nor list
+            return data
+        
+    def create_payload(self, sender: Account, recipient: Account, amount: int, contract: Contract, func_name: str, func_params: dict) -> dict:
         """Create a payload for a transaction or smart contract interaction.
 
         Args
@@ -104,13 +129,10 @@ class Network(object):
         sender : Account
             The account object representing the sender's address.
         recipient : Account
-            The account object representing the recipient's address. None if interacting with a contract.
-        amount : int
-            The amount of cryptocurrency to transfer (in wei). Ignored if interacting with a contract.
+            The account object representing the recipient's address.
+            The amount of cryptocurrency to transfer (in wei).
         contract : Contract
-            The contract object for interaction or deployment. None for regular transactions.
-        build : bool
-            Whether to build and deploy the contract.
+            The contract object for interaction or deployment.
         func_name : str
             The name of the function to call on the smart contract
         func_params : dict
@@ -122,29 +144,25 @@ class Network(object):
             A dictionary containing the transaction payload, including fields such as 'from', 'to', 'value', 'gasPrice', 'gas', and 'data'.
         """
         nonce = self.get_nonce(address=sender.address)
+        
         if contract:
-                if build:
-                    logger.info('>> Smart Contract Deployment')
-                    payload = contract.contract.constructor(**contract.contract_params).build_transaction(
-                        {
-                            "from": sender.address,
-                            "nonce": nonce
-                        }
-                    )
-                else:
-                    logger.info('>> Smart Contract Transaction')
-                    logger.info(f'{func_name=}')
-                    logger.info(f'{list(func_params.values()) if func_params else []}')
-                    function_call = contract.contract.encodeABI(fn_name=func_name, args=list(func_params.values()) if func_params else [])
-                    payload = {
-                        'from': sender.address,
-                        'to': contract.contract_address,
-                        'value': 0,  # Value in Wei (for Ethereum), usually 0 for token transfers
-                        'data': function_call,  # Encoded function call
-                        'gasPrice': self.provider.eth.gas_price,  # Gas price
-                        'gas': 100000,  # Gas limit
-                        'nonce': nonce
-                    }
+            logger.info('>> Smart Contract Transaction')
+            logger.info(f'{func_name=}')
+            logger.info(f'{func_params=}')
+        
+            encoded_params = self._encode_nested_dict_to_bytes(func_params)
+            function_call = contract.contract.encodeABI(fn_name=func_name, args=encoded_params)
+            payload = {
+                'from': sender.address,
+                'to': contract.contract_address,
+                'value': 0,  # Value in Wei, typically 0 for function calls
+                'data': function_call,  # Encoded function call
+                'maxFeePerGas': self.get_max_fee_per_gas(),
+                'maxPriorityFeePerGas': self.get_max_priority_fee(),
+                'gas': 100000,  # Set an appropriate gas limit for the transaction
+                'nonce': nonce,
+                'chainId': self.chain_id
+            }
         else:
             logger.info('>> Regular Transaction')
             payload = {
@@ -159,11 +177,16 @@ class Network(object):
         try:
             logger.info(">> Payload:\n%s", json.dumps(payload, indent=4))
         except TypeError:
-            logger_hexbytes(level='info', data=payload)
-            
+            # First attempt with logger_hexbytes
+            try:
+                logger_hexbytes(level='info', data=payload)
+            except TypeError:
+                # If logger_hexbytes also fails, log a warning
+                logger.warning(">> Unable to display payload")
+                    
         return payload
 
-    def send_tx(self, sender: Account, payload: dict, contract: Contract, build: bool):
+    def send_tx(self, sender: Account, payload: dict, contract: Contract):
         """Sign and send a transaction, and handle the post-transaction steps.
 
         Args
@@ -174,8 +197,6 @@ class Network(object):
             The transaction payload to be signed and sent.
         contract : Contract
             The contract object related to the transaction. Used for post-transaction contract updates.
-        build : bool
-            Whether the transaction involves contract deployment (build=True) or interaction with an existing contract (build=False).
 
         Returns
         -------
@@ -198,13 +219,3 @@ class Network(object):
 
         if contract:
             contract_address = tx_receipt.contractAddress
-            if build:
-                logger.info("Post-deployment update of the contract attribute.")
-                contract.contract = self.provider.eth.contract(address=contract_address, abi=contract.abi, bytecode=contract.bytecode) 
-                logger.info(f'{contract_address=}')
-                contract.write_to_json(contract_address=contract_address)
-            else:
-                # EXPERIMENTAL
-                block_number = self.get_block_number()
-                logs = contract.contract.events.Transfer().get_logs(fromBlock=block_number)
-                logger.info(f'{logs=}')

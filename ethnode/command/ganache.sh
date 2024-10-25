@@ -6,6 +6,7 @@ PRIVATE_DIR="$ROOT_DIR/private"
 INSTALL_DIR="$ROOT_DIR/ethnode/install"
 CONFIG_PATH="$ROOT_DIR/config.json"
 ACCOUNT_KEYS_PATH="$PRIVATE_DIR/ganache_pk.json"
+INFURA_KEY_PATH="$PRIVATE_DIR/infura_key"
 GANACHE_LOG_PATH="$PRIVATE_DIR/ganache.log"
 
 # create ganache_pk.json
@@ -21,6 +22,9 @@ fi
 GANACHE_CHAIN_ID=$(jq -r '.NETWORK.GANACHE.chain_id' "$CONFIG_PATH")
 GANACHE_PORT=$(jq -r '.NETWORK.GANACHE.rpc_port' "$ROOT_DIR/config.json")
 
+# load infura API key
+INFURA_KEY=$(cat "$INFURA_KEY_PATH")
+
 # install
 bash "$INSTALL_DIR/install_ganache.sh"
 
@@ -30,7 +34,8 @@ nohup ganache --chain.chainId=$GANACHE_CHAIN_ID \
         --wallet.accountKeysPath=$ACCOUNT_KEYS_PATH \
         --wallet.defaultBalance=1000000 \
         --chain.asyncRequestProcessing=true \
+        --fork https://mainnet.infura.io/v3/$INFURA_KEY \
         --miner.blockGasLimit=1000000000000 > $GANACHE_LOG_PATH 2>&1 &
-
+      
 echo ">>> private keys have been stored in $ACCOUNT_KEYS_PATH"
 echo ">>> run 'tail -f $GANACHE_LOG_PATH' to monitor the process in real-time."

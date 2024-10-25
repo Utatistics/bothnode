@@ -22,6 +22,9 @@ def run_docker_compose() -> None:
     subprocess.run(["bash", str(docker_sh)], check=True)
 
 def start_bothnode() -> None:
+    """
+    Launch the backend processes required for bothnode
+    """
     run_uvicorn()
     run_docker_compose()
 

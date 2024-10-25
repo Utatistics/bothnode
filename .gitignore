@@ -9,10 +9,11 @@ private/
 # Node
 node_modules
 package-lock.json
+package.json
 yarn.lock
 
-# frontend
-frontend/
+**build_info.json
+**contract_info.json
 
 # pdf
 *.pdf
@@ -21,4 +22,6 @@ frontend/
 *.log
 
 
-
+# temp 
+backend/solc/contractAddress.sol
+backend/solc/npm_install.sh

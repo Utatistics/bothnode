@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import json
@@ -12,6 +13,7 @@ from backend.util.bothnode import start_bothnode, sync_mongodb
 import logging
 from logging import getLogger
 from colorlog import ColoredFormatter
+from web3 import Web3
 
 logger = getLogger(__name__)
 level = logging.INFO
@@ -22,7 +24,7 @@ formatter = ColoredFormatter(
     reset=True,
     log_colors={
         'DEBUG': 'light_black',
-        'INFO': 'green',
+        'INFO': 'light_green',
         'WARNING': 'yellow',
         'ERROR': 'red',
         'CRITICAL': 'red,bg_white',
@@ -73,9 +75,7 @@ class ArgParse(object):
                 self.parser.add_argument("-f", "--sender-address", help="The address for the sender")
                 self.parser.add_argument("-t", "--recipient-address", help="The address for the recipient")
                 self.parser.add_argument("-a", "--amount", type=int)
-                self.parser.add_argument("-b", "--build", action='store_true', default=False)
-                self.parser.add_argument("--contract-name")
-                self.parser.add_argument("--contract-params", type=self._dict_parser, help="Constructor parameters in dictionary format")
+                self.parser.add_argument("--contract-address", type=str)
                 self.parser.add_argument("--func-name", help="name of the function (i.e. method) to call")
                 self.parser.add_argument("--func-params", type=self._dict_parser, help="Smart contract method parameters in dictionary format")
             if partial_args.command == 'frontrun':
@@ -89,14 +89,24 @@ class ArgParse(object):
     def _parse_args(self):
         self.args = self.parser.parse_args()
         logger.debug(f'{self.args=}')
-    
-    def _dict_parser(self, value):
-        try:
-            parsed_dict = json.loads(value)
-            return parsed_dict
-        except json.JSONDecodeError:
-            raise argparse.ArgumentTypeError(f"Invalid dictionary format: {value}")
 
+    def _dict_parser(self, value):
+            # Check if the input is a valid file path
+            if os.path.isfile(value):
+                try:
+                    with open(value, 'r') as file:
+                        parsed_dict = json.load(file)
+                        return parsed_dict
+                except (IOError, json.JSONDecodeError) as e:
+                    raise argparse.ArgumentTypeError(f"Error reading file: {e}")
+            
+            # Otherwise, try to parse it as a JSON string
+            try:
+                parsed_dict = json.loads(value)
+                return parsed_dict
+            except json.JSONDecodeError:
+                raise argparse.ArgumentTypeError(f"Invalid dictionary format: {value}")
+            
 class Spinner:
     def __init__(self, message="Processing..."):
         self.spinner = itertools.cycle(['|', '/', '-', '\\'])
@@ -162,9 +172,7 @@ def handler(args: argparse.Namespace):
                                     sender_address=args.sender_address,
                                     recipient_address=args.recipient_address,
                                     amount=args.amount,
-                                    build=args.build,
-                                    contract_name=args.contract_name,
-                                    contract_params=args.contract_params,
+                                    contract_address=args.contract_address,
                                     func_name=args.func_name,
                                     func_params=args.func_params)
      
