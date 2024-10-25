@@ -169,16 +169,11 @@ def handler(args: argparse.Namespace):
             
         elif args.command == 'tx':
             logger.info("Starting a transaction...")
-            if args.contract_params:
-                contract_params = args.contract_params 
-            else:
-                contract_params = {}
             driver.send_transaction(net=net,
                                     sender_address=args.sender_address,
                                     recipient_address=args.recipient_address,
                                     amount=args.amount,
-                                    contract_name=args.contract_name,
-                                    contract_params=contract_params,
+                                    contract_address=args.contract_address,
                                     func_name=args.func_name,
                                     func_params=args.func_params)
      

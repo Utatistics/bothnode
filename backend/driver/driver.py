@@ -15,7 +15,6 @@ logger = getLogger(__name__)
 config = Config()
 db_config = config.DB_CONFIG
 connection_string = add_auth_to_mongo_connection_string(connection_string=db_config['connection_string'], username=db_config['init_username'], password=db_config['init_password'])
-db_client = MongoDBClient(uri=connection_string, database_name='transaction_db')
 
 def init_net_instance(net_name: str, protocol: str) -> None:
     logger.info(f"Creating Network instance of {net_name}...")
@@ -56,7 +55,7 @@ def query_handler(net: Network, target: str, query_params: dict) -> None:
     else:
         raise ValueError(f'Invalid target: {target}')
     
-def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_name: str, contract_params: dict, func_name: str, func_params: dict) -> None:
+def send_transaction(net: Network, sender_address: str, recipient_address: str, amount: int, contract_address: str, func_name: str, func_params: dict) -> None:
     """Send a transaction, which may involve interacting with a smart contract.
 
     Args
@@ -85,9 +84,15 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
     logger.info("Sending TX...")
     sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
 
-    if contract_name:
+    if contract_address:
         recipient = None
-        contract = Contract(contract_name=contract_name, provider=net.provider, contract_params=contract_params)
+        contract = Contract(contract_address=contract_address, provider=net.provider)
+        try:
+            db_client = MongoDBClient(uri=connection_string, database_name='contract_db')
+            document = db_client.find_document(collection_name='deployment', query={{"address": contract_address}})
+            contract.load_from_document(document=document)
+        except Exception as e:
+            logger.error(f"Failed to store data in MongoDB: {e}")
 
     else:
         contract = None
@@ -96,7 +101,7 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
     payload = net.create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, func_name=func_name, func_params=func_params)
     net.send_tx(sender=sender, payload=payload, contract=contract)
 
-def front_runner(net: Network, sender_address: str) -> None:   
+def front_runner(net: Network, sender_address: str) -> None:
     logger.info("Sending TX...")
 
     sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
@@ -116,6 +121,7 @@ def front_runner(net: Network, sender_address: str) -> None:
     
     # Insert data into MongoDB
     try:
+        db_client = MongoDBClient(uri=connection_string, database_name='transaction_db')
         db_client.insert_document(collection_name='transactions', document=transaction_data)
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")

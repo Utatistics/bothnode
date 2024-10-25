@@ -12,20 +12,14 @@ config = Config()
 
 
 class Contract(object):
-    def __init__(self, contract_name: str, provider, contract_params: dict) -> None:
-        self.contract_name = contract_name
+    def __init__(self, contract_address: str, provider) -> None:
+        self.contract_address = contract_address
         self.provider = provider
-        self.contract_params = contract_params
-        self.path_to_contract = config.SOLC_DIR / contract_name
-        self.path_to_contract_json = self.path_to_contract / 'contract_info.json'
             
     def _to_dict(self) -> dict:
         return {
-            "contract_name": self.contract_name,
-            "contract_params": self.contract_params,
-            "path_to_contract": str(self.path_to_contract),
-            "path_to_sh": str(self.path_to_sh),
-            "contract_address": getattr(self, 'contract_address', None),
+            "contract_address": self.contract_name,
+            "contract_name": getattr(self, 'contract_name', None),
             "abi": getattr(self, 'abi', None),
             "bytecode": getattr(self, 'bytecode', None)
         }
@@ -36,3 +30,9 @@ class Contract(object):
         with open(self.path_to_contract_json, 'w') as json_file:
             json.dump(data, json_file, indent=4)
         logger.info(f'contract info saved at: {self.path_to_contract_json}')
+        
+    def load_from_document(self, document: dict) -> None:
+        self.abi = document['abi']
+        self.bytecode = document['bytecode']
+        
+        
