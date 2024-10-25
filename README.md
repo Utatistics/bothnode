@@ -78,9 +78,9 @@ bothnode tx ganache -f <from_address>-t <to_address> --amount 1
 
 # transaction for smart contract calling
 bothnode tx ganache -f <from_address>
---contract-name Tokenization
---func-name transfer
---func-params '{"recipient": "0xFaD6bF978fC43DD8Dc6084356012f80CB3Ff1b56", "amount": 1000}'
+--contract-address <contract_address>
+--func-name transfer # e.g. 
+--func-params '{"recipient": "0xFaD6bF978fC43DD8Dc6084356012f80CB3Ff1b56", "amount": 1000}' # e.g.
 ```
 
 #### bothnode detect
