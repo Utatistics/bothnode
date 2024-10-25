@@ -68,12 +68,10 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
         The address of the recipient's account.
     amount : int
         The amount of cryptocurrency to send (in wei).
-    contract_name : str
-        The name of the smart contract to interact with, or an empty string if not using a contract.
-    contract_params : dict
-        The parameters required for contract deployment or interaction.
+    contract_address : str
+        The address of the smart contract to interact with
     func_name : str
-        The name of the function to call on the smart contract, or an empty string if not using a contract function.
+        The name of the function to call on the smart contract
     func_params : dict
         The parameters for the contract function call, if applicable.
 
@@ -89,10 +87,10 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
         contract = Contract(contract_address=contract_address, provider=net.provider)
         try:
             db_client = MongoDBClient(uri=connection_string, database_name='contract_db')
-            document = db_client.find_document(collection_name='deployment', query={{"address": contract_address}})
+            document = db_client.find_document(collection_name='deployment', query={"address": contract_address})
             contract.load_from_document(document=document)
         except Exception as e:
-            logger.error(f"Failed to store data in MongoDB: {e}")
+            logger.error(f"Failed to load data from MongoDB: {e}")
 
     else:
         contract = None

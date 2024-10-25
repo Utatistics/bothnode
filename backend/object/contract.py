@@ -34,5 +34,6 @@ class Contract(object):
     def load_from_document(self, document: dict) -> None:
         self.abi = document['abi']
         self.bytecode = document['bytecode']
+        self.contract = self.provider.eth.contract(address=self.contract_address, abi=self.abi)
         
-        
+        logger.info(f"MongoDB document retrieved: _id={document['_id']}")
