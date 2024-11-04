@@ -124,19 +124,6 @@ def node_launcher(net_name: str) -> None:
         ganache_sh = config.COMMAND_DIR / 'ganache.sh'
         subprocess.Popen(["bash", str(ganache_sh), str(config.ROOT_DIR), net_name])
     else:
-        geth_sh = config.COMMAND_DIR / "geth.sh"        
-        try:
-            geth_process = subprocess.run(
-                ["bash", str(clef_sh), net_name],
-                check=True,
-                text=True,  # Enables text mode for capturing output as strings
-                stdout=subprocess.PIPE,  # Capture standard output
-                stderr=subprocess.PIPE   # Capture standard error
-                )
-            logger.info(f"Output: {geth_process.stdout}")
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Error executing {geth_sh}: {e.stderr}")
-            
         # Run the clef.sh script to handle interactive commands
         clef_sh = config.COMMAND_DIR / "clef.sh"        
         try:
@@ -150,3 +137,17 @@ def node_launcher(net_name: str) -> None:
             logger.info(f"Output: {clef_process.stdout}")
         except subprocess.CalledProcessError as e:
             logger.error(f"Error executing {clef_sh}: {e.stderr}")
+        
+        geth_sh = config.COMMAND_DIR / "geth.sh"        
+        try:
+            geth_process = subprocess.run(
+                ["bash", str(geth_sh), net_name],
+                check=True,
+                text=True,  # Enables text mode for capturing output as strings
+                stdout=subprocess.PIPE,  # Capture standard output
+                stderr=subprocess.PIPE   # Capture standard error
+                )
+            logger.info(f"Output: {geth_process.stdout}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error executing {geth_sh}: {e.stderr}")
+            
