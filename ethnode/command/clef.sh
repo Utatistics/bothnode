@@ -1,4 +1,5 @@
 #!/bin/bash
+echo '>>> Starting clef...'
 
 # set path
 ROOT_DIR=$(dirname "$(dirname "$(dirname "$(readlink -f "$0")")")")

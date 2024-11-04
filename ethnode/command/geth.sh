@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # set path
-ROOT_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
-PATH_TO_CONFIG="$ROOT_DIR/config.json"
+ROOT_DIR=$(dirname "$(dirname "$(dirname "$(readlink -f "$0")")")")joPATH_TO_CONFIG="$ROOT_DIR/config.json"
 PRIVATE_DIR="$ROOT_DIR/private"
 
 # set parameters
