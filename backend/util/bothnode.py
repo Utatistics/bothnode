@@ -3,6 +3,7 @@ import subprocess
 
 from backend.util.config import Config
 from logging import getLogger
+from colorlog import ColoredFormatter
 
 config = Config()
 logger = getLogger(__name__)

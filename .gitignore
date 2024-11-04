@@ -6,6 +6,7 @@ private/
 **__pycache__/
 **.egg-info/
 update.sh
+pool.py
 
 # Node
 node_modules

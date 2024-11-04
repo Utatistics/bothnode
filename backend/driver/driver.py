@@ -3,6 +3,7 @@ import datetime
 
 from backend.object.network import Network
 from backend.object.account import Account
+from backend.object.wallet import Wallet
 from backend.object.contract import Contract
 from backend.object.agent import FrontRunner, target_criteria
 from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
@@ -81,7 +82,7 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
     """
     logger.info("Sending TX...")
     sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
-
+  
     if contract_address:
         recipient = None
         contract = Contract(contract_address=contract_address, provider=net.provider)
@@ -97,8 +98,12 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
         recipient = Account(recipient_address, private_key=None, chain_id=net.chain_id)
     
     payload = net.create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, func_name=func_name, func_params=func_params)
-    net.send_tx(sender=sender, payload=payload, contract=contract)
+    net.send_tx(sender=sender, payload=payload, contract=contract)     
 
+def check_wallet_balance(net: Network, wallet_address: str):
+    wallet = Wallet(provider=net.provider, wallet_address=wallet_address)
+    wallet.get_balance()
+    
 def front_runner(net: Network, sender_address: str) -> None:
     logger.info("Sending TX...")
 
@@ -126,4 +131,3 @@ def front_runner(net: Network, sender_address: str) -> None:
 
 def detect_anamolies(method: str):
     logger.info("Let there be light")
-    

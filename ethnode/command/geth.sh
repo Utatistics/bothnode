@@ -34,4 +34,4 @@ nohup geth --$NETWORK_NAME \
   --authrpc.jwtsecret $PRIVATE_DIR/jwtsecret \
   --http \
   --http.api eth,net \
-  --signer=$PRIVATE_DIR/clef/clef.ipc > $HOME/.bothnode/log/geth.log 2>&1 &
+  --signer=$HOME/clef/clef.ipc > $HOME/.bothnode/log/geth.log 2>&1 &
