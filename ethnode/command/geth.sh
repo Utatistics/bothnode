@@ -40,4 +40,4 @@ nohup geth --$NETWORK_NAME \
   --signer=$HOME/.clef/clef/clef.ipc > $GETH_LOG_PATH 2>&1 &
 
 echo ">>> run 'tail -f $LIGHTHOUSE_LOG_PATH' to monitor the process in real-time."
-echo ">>> run 'tail -f $GANACHE_LOG_PATH' to monitor the process in real-time."
+echo ">>> run 'tail -f $GETH_LOG_PATH' to monitor the process in real-time."
