@@ -68,6 +68,10 @@
     "connection_string": "mongodb://localhost:27017",
     "init_username": "rootuser",
     "init_password": "rootpass",
-    "init_database": "mydatabase"
+    "init_database": "mydatabase",
+    "database": {
+      "transaction": "transaction_db",
+      "contract": "contract_db"
+    } 
   }
 }

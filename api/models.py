@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import Optional
-from bson import ObjectId
+from typing import List, Optional, Dict, Any
+from bson import ObjectId 
 from datetime import datetime
 
 class PyObjectId(ObjectId):
@@ -36,3 +36,20 @@ class TransactionCreate(BaseModel):
     target_transaction: Optional[str] = None
     payload: Optional[dict] = None
     timestamp: datetime
+            
+class Contract(BaseModel):
+    id: str 
+    address: str
+    abi: Optional[List[Dict[str, Any]]]  # Represents an array of dictionaries for ABI
+    bytecode: Optional[str]  # Optional, can be None
+    contractName: str
+    network: str
+    sourcePath: str
+    timestamp: datetime
+
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat(),  # Converts datetime to ISO format in JSON
+            ObjectId: str  # Ensures ObjectId is serialized as a string
+        }
+        allow_population_by_field_name = True  # Allows using Pydantic field names or MongoDB keys
