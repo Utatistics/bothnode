@@ -91,7 +91,7 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
             document = db_client.find_document(collection_name='deployment', query={"address": contract_address})
             contract.load_from_document(document=document)
         except Exception as e:
-            logger.error(f"Failed to load data from MongoDB: {e}")
+            logger.error(f"Failed to load data from MongoDB with address={contract_address}: {e}")
 
     else:
         contract = None

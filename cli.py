@@ -91,7 +91,6 @@ class ArgParse(object):
         logger.debug(f'{self.args=}')
 
     def _dict_parser(self, value):
-            # Check if the input is a valid file path
             if os.path.isfile(value):
                 try:
                     with open(value, 'r') as file:
@@ -99,8 +98,6 @@ class ArgParse(object):
                         return parsed_dict
                 except (IOError, json.JSONDecodeError) as e:
                     raise argparse.ArgumentTypeError(f"Error reading file: {e}")
-            
-            # Otherwise, try to parse it as a JSON string
             try:
                 parsed_dict = json.loads(value)
                 return parsed_dict

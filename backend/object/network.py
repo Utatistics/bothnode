@@ -147,15 +147,14 @@ class Network(object):
         
         if contract:
             logger.info('>> Smart Contract Transaction')
-            logger.info(f'{func_name=}')
-            logger.info(f'{func_params=}')
-            
-            # debug 
-            for k in func_params.keys():
-                logger.warning(f'{k}-{func_params[k]}-{type(func_params[k])}')
-        
-            encoded_params = self._encode_nested_dict_to_bytes(func_params)
-            function_call = contract.contract.encodeABI(fn_name=func_name, args=encoded_params)
+            logger.info(f'{func_name=}')                        
+            if func_params:
+                logger.info(f'{func_params=}')
+                function_call = contract.contract.encodeABI(fn_name=func_name, args=func_params)
+            else:
+                function_call = contract.contract.encodeABI(fn_name=func_name, args=None)
+
+            # create smart contract payload 
             payload = {
                 'from': sender.address,
                 'to': contract.contract_address,

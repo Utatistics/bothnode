@@ -30,13 +30,14 @@ nohup lighthouse bn \
 
 echo '>>> Starting geth...'
 nohup geth --$NETWORK_NAME \
-  --datadir $PRIVATE_DIR \
+  --datadir $HOME_DIR \
   --authrpc.addr localhost \
   --authrpc.port $AUTHRPC_PORT \
   --authrpc.vhosts localhost \
-  --authrpc.jwtsecret $PRIVATE_DIR/jwtsecret \
+  --authrpc.jwtsecret $HOME/jwtsecret \
   --http \
   --http.api eth,net \
+  --syncmode "fast" \
   --signer=$HOME/.clef/clef/clef.ipc > $GETH_LOG_PATH 2>&1 &
 
 echo ">>> run 'tail -f $LIGHTHOUSE_LOG_PATH' to monitor the process in real-time."
