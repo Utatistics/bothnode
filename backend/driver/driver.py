@@ -6,7 +6,9 @@ from backend.object.account import Account
 from backend.object.wallet import Wallet
 from backend.object.contract import Contract
 from backend.object.agent import FrontRunner, target_criteria
+from backend.object.graph import NodeFeature, EdgeFeature
 from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
+
 
 from backend.util.config import Config
 from logging import getLogger
@@ -130,4 +132,16 @@ def front_runner(net: Network, sender_address: str) -> None:
         logger.error(f"Failed to store data in MongoDB: {e}")
 
 def detect_anamolies(method: str):
-    logger.info("Let there be light")
+    logger.info("Graph construction")
+    node_feagure = NodeFeature
+    edge_feature = EdgeFeature
+    
+    logger.info("DB ingestion")
+    
+    logger.info('GNN construction')
+    
+    
+    
+    
+    
+    

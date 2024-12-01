@@ -80,9 +80,9 @@ class ArgParse(object):
                 self.parser.add_argument("--func-params", type=self._dict_parser, help="Smart contract method parameters in dictionary format")
             if partial_args.command == 'frontrun':
                 self.parser.add_argument("sender_address", help="The address for the sender")
+            if partial_args.command == 'detect':
                 self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])        
         
-          
         # parse the args
         self._parse_args()
 
