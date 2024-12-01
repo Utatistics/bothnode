@@ -65,8 +65,10 @@ class ArgParse(object):
             self.parser.add_argument("instance_region", help="region name (e.g., eu-east-2)")            
             self.parser.add_argument("db_name", help="database name (e.g., transaction)")               
         elif partial_args.command != 'run':
-            self.parser.add_argument("net", help="Network name (e.g., ganache)")
+            # shared parms
+            self.parser.add_argument("net", help="Network name (e.g., ganache)") 
             self.parser.add_argument("-p", "--protocol", default='HTTPS')
+            
             if partial_args.command == 'get':
                 tgt = ['block_info', 'nonce', 'chain_info', 'gas_price', 'queue'] 
                 self.parser.add_argument("target", nargs='?', help="Target for the comamnd", choices=tgt)
@@ -81,8 +83,10 @@ class ArgParse(object):
             if partial_args.command == 'frontrun':
                 self.parser.add_argument("sender_address", help="The address for the sender")
             if partial_args.command == 'detect':
-                self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])        
-        
+                self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])
+                self.parser.add_argument("-n", "--block-number", type=int)
+                self.parser.add_argument("-l", "--block-length", type=int, default=1)
+                            
         # parse the args
         self._parse_args()
 
@@ -178,7 +182,7 @@ def handler(args: argparse.Namespace):
             driver.front_runner(net=net, sender_address=args.sender_address)
      
         elif args.command == 'detect':
-            driver.detect_anamolies(method=args.method)
+            driver.detect_anamolies(net=net, method=args.method, block_num=args.block_number, block_len=args.block_length)
   
 def main():
     argparser = ArgParse()
