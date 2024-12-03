@@ -1,6 +1,10 @@
 import json
 from typing import List, Dict
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 class NodeFeature(object):
     def __init__(self):
         pass
@@ -98,8 +102,4 @@ class EdgeFeature(object):
         """
         with open(path_to_json, "w") as jf:
             json.dump(self.edges, jf, indent=2)
-
-class GraphData(object):
-    def __init__(self):
-        pass
-    
+3
