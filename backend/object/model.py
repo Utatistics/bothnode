@@ -10,8 +10,10 @@ logger = getLogger(__name__)
     
 # Define a simple GCN model
 class GraphConvNetwork(nn.Module):    
-    def __init__(self, in_feats, hidden_feats, out_feats):
-        super(self).__init__()
+    def __init__(self):
+        super(self).__init__()    
+
+    def graph_conv(self, in_feats, hidden_feats, out_feats):
         self.conv1 = GraphConv(in_feats, hidden_feats)
         self.conv2 = GraphConv(hidden_feats, out_feats)
 
