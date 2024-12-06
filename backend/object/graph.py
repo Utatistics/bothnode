@@ -1,7 +1,11 @@
 import json
 from typing import List, Dict
 
+import dgl
+import torch
+
 from logging import getLogger
+
 
 logger = getLogger(__name__)
 
@@ -25,24 +29,24 @@ class NodeFeature(object):
             transactions = block.get("transactions", [])
             for txn in transactions:
                 sender = txn.get("from")
-                receiver = txn.get("to")
+                recipient = txn.get("to")
                 value = int(txn.get("value", "0x0"), 16) / 1e18  # Convert Wei to Ether
                 gas_used = int(txn.get("gas", "0x0"), 16)
 
                 # Update sender's features
                 if sender:
                     if sender not in self.nodes:
-                        self.nodes[sender] = {"total_sent": 0, "total_received": 0, "total_gas_used": 0, "last_active": 0}
+                        self.nodes[sender] = {"address": sender, "total_sent": 0, "total_received": 0, "total_gas_used": 0, "last_active": 0}
                     self.nodes[sender]["total_sent"] += value
                     self.nodes[sender]["total_gas_used"] += gas_used
                     self.nodes[sender]["last_active"] = max(self.nodes[sender]["last_active"], timestamp)
 
-                # Update receiver's features
-                if receiver:
-                    if receiver not in self.nodes:
-                        self.nodes[receiver] = {"total_sent": 0, "total_received": 0, "total_gas_used": 0, "last_active": 0}
-                    self.nodes[receiver]["total_received"] += value
-                    self.nodes[receiver]["last_active"] = max(self.nodes[receiver]["last_active"], timestamp)
+                # Update recipient's features
+                if recipient:
+                    if recipient not in self.nodes:
+                        self.nodes[recipient] = {"address": recipient, "total_sent": 0, "total_received": 0, "total_gas_used": 0, "last_active": 0}
+                    self.nodes[recipient]["total_received"] += value
+                    self.nodes[recipient]["last_active"] = max(self.nodes[recipient]["last_active"], timestamp)
                                         
     def write_to_json(self, path_to_json: str) -> None:
         """
@@ -82,7 +86,7 @@ class EdgeFeature(object):
                 self.edges.append({
                     "edge_id": txn.get("hash"),  # Transaction hash
                     "from": txn.get("from"),  # Sender address
-                    "to": txn.get("to"),  # Receiver address
+                    "to": txn.get("to"),  # recipient address
                     "value": int(txn.get("value", "0x0"), 16) / 1e18,  # Value in Ether (from Wei)
                     "gas_used": int(txn.get("gas", "0x0"), 16),  # Gas used
                     "timestamp": timestamp,  # Block timestamp
@@ -105,38 +109,54 @@ class EdgeFeature(object):
 
 class Graph(object):
     def __init__(self, node_feature: NodeFeature, edge_feature: EdgeFeature):
-        self.node_feature_dict = {node_id: idx for idx, node_id in enumerate(node_feature.nodes.keys())}        
+        """
+        Args
+        ----
+        node_feature : NodeFeature
+        edge_feature : EdgeFeature
         
-        node_features = []
-        for i in self.node_feature_dict:
-            d = self.node_feature_dict[i]
+        """
+        self.node_feature = node_feature
+        self.edge_feature = edge_feature
+        
+        self._graph_constrtor()
+        self._tensor_generator()
             
-            logger.warning(f'{i=}')
-            logger.warning(f'{d=}')
-
-            node_features.append([
-                d["total_sent"],
-                d["total_received"],
-                d["total_gas_used"],
-                d["last_active"]
-            ])        
+    def _graph_constrtor(self):
+        """create DGL graph object
+        """
+        self.address_to_index = {features['address']: i for i, features in enumerate(self.node_feature.nodes.values())}
         
+        src = []
+        dst = []
+        for edge in self.edge_feature.edges:
+            from_address = edge['from']
+            to_address = edge['to']            
+            from_index = self.address_to_index.get(from_address)
+            to_index = self.address_to_index.get(to_address)            
+            if from_index != None and to_index != None:
+                src.append(from_index)
+                dst.append(to_index)
+        self.graph = dgl.graph((src, dst))
+
+    def _tensor_generator(self):
+        """extract tensors from node and edge features
+        """        
+        node_features = []
+        for node in self.node_feature.nodes.values():
+            node_features.append([
+                node['total_sent'],
+                node['total_received'],
+                node['total_gas_used'],
+                node['last_active']
+            ])
         edge_features = []
-        for edge in edge_feature:
+        for edge in self.edge_feature.edges:
             edge_features.append([
-                edge["value"],
-                edge["gas_used"],
-                edge["timestamp"]
+                edge['value'],
+                edge['gas_used'],
+                edge['timestamp']
             ])
         
-        self._graph_constructor(node_features=node_features, edge_features=edge_features)
-    
-    def _graph_constructor(self, node_features: List[List], edge_features: List[List]):   
-        src = [self.node_feature_dict[edge['from']] for edge in edge_feature.edges]
-        dst = [self.node_feature_dict[edge['to']] for edge in edge_feature.edges]
-        
-        self.graph = dgl.graph((src, dst))    
-        self.graph.ndata['feature'] = torch.tensor(node_features, dtype=torch.float32)
-        self.graph.edata['feature'] = torch.tensor(edge_features, dtype=torch.float32)
-
-    
+        self.graph.ndata['tensor'] = torch.tensor(node_features, dtype=torch.float32)
+        self.graph.edata['tensor'] = torch.tensor(edge_features, dtype=torch.float32)

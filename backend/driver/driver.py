@@ -145,11 +145,12 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int):
     logger.info("Graph construction")
     node_feature = NodeFeature(block_data=block.block_data)
     edge_feature = EdgeFeature(block_data=block.block_data)
-    node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
-    edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
-
-    '''
+    # node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
+    # edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
+    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
+    
     logger.info("DB ingestion")
+    '''
     try:
         db_client = MongoDBClient(uri=connection_string, database_name='')
     except Exception as e:
@@ -157,6 +158,5 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int):
     '''
     
     logger.info('GNN construction')
-    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
     # gcn = GraphConvNetwork(input_dim=4, hidden_dim=16, output_dim=8)
     # result = gcn(graph.graph, graph.ndata['feat'])
