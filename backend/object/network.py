@@ -61,10 +61,17 @@ class Network(object):
         logger.info(f'>> Nonce={nonce} for {address=}')
         return nonce
     
-    def get_block_number(self):
-        number = self.provider.eth.get_block('latest').number
-        logger.info(f'>> Block Number={number}')
-        return number
+    def get_latest_block_num(self) -> int:
+        """get the latest block number for quick reference
+        
+        Returns
+        -------
+        block_num : int
+            the latest blocknumber of the connected node.
+        """
+        block_num = self.provider.eth.get_block('latest').number
+        logger.info(f'>> Block Number={block_num}')
+        return block_num
 
     def get_chain_info(self):
         logger.info(f">> Chain ID: {self.provider.eth.chain_id}")

@@ -6,7 +6,11 @@ from backend.object.account import Account
 from backend.object.wallet import Wallet
 from backend.object.contract import Contract
 from backend.object.agent import FrontRunner, target_criteria
+from backend.object.block import Block
+from backend.object.graph import NodeFeature, EdgeFeature, Graph
+from backend.object.model import GraphConvNetwork
 from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
+
 
 from backend.util.config import Config
 from logging import getLogger
@@ -115,13 +119,13 @@ def front_runner(net: Network, sender_address: str) -> None:
     agent.execute_frontrun(payload=payload)
 
     # Prepare the data to be stored
+    logger.info("DB ingestion")
     transaction_data = {
         "sender_address": sender_address,
         "target_transaction": target_tx,
         "payload": payload,
         "timestamp": datetime.datetime.now()
     }
-    
     # Insert data into MongoDB
     try:
         db_client = MongoDBClient(uri=connection_string, database_name='transaction_db')
@@ -129,5 +133,33 @@ def front_runner(net: Network, sender_address: str) -> None:
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
 
-def detect_anamolies(method: str):
-    logger.info("Let there be light")
+def detect_anamolies(net: Network, method: str, block_num: int, block_len: int):
+    if not block_num:
+        block_num = net.get_latest_block_num() 
+          
+    logger.info("Retriving data from node.")
+    block = Block(net_name=net.name)
+    block.query_blocks(block_num=block_num, block_len=block_len)
+    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata.json')
+
+    logger.info("Graph construction")
+    node_feature = NodeFeature(block_data=block.block_data)
+    edge_feature = EdgeFeature(block_data=block.block_data)
+    # node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
+    # edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
+    
+    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
+    # graph.draw_graph()
+    logger.info("DB ingestion")
+    '''
+    try:
+        db_client = MongoDBClient(uri=connection_string, database_name='')
+    except Exception as e:
+        logger.error(f"Failed to store data in MongoDB: {e}")
+    '''
+    
+    logger.info('GNN construction')    
+    gcn = GraphConvNetwork(graph=graph)
+    gcn.define_forward()
+    
+    result = gcn(graph.graph, graph.graph.ndata['tensor'])
