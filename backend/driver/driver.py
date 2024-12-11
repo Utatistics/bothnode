@@ -147,8 +147,9 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int):
     edge_feature = EdgeFeature(block_data=block.block_data)
     # node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
     # edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
-    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
     
+    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
+    # graph.draw_graph()
     logger.info("DB ingestion")
     '''
     try:
@@ -157,6 +158,8 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int):
         logger.error(f"Failed to store data in MongoDB: {e}")
     '''
     
-    logger.info('GNN construction')
-    # gcn = GraphConvNetwork(input_dim=4, hidden_dim=16, output_dim=8)
-    # result = gcn(graph.graph, graph.ndata['feat'])
+    logger.info('GNN construction')    
+    gcn = GraphConvNetwork(graph=graph)
+    gcn.define_forward()
+    
+    result = gcn(graph.graph, graph.graph.ndata['tensor'])
