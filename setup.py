@@ -16,9 +16,10 @@ setup(
         ,'pymongo'
         ,'PyYAML'
         ,'eth-abi'
-        ,'torch==2.4'  # Ensure torch 2.4 is installed
+        ,'beautifulsoup4'
         ,'pandas'
         ,'matplotlib'
+        ,'torch==2.4'  # Ensure torch 2.4 is installed
         ,'dgl @ https://data.dgl.ai/wheels-test/torch-2.4/repo.html' # Adding the specific DGL install link
     ],
     entry_points={
