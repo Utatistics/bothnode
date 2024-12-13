@@ -53,7 +53,7 @@ class ArgParse(object):
         self.parser = argparse.ArgumentParser(description="bothnode CLI")
     
         # command and args
-        self.cmd = ['run', 'init', 'db_sync', 'get', 'tx', 'frontrun', 'detect']
+        self.cmd = ['run', 'init', 'db_sync', 'fetch', 'get', 'tx', 'frontrun', 'detect']
         self.parser.add_argument("command", help="Command to execute", choices=self.cmd)       
         
         partial_args, _ = self.parser.parse_known_args()
@@ -63,7 +63,9 @@ class ArgParse(object):
         if partial_args.command == 'db_sync':
             self.parser.add_argument("instance_id")            
             self.parser.add_argument("instance_region", help="region name (e.g., eu-east-2)")            
-            self.parser.add_argument("db_name", help="database name (e.g., transaction)")               
+            self.parser.add_argument("db_name", help="database name (e.g., transaction)")        
+        elif partial_args.command == 'fetch':
+            pass       
         elif partial_args.command != 'run':
             # shared parms
             self.parser.add_argument("net", help="Network name (e.g., ganache)") 
@@ -158,6 +160,9 @@ def handler(args: argparse.Namespace):
         
     elif args.command == 'db_sync':
         sync_mongodb(instance_id=args.instance_id, region=args.instance_region, container_name='mongodb', db_name=args.db_name)
+    
+    elif args.command == 'fetch':
+        driver.run_label_crowler()
         
     else:
         logger.info(f"Executing the command: {args.command}")

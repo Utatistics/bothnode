@@ -9,16 +9,19 @@ from backend.object.agent import FrontRunner, target_criteria
 from backend.object.block import Block
 from backend.object.graph import NodeFeature, EdgeFeature, Graph
 from backend.object.model import GraphConvNetwork
-from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
-
+from backend.object.crowler import CryptoScamDBCrowler
 
 from backend.util.config import Config
 from logging import getLogger
+
+from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
 
 logger = getLogger(__name__)
 
 config = Config()
 db_config = config.DB_CONFIG
+extl_config = config.EXTL_CONFIG
+
 connection_string = add_auth_to_mongo_connection_string(connection_string=db_config['connection_string'], username=db_config['init_username'], password=db_config['init_password'])
 
 def init_net_instance(net_name: str, protocol: str) -> None:
@@ -133,7 +136,7 @@ def front_runner(net: Network, sender_address: str) -> None:
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
 
-def detect_anamolies(net: Network, method: str, block_num: int, block_len: int):
+def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) -> None:
     if not block_num:
         block_num = net.get_latest_block_num() 
           
@@ -163,3 +166,16 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int):
     gcn.define_forward()
     
     result = gcn(graph.graph, graph.graph.ndata['tensor'])
+    
+def run_label_crowler() -> None:
+    logger.info("Fetching blacklists from external service provider.")
+    crowler = CryptoScamDBCrowler(extl_config=extl_config)
+    black_list = crowler.get_black_list()
+    
+    logger.info("DB ingestion")
+    '''
+    try:
+        db_client = MongoDBClient(uri=connection_string, database_name='')
+    except Exception as e:
+        logger.error(f"Failed to store data in MongoDB: {e}")
+    '''
