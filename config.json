@@ -52,7 +52,7 @@
     }
   },
   "CLI": {
-    "version": "0.4.0"
+    "version": "0.4.1"
   },
   "DB": {
     "connection_string": "mongodb://localhost:27017",
@@ -66,6 +66,6 @@
   },
   "EXTL": {
     "cryptoScamDB": "https://cryptoscamdb.org/pages-manifest-0e07e26bdb01ac0f11b3.js",
-    "etherScan": "https://etherscan.io/" 
+    "etherScan": "https://etherscan.io/"
   }
 }
