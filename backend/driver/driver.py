@@ -22,7 +22,9 @@ config = Config()
 db_config = config.DB_CONFIG
 extl_config = config.EXTL_CONFIG
 
-connection_string = add_auth_to_mongo_connection_string(connection_string=db_config['connection_string'], username=db_config['init_username'], password=db_config['init_password'])
+connection_string = add_auth_to_mongo_connection_string(connection_string=db_config['connection_string'],
+                                                        username=db_config['init_username'],
+                                                        password=db_config['init_password'])
 
 def init_net_instance(net_name: str, protocol: str) -> None:
     logger.info(f"Creating Network instance of {net_name}...")
@@ -107,7 +109,7 @@ def send_transaction(net: Network, sender_address: str, recipient_address: str, 
     payload = net.create_payload(sender=sender, recipient=recipient, amount=amount, contract=contract, func_name=func_name, func_params=func_params)
     net.send_tx(sender=sender, payload=payload, contract=contract)     
 
-def check_wallet_balance(net: Network, wallet_address: str):
+def check_wallet_balance(net: Network, wallet_address: str) -> None:
     wallet = Wallet(provider=net.provider, wallet_address=wallet_address)
     wallet.get_balance()
     
@@ -171,7 +173,7 @@ def run_label_crowler() -> None:
     logger.info("Fetching blacklists from external service provider.")
     crowler = CryptoScamDBCrowler(extl_config=extl_config)
     black_list = crowler.get_black_list()
-    
+    logger.info(black_list)
     logger.info("DB ingestion")
     '''
     try:

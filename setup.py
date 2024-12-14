@@ -16,7 +16,6 @@ setup(
         ,'pymongo'
         ,'PyYAML'
         ,'eth-abi'
-        ,'beautifulsoup4'
         ,'pandas'
         ,'matplotlib'
         ,'torch==2.4'  # Ensure torch 2.4 is installed
