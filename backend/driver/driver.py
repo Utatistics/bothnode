@@ -10,6 +10,7 @@ from backend.object.block import Block
 from backend.object.graph import NodeFeature, EdgeFeature, Graph
 from backend.object.model import GraphConvNetwork
 from backend.object.crowler import CryptoScamDBCrowler
+from backend.object.random_walk import Node2Vec
 
 from backend.util.config import Config
 from logging import getLogger
@@ -138,38 +139,9 @@ def front_runner(net: Network, sender_address: str) -> None:
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
 
-def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) -> None:
-    if not block_num:
-        block_num = net.get_latest_block_num() 
-          
-    logger.info("Retriving data from node.")
-    block = Block(net_name=net.name)
-    block.query_blocks(block_num=block_num, block_len=block_len)
-    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata.json')
-
-    logger.info("Graph construction")
-    node_feature = NodeFeature(block_data=block.block_data)
-    edge_feature = EdgeFeature(block_data=block.block_data)
-    # node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
-    # edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
-    
-    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
-    # graph.draw_graph()
-    logger.info("DB ingestion")
-    '''
-    try:
-        db_client = MongoDBClient(uri=connection_string, database_name='')
-    except Exception as e:
-        logger.error(f"Failed to store data in MongoDB: {e}")
-    '''
-    
-    logger.info('GNN construction')    
-    gcn = GraphConvNetwork(graph=graph)
-    gcn.define_forward()
-    
-    result = gcn(graph.graph, graph.graph.ndata['tensor'])
-    
 def run_label_crowler() -> None:
+    """Fetching blacklisted accounts and restore them to DB as training signal 
+    """
     logger.info("Fetching blacklists from external service provider.")
     crowler = CryptoScamDBCrowler(extl_config=extl_config)
     black_list = crowler.get_black_list()
@@ -181,3 +153,65 @@ def run_label_crowler() -> None:
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
     '''
+
+def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) -> None:
+    """detect anamolies in the network with the specified method
+    
+    Args
+    ----
+    net : Network
+        target network to run the detection algorithm
+    method : str
+        to be implemented
+    block_num : int
+        the latest number of blocks to aggregate the transactions from.
+    block_len : int
+        the length of blocks to aggregate the transactions from.
+    """
+    logger.info("Retriving data from node.")
+    if not block_num:
+        block_num = net.get_latest_block_num() 
+    block = Block(net_name=net.name)
+    block.query_blocks(block_num=block_num, block_len=block_len)
+    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata.json')
+
+
+    logger.info("Graph construction")
+    node_feature = NodeFeature(block_data=block.block_data)
+    edge_feature = EdgeFeature(block_data=block.block_data)
+    # node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
+    # edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
+    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
+    # graph.draw_graph()
+
+    
+    logger.info("DB ingestion")
+    '''
+    try:
+        db_client = MongoDBClient(uri=connection_string, database_name='')
+    except Exception as e:
+        logger.error(f"Failed to store data in MongoDB: {e}")
+    '''
+    
+    logger.info("Scoring node similarity via Randam Walk") 
+    num_nodes = graph.num_nodes()
+    embedding_dim = 16
+    walk_length = 10
+    num_walks = 80
+    window_size = 2
+    p = 1  # Return parameter
+    q = 1  # In-out parameter
+    epochs = 10
+    learning_rate = 0.01
+
+    rw = Node2Vec(num_nodes=num_nodes, embedding_dim=embedding_dim)
+    embeddings = rw.train_node2vec(graph, walk_length, num_walks, window_size, p, q, epochs, learning_rate)
+    similarity_matrix = model.compute_similarity_matrix()
+    logger.info("Similarity Matrix:\n", similarity_matrix)
+
+    
+    logger.info('Learning the embedding via GNN')    
+    gcn = GraphConvNetwork(graph=graph)
+    gcn.define_forward()    
+    result = gcn(graph.graph, graph.graph.ndata['tensor'])
+    

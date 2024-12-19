@@ -88,6 +88,8 @@ class CryptoScamDBCrowler(object):
         logger.debug(res_report.status_code)
         logger.debug(res_report.json())
         
+        
+        
         return res_report
 
     def get_black_list(self) -> list:
@@ -111,13 +113,17 @@ class CryptoScamDBCrowler(object):
                 res_report = self.session.get(page_url)
                 res_report.raise_for_status()
                 report_json = self._report_json_parser(res_report)
-                black_list.append(report_json)
+                black_list.append(report_json.json())
             except requests.exceptions.RequestException as e:
                 logger.error(f"Request failed for {page_url}: {e}")
                 raise  # Reraise the exception to handle it in the calling method
             except ValueError as e:
                 logger.error(f"Error fetching data for {page_url}: {e}")
-                
+            
+            
+            break
+        
+        
         return black_list
         
 class EtherScanCrowler(object):
