@@ -113,7 +113,8 @@ class EdgeFeature(object):
 
 class Graph(object):
     def __init__(self, node_feature: NodeFeature, edge_feature: EdgeFeature):
-        """
+        """custom graph object
+        
         Args
         ----
         node_feature : NodeFeature
@@ -122,15 +123,23 @@ class Graph(object):
         """
         self.node_feature = node_feature
         self.edge_feature = edge_feature
+        logger.info(f'{len(self.node_feature.nodes)=}')
+        logger.info(f'{len(self.edge_feature.edges)=}')
         
         try:
             self._node_link_generator()
-            self._tensor_generator()
-            
-            logger.info("Successfully constructed graph structure.")
-            self.get_graph_attr()
+            logger.info("Successfully constructed graph object.")
         except Exception as e:
-            logger.error(f"Graph construction failed: {e}") 
+            logger.error(f"node link generation failed: {e}") 
+
+        try:
+            logger.info(f'{self.graph.num_nodes()=}')
+            logger.info(f'{self.graph.num_edges()=}')
+
+            self._tensor_generator()         
+            logger.info("Successfully added features to the graph.")
+        except Exception as e:
+            logger.error(f"tensor generation failed: {e}") 
              
     def _node_link_generator(self):
         """create DGL graph object
@@ -147,6 +156,7 @@ class Graph(object):
             if from_index != None and to_index != None:
                 src.append(from_index)
                 dst.append(to_index)
+    
         self.graph = dgl.graph((src, dst))
 
     def _tensor_generator(self):
@@ -162,7 +172,10 @@ class Graph(object):
             ])
         edge_features = []
         for edge in self.edge_feature.edges:
-            edge_features.append([
+            if not edge['to']:
+                continue
+            else:
+                edge_features.append([
                 edge['value'],
                 edge['gas_used'],
                 edge['timestamp']
@@ -170,29 +183,10 @@ class Graph(object):
         
         self.graph.ndata['tensor'] = torch.tensor(node_features, dtype=torch.float32)
         self.graph.edata['tensor'] = torch.tensor(edge_features, dtype=torch.float32)
-    
-    def get_graph_attr(self):
-        """querying graph structure 
+            
+    def draw_graph(self) -> None:
+        """visuallize graph structure
         """
-        logger.info(f'{self.graph.ntypes=}')
-        logger.info(f'{self.graph.etypes=}')
-        logger.info(f'{self.graph.srctypes=}')
-        logger.info(f'{self.graph.dsttypes=}')
-        logger.info(f'{self.graph.canonical_etypes=}')
-        logger.info(f'{self.graph.metagraph()=}')
-        
-        logger.info(f'{self.graph.num_nodes()=}')
-        logger.info(f'{self.graph.num_edges()=}')
-
-        logger.info(f'{self.graph.is_unibipartite=}')
-        logger.info(f'{self.graph.is_multigraph=}')
-        logger.info(f'{self.graph.is_homogeneous=}')
-        
-        #logger.info(f'{graph.graph.in_degrees()=}')
-        #logger.info(f'{graph.graph.out_degrees()=}')
-        #logger.info(f'{graph.graph.adj()=}')
-        
-    def draw_graph(self):
         
         nx_g = self.graph.to_networkx()
         
@@ -207,5 +201,4 @@ class Graph(object):
         plt.savefig(config.PRIVATE_DIR / "graph_visualization.png", format="PNG")  # You can change the filename and format
         plt.close()  # Close the plot to avoid it showing up
 
-        
         

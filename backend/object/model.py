@@ -2,7 +2,7 @@ import dgl
 from dgl import DGLGraph
 from dgl.nn import GraphConv
 from dgl.nn import SAGEConv
-from dgl.dataloading import MultiLayerNeighborSampler, NodeDataLoader
+from dgl.dataloading import MultiLayerNeighborSampler
 
 import torch
 import torch.nn as nn
@@ -75,7 +75,7 @@ class UnsupervisedGraphSAGE:
         self.classifier = NodePairClassifier(out_feats)
         self.optimizer = torch.optim.Adam(
             list(self.model.parameters()) + list(self.classifier.parameters()),
-            lr=0.01
+            lr=0.01 
         )
 
     def generate_node_pairs(self, num_walks=10, walk_length=5, neg_samples=5):

@@ -10,7 +10,7 @@ from backend.object.block import Block
 from backend.object.graph import NodeFeature, EdgeFeature, Graph
 from backend.object.model import GraphConvNetwork
 from backend.object.crowler import CryptoScamDBCrowler
-from backend.object.random_walk import Node2Vec
+from backend.object.randomwalk import Node2Vec
 
 from backend.util.config import Config
 from logging import getLogger
@@ -175,15 +175,13 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     block.query_blocks(block_num=block_num, block_len=block_len)
     block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata.json')
 
-
     logger.info("Graph construction")
     node_feature = NodeFeature(block_data=block.block_data)
     edge_feature = EdgeFeature(block_data=block.block_data)
-    # node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
-    # edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
+    node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
+    edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
     graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
-    # graph.draw_graph()
-
+    #graph.draw_graph()
     
     logger.info("DB ingestion")
     '''
@@ -194,7 +192,8 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     '''
     
     logger.info("Scoring node similarity via Randam Walk") 
-    num_nodes = graph.num_nodes()
+    num_nodes = graph.graph.num_nodes()
+    logger.info(f'{num_nodes=}')
     embedding_dim = 16
     walk_length = 10
     num_walks = 80
@@ -205,7 +204,14 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     learning_rate = 0.01
 
     rw = Node2Vec(num_nodes=num_nodes, embedding_dim=embedding_dim)
-    embeddings = rw.train_node2vec(graph, walk_length, num_walks, window_size, p, q, epochs, learning_rate)
+    embeddings = rw.train_node2vec(graph=graph.graph
+                                   ,walk_length=walk_length
+                                   ,num_walks=num_walks
+                                   ,window_size=window_size
+                                   ,p=p
+                                   ,q=q
+                                   ,epochs=epochs
+                                   ,learning_rate=learning_rate)
     similarity_matrix = model.compute_similarity_matrix()
     logger.info("Similarity Matrix:\n", similarity_matrix)
 
