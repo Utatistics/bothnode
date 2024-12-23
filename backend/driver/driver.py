@@ -114,7 +114,7 @@ def check_wallet_balance(net: Network, wallet_address: str) -> None:
     wallet = Wallet(provider=net.provider, wallet_address=wallet_address)
     wallet.get_balance()
     
-def front_runner(net: Network, sender_address: str) -> None:
+def front_runner(net: Network, sender_address: str) -> None: 
     logger.info("Sending TX...")
 
     sender = Account(sender_address, private_key=None, chain_id=net.chain_id)
@@ -181,7 +181,9 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
     edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
     graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
-    #graph.draw_graph()
+    
+    # visualizatoin
+    graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_visualization.png")
     
     logger.info("DB ingestion")
     '''
@@ -194,30 +196,33 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     logger.info("Scoring node similarity via Randam Walk") 
     num_nodes = graph.graph.num_nodes()
     logger.info(f'{num_nodes=}')
+    logger.info(f'{graph.graph.edges()=}')
     embedding_dim = 16
     walk_length = 10
     num_walks = 80
     window_size = 2
-    p = 1  # Return parameter
-    q = 1  # In-out parameter
+    p = 1 # BFS penilizing term (i.e. Return Parameter)
+    q = 1 # DFS penilizing term (i.e. In-out Parameter)
     epochs = 10
     learning_rate = 0.01
 
     rw = Node2Vec(num_nodes=num_nodes, embedding_dim=embedding_dim)
-    embeddings = rw.train_node2vec(graph=graph.graph
-                                   ,walk_length=walk_length
-                                   ,num_walks=num_walks
-                                   ,window_size=window_size
-                                   ,p=p
-                                   ,q=q
-                                   ,epochs=epochs
-                                   ,learning_rate=learning_rate)
-    similarity_matrix = model.compute_similarity_matrix()
-    logger.info("Similarity Matrix:\n", similarity_matrix)
+    rw.train_node2vec(graph=graph.graph
+                      ,walk_length=walk_length
+                      ,num_walks=num_walks
+                      ,window_size=window_size
+                      ,p=p
+                      ,q=q
+                      ,epochs=epochs
+                      ,learning_rate=learning_rate)
+    similarity_matrix = rw.compute_similarity_matrix()
+    logger.info(f"Network Embeddings:\n{rw.node_embeddings}")
+    logger.info(f"Similarity Matrix :{similarity_matrix.shape}\n{similarity_matrix}")
+
 
     
-    logger.info('Learning the embedding via GNN')    
-    gcn = GraphConvNetwork(graph=graph)
-    gcn.define_forward()    
-    result = gcn(graph.graph, graph.graph.ndata['tensor'])
+    #logger.info('Learning the embedding via GNN')    
+    #gcn = GraphConvNetwork(graph=graph)
+    #gcn.define_forward()    
+    #output = gcn(graph.graph, graph.graph.ndata['tensor'])
     

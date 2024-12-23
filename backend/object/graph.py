@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import List, Dict
 import matplotlib.pyplot as plt
 
@@ -184,8 +185,13 @@ class Graph(object):
         self.graph.ndata['tensor'] = torch.tensor(node_features, dtype=torch.float32)
         self.graph.edata['tensor'] = torch.tensor(edge_features, dtype=torch.float32)
             
-    def draw_graph(self) -> None:
+    def draw_graph(self, path_to_png: Path) -> None:
         """visuallize graph structure
+        
+        Args
+        ----
+        path_to_png : Path
+            the path to the output png.
         """
         
         nx_g = self.graph.to_networkx()
@@ -197,8 +203,11 @@ class Graph(object):
         nx.draw(
             nx_g, pos, node_size=20, node_color="blue", edge_color="gray", alpha=0.7, with_labels=False
         )
-        plt.show()
-        plt.savefig(config.PRIVATE_DIR / "graph_visualization.png", format="PNG")  # You can change the filename and format
+        
+        # Xmin Issue to be Fixed!
+        #plt.show()
+        
+        plt.savefig(path_to_png, format="PNG")  # You can change the filename and format
         plt.close()  # Close the plot to avoid it showing up
 
         

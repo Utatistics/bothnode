@@ -4,27 +4,18 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 
-
 from backend.util.config import Config
-from logging import getLogger
 
-logger = getLogger(__name__)
-
-config = Config()
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from typing import List, Tuple
-import numpy as np
 import logging
+from logging import getLogger
+from typing import List, Tuple
 
 logger = logging.getLogger(__name__)
 
 class Node2Vec(nn.Module):
     def __init__(self, num_nodes: int, embedding_dim: int) -> None:
         """
-        Initialize Node2Vec model.
+        Initialize Node2Vec model as a single Embedding layer.
         
         Args
         ----
@@ -33,7 +24,7 @@ class Node2Vec(nn.Module):
         embedding_dim : int
             Dimension of the node embeddings.
         """
-        super(Node2Vec, self).__init__()
+        super().__init__()
         self.node_embeddings = nn.Embedding(num_nodes, embedding_dim)
 
     def forward(self, nodes: torch.Tensor) -> torch.Tensor:
@@ -51,57 +42,39 @@ class Node2Vec(nn.Module):
         """
         return self.node_embeddings(nodes)
 
-    def get_similarity(self, node_u: torch.Tensor, node_v: torch.Tensor) -> torch.Tensor:
+    def _biased_random_walk(self, graph: dgl.DGLGraph, init_nodes: torch.Tensor, walk_length: int, p: float, q: float) -> List[List[int]]:
         """
-        Compute similarity score (i.e. dot product) between two nodes.
-        
-        Args
-        ----
-        node_u : torch.Tensor)
-            Tensor of source node IDs.
-        node_v : torch.Tensor): Tensor of target node IDs.
-        
-        Returns
-        -------
-        torch.Tensor:
-            Similarity scores.
-        """
-        emb_u = self.node_embeddings(node_u)
-        emb_v = self.node_embeddings(node_v)
-        return torch.sum(emb_u * emb_v, dim=-1)
+        Perform the randarm walk strategy for Node2Vec (i.e. 2nd order biased r.w.), starting from each node on graph 
 
-    def _biased_random_walk(self, graph: dgl.DGLGraph, nodes: torch.Tensor, walk_length: int, p: float, q: float) -> List[List[int]]:
-        """
-        Perform the randarm walk strategy for Node2Vec (i.e. 2nd order biased r.w.) on the given graph.
-        
         Args
         ----
         graph: dgl.DGLGraph
             Graph object with a `successors` method.
-        nodes : torch.Tensor
-            Starting nodes for the random walks.
+        init_nodes : torch.Tensor
+            Starting nodes for the random walks (i.e. all nodes)
         walk_length : int
             Length of each walk.
         p : float
-            Return hyperparameter.
+            BFS penilizing term (i.e. Return Parameter)
         q : float
-            In-out hyperparameter.
+            DFS penilizing term (i.e. In-out Parameter)
         
         Returns
         -------
-        List[List[int]]: List of random walks.
+        walks : List[List[int]]
+            List of the obtraind random walks
         """
         walks = []
-        for start_node in nodes:
-            walk = [start_node.item()]
+        for init_node in init_nodes:
+            walk = [init_node.item()]
             while len(walk) < walk_length:
                 cur = walk[-1]
-                neighbors = list(graph.successors(cur).numpy())
+                neighbors = list(graph.successors(cur).numpy()) # list of the possible nexe nodes
                 if len(neighbors) == 0:
                     break
-                if len(walk) == 1:
-                    next_node = np.random.choice(neighbors)
-                else:
+                if len(walk) == 1: # 1st step 
+                    next_node = np.random.choice(neighbors) # randomly choose from neighbors
+                else: # subsequest step
                     prev = walk[-2]
                     prob = []
                     for neighbor in neighbors:
@@ -111,9 +84,11 @@ class Node2Vec(nn.Module):
                             prob.append(1)
                         else:
                             prob.append(1 / q)
-                    prob = np.array(prob) / sum(prob)
+                    prob = np.array(prob) / sum(prob) # normalizing the distribution
                     next_node = np.random.choice(neighbors, p=prob)
+                
                 walk.append(next_node)
+                
             walks.append(walk)
         return walks
 
@@ -142,22 +117,20 @@ class Node2Vec(nn.Module):
         window_size : int 
             Context window size for skip-gram.
         p : float
-            Return hyperparameter.
+            BFS penilizing term (i.e. Return Parameter)
         q : float
-            In-out hyperparameter.
+            DFS penilizing term (i.e. In-out Parameter)
         epochs : int
             Number of training epochs.
         learning_rate : float
             Learning rate for optimization.
         """
-        optimizer = optim.Adam(self.parameters(), lr=learning_rate)
-
         # Generate random walks
         all_walks = []
         for _ in range(num_walks):
-            start_nodes = torch.arange(graph.num_nodes())
-            walks = self._biased_random_walk(graph, start_nodes, walk_length, p, q)
-            all_walks.extend(walks)
+            init_nodes = torch.arange(graph.num_nodes()) # a vector with 
+            walks = self._biased_random_walk(graph=graph, init_nodes=init_nodes, walk_length=walk_length, p=p, q=q)
+            all_walks.extend(walks) # 'extend' appends the given list by items
 
         # Convert walks to skip-gram pairs
         skip_gram_pairs = []
@@ -169,6 +142,7 @@ class Node2Vec(nn.Module):
         skip_gram_pairs = torch.tensor(skip_gram_pairs)
 
         # Training loop
+        optimizer = optim.Adam(self.parameters(), lr=learning_rate)
         for epoch in range(epochs):
             self.train()
             optimizer.zero_grad()
