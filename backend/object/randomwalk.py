@@ -128,7 +128,7 @@ class Node2Vec(nn.Module):
         # Generate random walks
         all_walks = []
         for _ in range(num_walks):
-            init_nodes = torch.arange(graph.num_nodes()) # a vector with 
+            init_nodes = torch.arange(graph.num_nodes()) # a vector of consecutive node id within the range
             walks = self._biased_random_walk(graph=graph, init_nodes=init_nodes, walk_length=walk_length, p=p, q=q)
             all_walks.extend(walks) # 'extend' appends the given list by items
 
@@ -143,13 +143,14 @@ class Node2Vec(nn.Module):
 
         # Training loop
         optimizer = optim.Adam(self.parameters(), lr=learning_rate)
+        
         for epoch in range(epochs):
             self.train()
             optimizer.zero_grad()
 
             u, v = skip_gram_pairs[:, 0], skip_gram_pairs[:, 1]
             u_emb, v_emb = self(u), self(v)
-            scores = torch.sum(u_emb * v_emb, dim=1)
+            scores = torch.sum(u_emb * v_emb, dim=1) # dot product
             loss = -torch.log(torch.sigmoid(scores)).mean()
 
             loss.backward()

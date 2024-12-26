@@ -142,11 +142,11 @@ def draw_ascii_art():
         "| '_ \ / _ \ |  _|  | ' \  | ' \)) / _ \ / _` |  / -_)  ",
         "|_.__/ \___/  \__|  |_||_| |_||_|  \___/ \__,_|  \___|  ",
     ]
-    logger.info(f">>> Welcome to bothnode {version}")
+    print(f">>> Welcome to bothnode {version}")
     for line in pattern:
-        logger.info(line)
+        print(line)
         time.sleep(0.1)
-    logger.info('\n')
+    print('\n')
     
 def handler(args: argparse.Namespace):
     if args.command == 'run':

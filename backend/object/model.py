@@ -6,6 +6,7 @@ from dgl.dataloading import MultiLayerNeighborSampler
 
 import torch
 import torch.nn as nn
+import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
 
@@ -24,13 +25,11 @@ class GraphConvNetwork(nn.Module):
         graph : Graph 
         """
         super().__init__()
-        self.graph = graph        
-        
-    def define_forward(self):
+        self.graph = graph                
         input_dim = self.graph.graph.ndata['tensor'].shape[1]
         hidden_dim= 8
         output_dim= 1
-
+        
         self.conv1 = GraphConv(input_dim, hidden_dim)
         self.conv2 = GraphConv(hidden_dim, output_dim)
 
@@ -48,101 +47,95 @@ class GraphConvNetwork(nn.Module):
         h = F.relu(h)
         h = self.conv2(graph, h)
         return h
-
+    
 class GraphSAGE(nn.Module):
-    def __init__(self, in_feats, hidden_feats, out_feats, num_layers, aggregator_type='mean'):
-        super(GraphSAGE, self).__init__()
-        self.layers = nn.ModuleList()
-        # Input layer
-        self.layers.append(SAGEConv(in_feats, hidden_feats, aggregator_type))
-        # Hidden layers
-        for _ in range(num_layers - 2):
-            self.layers.append(SAGEConv(hidden_feats, hidden_feats, aggregator_type))
-        # Output layer
-        self.layers.append(SAGEConv(hidden_feats, out_feats, aggregator_type))
+    def __init__(self, in_feats: int, hidden_feats: int, out_feats: int) -> None:
+        """
+        Initialize the GraphSAGE model with two SAGEConv layers.
 
-    def forward(self, graph, features):
-        h = features
-        for layer in self.layers:
-            h = layer(graph, h)
-            h = F.relu(h)
+        Args
+        ----
+        in_feats : int
+            Number of input features for each node.
+        hidden_feats : int
+            Number of hidden units in the first SAGEConv layer.
+        out_feats : int
+            Number of output features for the final layer (embedding dimension).
+        """
+        super().__init__()
+        self.input_dim = in_feats
+        self.hidden_dim = hidden_feats
+        self.output_dim = out_feats
+        
+        self.layer1 = dgl.nn.SAGEConv(in_feats, hidden_feats, 'mean')  # First GraphSAGE layer with mean aggregation.
+        self.layer2 = dgl.nn.SAGEConv(hidden_feats, out_feats, 'mean')  # Second GraphSAGE layer with mean aggregation.
+
+    def forward(self, graph: dgl.DGLGraph, features: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass to compute node embeddings.
+
+        Args
+        ----
+        graph : dgl.DGLGraph
+            The input graph.
+        features : torch.Tensor
+            Node features (e.g., one-hot encoding or predefined embeddings).
+
+        Returns
+        -------
+        torch.Tensor
+            Final node embeddings of shape (num_nodes, out_feats).
+        """
+        h = self.layer1(graph, features) 
+        h = torch.relu(h)
+        h = self.layer2(graph, h)
         return h
+    
+    def learn_embedding(self, graph: dgl.DGLGraph, features: torch.Tensor, labels: torch.Tensor, epochs: int=20, learning_rate: float=0.01) -> torch.Tensor:
+        """ 
+        Train GraphSAGE to learn node embeddings with similarity matrix as labels.
 
-class UnsupervisedGraphSAGE:
-    def __init__(self, graph, in_feats, hidden_feats, out_feats, num_layers):
-        self.graph = graph
-        self.model = GraphSAGE(in_feats, hidden_feats, out_feats, num_layers)
-        self.classifier = NodePairClassifier(out_feats)
-        self.optimizer = torch.optim.Adam(
-            list(self.model.parameters()) + list(self.classifier.parameters()),
-            lr=0.01 
-        )
+        Args
+        ----
+        graph : dgl.DGLGraph
+            Input graph.
+        labels : torch.Tensor
+            Similarity matrix as labels.
+        features : torch.Tensor, optional
+            Node features. If None, uses one-hot encoding.
+        epochs : int, optional
+            Number of training epochs.
+        learning_rate : float, optional
+            Learning rate for optimizer.
 
-    def generate_node_pairs(self, num_walks=10, walk_length=5, neg_samples=5):
-        """Generate positive and negative node pairs."""
-        positive_pairs = []
-        for _ in range(num_walks):
-            for node in range(self.graph.num_nodes()):
-                walk = dgl.sampling.random_walk(self.graph, [node], length=walk_length)[0][0]
-                for i in range(len(walk) - 1):
-                    positive_pairs.append((walk[i].item(), walk[i + 1].item()))
+        Returns
+        -------
+        torch.Tensor
+            Learned embeddings.
+        """
+        num_nodes = graph.num_nodes()
+        if features is None:
+            features = torch.eye(num_nodes) # one-hot encoding (i.e. identiry matrix) if features are not provided
 
-        # Generate negative pairs
-        neg_nodes = torch.arange(self.graph.num_nodes())
-        negative_pairs = [
-            (np.random.choice(neg_nodes), np.random.choice(neg_nodes)) for _ in range(len(positive_pairs) * neg_samples)
-        ]
-
-        return positive_pairs, negative_pairs
-
-    def train(self, features, epochs=10, batch_size=64, neg_samples=5):
-        """Train the unsupervised GraphSAGE model."""
-        self.model.train()
-        self.classifier.train()
+        # Training loop
+        optimizer = optim.Adam(self.parameters(), lr=learning_rate)
+        criterion = nn.MSELoss()
 
         for epoch in range(epochs):
-            positive_pairs, negative_pairs = self.generate_node_pairs(neg_samples=neg_samples)
-            all_pairs = positive_pairs + negative_pairs
-            labels = torch.cat(
-                [torch.ones(len(positive_pairs)), torch.zeros(len(negative_pairs))]
-            ).to(torch.float32)
+            self.train()
+            optimizer.zero_grad()
 
-            # Shuffle pairs
-            indices = torch.randperm(len(all_pairs))
-            all_pairs = [all_pairs[i] for i in indices]
-            labels = labels[indices]
+            embeddings = self(graph, features) # callable: delegate to 'forward'
+            #pred_similarity = embeddings @ embeddings.T  # Dot product for predicted similarity matrix
+            pred_similarity = torch.sum(embeddings.unsqueeze(1) * embeddings, dim=2) 
 
-            # Minibatch training
-            total_loss = 0
-            for i in range(0, len(all_pairs), batch_size):
-                batch_pairs = all_pairs[i:i + batch_size]
-                batch_labels = labels[i:i + batch_size]
+            # Compute loss
+            loss = criterion(pred_similarity, labels)
+            loss.backward(retain_graph=True)
 
-                u, v = zip(*batch_pairs)
-                u = torch.tensor(u)
-                v = torch.tensor(v)
+            optimizer.step()
 
-                # Forward pass
-                u_emb = self.model(self.graph, features)[u]
-                v_emb = self.model(self.graph, features)[v]
-                predictions = self.classifier(u_emb, v_emb).squeeze()
+            logger.info(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.item()}")
 
-                # Compute loss
-                loss = F.binary_cross_entropy(predictions, batch_labels)
-                total_loss += loss.item()
-
-                # Backward pass and optimization
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-
-            logger.info(f"Epoch {epoch + 1}/{epochs}, Loss: {total_loss / len(all_pairs):.4f}")
-
-class NodePairClassifier(nn.Module):
-    def __init__(self, embedding_dim):
-        super(NodePairClassifier, self).__init__()
-        self.fc = nn.Linear(embedding_dim * 2, 1)  # Concatenated embeddings as input
-
-    def forward(self, u_emb, v_emb):
-        pair_emb = torch.cat([u_emb, v_emb], dim=1)  # Concatenate node embeddings
-        return torch.sigmoid(self.fc(pair_emb))  # Binary classification output
+        return embeddings.detach()
+    
