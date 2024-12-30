@@ -206,7 +206,8 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     p = 1 # BFS penilizing term (i.e. Return Parameter)
     q = 1 # DFS penilizing term (i.e. In-out Parameter)
     epochs = 10
-    learning_rate = 0.01
+    learning_rate = 1e-4
+    
 
     logger.info("Running Node2Vec to compute similarity matrix")
     rw = Node2Vec(num_nodes=num_nodes, embedding_dim=embedding_dim)

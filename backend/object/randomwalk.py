@@ -154,6 +154,7 @@ class Node2Vec(nn.Module):
             loss = -torch.log(torch.sigmoid(scores)).mean()
 
             loss.backward()
+            
             optimizer.step()
 
             logger.info(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.item()}")

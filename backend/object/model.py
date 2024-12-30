@@ -132,7 +132,12 @@ class GraphSAGE(nn.Module):
             # Compute loss
             loss = criterion(pred_similarity, labels)
             loss.backward(retain_graph=True)
-
+            
+            for name, param in self.named_parameters():
+                if param.grad is not None:
+                    grad_norm = param.grad.norm(2).item()  # Compute L2 norm of the gradient
+                    logger.warning(f"Gradient norm for {name}: {grad_norm}")
+            
             optimizer.step()
 
             logger.info(f"Epoch {epoch + 1}/{epochs}, Loss: {loss.item()}")
