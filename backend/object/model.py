@@ -89,6 +89,7 @@ class GraphSAGE(nn.Module):
         h = self.layer1(graph, features) 
         h = torch.relu(h)
         h = self.layer2(graph, h)
+
         return h
     
     def learn_embedding(self, graph: dgl.DGLGraph, features: torch.Tensor, labels: torch.Tensor, epochs: int=20, learning_rate: float=0.01) -> torch.Tensor:
@@ -113,6 +114,13 @@ class GraphSAGE(nn.Module):
         torch.Tensor
             Learned embeddings.
         """
+
+        # Calculate total number of parameters
+        total_params = sum(p.numel() for p in self.parameters())
+        trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
+        logger.info(f"Total parameters: {total_params}")
+        logger.info(f"Trainable parameters: {trainable_params}")
+
         num_nodes = graph.num_nodes()
         if features is None:
             features = torch.eye(num_nodes) # one-hot encoding (i.e. identiry matrix) if features are not provided
@@ -126,6 +134,7 @@ class GraphSAGE(nn.Module):
             optimizer.zero_grad()
 
             embeddings = self(graph, features) # callable: delegate to 'forward'
+            
             #pred_similarity = embeddings @ embeddings.T  # Dot product for predicted similarity matrix
             pred_similarity = torch.sum(embeddings.unsqueeze(1) * embeddings, dim=2) 
 
