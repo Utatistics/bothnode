@@ -61,10 +61,17 @@ class Network(object):
         logger.info(f'>> Nonce={nonce} for {address=}')
         return nonce
     
-    def get_block_number(self):
-        number = self.provider.eth.get_block('latest').number
-        logger.info(f'>> Block Number={number}')
-        return number
+    def get_latest_block_num(self) -> int:
+        """get the latest block number for quick reference
+        
+        Returns
+        -------
+        block_num : int
+            the latest blocknumber of the connected node.
+        """
+        block_num = self.provider.eth.get_block('latest').number
+        logger.info(f'>> Block Number={block_num}')
+        return block_num
 
     def get_chain_info(self):
         logger.info(f">> Chain ID: {self.provider.eth.chain_id}")
@@ -147,11 +154,14 @@ class Network(object):
         
         if contract:
             logger.info('>> Smart Contract Transaction')
-            logger.info(f'{func_name=}')
-            logger.info(f'{func_params=}')
-        
-            encoded_params = self._encode_nested_dict_to_bytes(func_params)
-            function_call = contract.contract.encodeABI(fn_name=func_name, args=encoded_params)
+            logger.info(f'{func_name=}')                        
+            if func_params:
+                logger.info(f'{func_params=}')
+                function_call = contract.contract.encodeABI(fn_name=func_name, args=func_params)
+            else:
+                function_call = contract.contract.encodeABI(fn_name=func_name, args=None)
+
+            # create smart contract payload 
             payload = {
                 'from': sender.address,
                 'to': contract.contract_address,

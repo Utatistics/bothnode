@@ -1,0 +1,65 @@
+ganache v7.9.2 (@ganache/cli: 0.10.2, @ganache/core: 0.10.2)
+Starting RPC server
+
+Available Accounts
+==================
+(0) 0xD21d1024cB609E34d0183bd0f1ca861818b72dd5 (1000000 ETH)
+(1) 0xe14F660be5E84864E66Bf16EB39718c836a107b7 (1000000 ETH)
+(2) 0x66129e9576207e3730Ee928fBCF97C6Bb261894d (1000000 ETH)
+(3) 0x42fb6abcf3B2f2A61494EB367D9Dd01AEdD7DC90 (1000000 ETH)
+(4) 0x6775fa06891fF0E43356fe846f2d252408F1E05d (1000000 ETH)
+(5) 0x4fe885ff95A52671eb4c9E92afeA31C90f1428EB (1000000 ETH)
+(6) 0x09F4D87062f44a1AF96B93987000Ed0046e7a3C2 (1000000 ETH)
+(7) 0x5955B4DA5D3EE809870df300D5636360f1663031 (1000000 ETH)
+(8) 0x638724Ce35BE5a06760748a2242b34B1561260F8 (1000000 ETH)
+(9) 0x73D32f225b315F62596cA1EA7580A34aE8118a0a (1000000 ETH)
+
+Private Keys
+==================
+(0) 0xc9056311b2c4acaf494b9710d7a3a1a6f1bdce0a5e88de0b7fb092f62533f626
+(1) 0xb9a89dd998ec16dd5cc79edfe7a68bd99b7009f80ab9931ba799cf1bb9d4f7e1
+(2) 0xb65e79ee4cbc308dab2ffe6f37cc8e593446437ab25dd1160096029392fdfe64
+(3) 0x78cb2da72c29df8c3699b74f452e6710275691879380f373074111997eb714b3
+(4) 0xab132ef2c66c4055e1f453789baa3acc5a7a9ed329363616cb97e9f346cd492b
+(5) 0xa03a119d62e1e1a64c0732191dd605de30ad7d8d6dd3cda4eb72be1ad3af937b
+(6) 0x775b8f243467ec1a59b92ac81fd7b90017fe6a451ce898e0538841c0a8eb31e3
+(7) 0x1d4cd8816232360399bd22da5a9acfb5a698f0de9423d1a276c63d46091f122b
+(8) 0xa33a2b8cb321e3703eb703c70a28915d16359d1e1e0dfe3eaab05e81663aa95d
+(9) 0x05bddd2f4807a8df8bd0105d106595d9db0e623608f217da3f52d914c97c22c3
+
+Accounts and keys saved to /home/vagrant/bothnode/private/ganache_pk.json
+
+HD Wallet
+==================
+Mnemonic:      poem hill home lens firm volume noodle print share buyer you tourist
+Base HD Path:  m/44'/60'/0'/0/{account_index}
+
+Default Gas Price
+==================
+2000000000
+
+BlockGas Limit
+==================
+30000000
+
+Call Gas Limit
+==================
+50000000
+
+Chain
+==================
+Hardfork: shanghai
+Id:       1337
+
+RPC Listening on 127.0.0.1:8545
+web3_clientVersion
+eth_accounts
+eth_getBlockByNumber
+eth_getBlockByNumber
+eth_getBlockByNumber
+
+Received shutdown signal: SIGTERM
+Shutting down…
+
+Received shutdown signal: SIGHUP
+Server has been shut down

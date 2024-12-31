@@ -18,7 +18,6 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-
 @app.get("/")
 async def root():
     return {"message": "Welcome to the MongoDB Transaction API"}

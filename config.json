@@ -29,16 +29,6 @@
       "authrpc_port": 8551,
       "block_explorer_url": "https://etherscan.io"
     },
-    "ROPSTEN": {
-      "name": "ropsten",
-      "local_rpc": "http://127.0.0.1:8545",
-      "remote_rpc": "https://ropsten.infura.io/v3/<ProjectID>",
-      "chain_id": 3,
-      "rpc_port": 8545,
-      "network_port": 30303,
-      "authrpc_port": 8551,
-      "block_explorer_url": "https://ropsten.etherscan.io/"
-    },
     "GOERLI": {
       "name": "goerli",
       "local_rpc": "http://127.0.0.1:8545",
@@ -62,12 +52,20 @@
     }
   },
   "CLI": {
-    "version": "0.3.0"
+    "version": "0.5.0"
   },
   "DB": {
     "connection_string": "mongodb://localhost:27017",
     "init_username": "rootuser",
     "init_password": "rootpass",
-    "init_database": "mydatabase"
+    "init_database": "mydatabase",
+    "database": {
+      "transaction": "transaction_db",
+      "contract": "contract_db"
+    }
+  },
+  "EXTL": {
+    "cryptoScamDB": "https://cryptoscamdb.org/pages-manifest-0e07e26bdb01ac0f11b3.js",
+    "etherScan": "https://etherscan.io/"
   }
 }

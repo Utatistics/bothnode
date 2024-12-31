@@ -15,7 +15,13 @@ setup(
         ,'uvicorn'
         ,'pymongo'
         ,'PyYAML'
-        ,'eth-abi'],  # web3==6.16.0',   
+        ,'eth-abi'
+        ,'pandas'
+        ,'matplotlib'
+        ,'torch==2.4'  # Ensure torch 2.4 is installed
+        ,'dgl @ https://data.dgl.ai/wheels-test/torch-2.4/repo.html' # Adding the specific DGL install link
+        ,'pyod'
+    ],
     entry_points={
         "console_scripts": [
             "bothnode = cli:main",

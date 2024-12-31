@@ -34,4 +34,8 @@ class Config(object):
             
             # load DB config data
             self.DB_CONFIG = config_json['DB']
+            
+            # external system config data
+            self.EXTL_CONFIG = config_json['EXTL']
+            
       

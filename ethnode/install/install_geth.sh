@@ -7,5 +7,5 @@ then
     sudo apt-get update
     sudo apt-get install -y ethereum
 else
-    echo "geth is already installed"
+    echo ">>geth is already installed"
 fi

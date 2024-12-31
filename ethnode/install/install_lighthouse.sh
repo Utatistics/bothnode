@@ -9,5 +9,5 @@ then
     sudo mv lighthouse /usr/local/bin/
     rm -rf lighthouse-$LATEST_VERSION-x86_64-unknown-linux-gnu.tar.gz
 else
-    echo "lighthouse is already installed"
+    echo ">>lighthouse is already installed"
 fi

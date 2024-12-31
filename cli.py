@@ -53,7 +53,7 @@ class ArgParse(object):
         self.parser = argparse.ArgumentParser(description="bothnode CLI")
     
         # command and args
-        self.cmd = ['run', 'init', 'db_sync', 'get', 'tx', 'frontrun', 'detect']
+        self.cmd = ['run', 'init', 'db_sync', 'fetch', 'get', 'tx', 'frontrun', 'detect']
         self.parser.add_argument("command", help="Command to execute", choices=self.cmd)       
         
         partial_args, _ = self.parser.parse_known_args()
@@ -63,10 +63,14 @@ class ArgParse(object):
         if partial_args.command == 'db_sync':
             self.parser.add_argument("instance_id")            
             self.parser.add_argument("instance_region", help="region name (e.g., eu-east-2)")            
-            self.parser.add_argument("db_name", help="database name (e.g., transaction)")               
+            self.parser.add_argument("db_name", help="database name (e.g., transaction)")        
+        elif partial_args.command == 'fetch':
+            pass       
         elif partial_args.command != 'run':
-            self.parser.add_argument("net", help="Network name (e.g., ganache)")
+            # shared parms
+            self.parser.add_argument("net", help="Network name (e.g., ganache)") 
             self.parser.add_argument("-p", "--protocol", default='HTTPS')
+            
             if partial_args.command == 'get':
                 tgt = ['block_info', 'nonce', 'chain_info', 'gas_price', 'queue'] 
                 self.parser.add_argument("target", nargs='?', help="Target for the comamnd", choices=tgt)
@@ -80,9 +84,11 @@ class ArgParse(object):
                 self.parser.add_argument("--func-params", type=self._dict_parser, help="Smart contract method parameters in dictionary format")
             if partial_args.command == 'frontrun':
                 self.parser.add_argument("sender_address", help="The address for the sender")
-                self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])        
-        
-          
+            if partial_args.command == 'detect':
+                self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])
+                self.parser.add_argument("-n", "--block-number", type=int)
+                self.parser.add_argument("-l", "--block-length", type=int, default=2)
+                            
         # parse the args
         self._parse_args()
 
@@ -91,7 +97,6 @@ class ArgParse(object):
         logger.debug(f'{self.args=}')
 
     def _dict_parser(self, value):
-            # Check if the input is a valid file path
             if os.path.isfile(value):
                 try:
                     with open(value, 'r') as file:
@@ -99,8 +104,6 @@ class ArgParse(object):
                         return parsed_dict
                 except (IOError, json.JSONDecodeError) as e:
                     raise argparse.ArgumentTypeError(f"Error reading file: {e}")
-            
-            # Otherwise, try to parse it as a JSON string
             try:
                 parsed_dict = json.loads(value)
                 return parsed_dict
@@ -157,6 +160,9 @@ def handler(args: argparse.Namespace):
         
     elif args.command == 'db_sync':
         sync_mongodb(instance_id=args.instance_id, region=args.instance_region, container_name='mongodb', db_name=args.db_name)
+    
+    elif args.command == 'fetch':
+        driver.run_label_crowler()
         
     else:
         logger.info(f"Executing the command: {args.command}")
@@ -181,7 +187,7 @@ def handler(args: argparse.Namespace):
             driver.front_runner(net=net, sender_address=args.sender_address)
      
         elif args.command == 'detect':
-            driver.detect_anamolies(method=args.method)
+            driver.detect_anamolies(net=net, method=args.method, block_num=args.block_number, block_len=args.block_length)
   
 def main():
     argparser = ArgParse()

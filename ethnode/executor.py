@@ -24,7 +24,7 @@ def install_service(service_name: str) -> None:
         return
     logger.info(f"Executed {install_sh} successfully.")
 
-def setup_service(service_name: str):
+def setup_service(service_name: str, net_name: str):
     """
     Set up a systemd service by copying the .service file.
 
@@ -38,7 +38,7 @@ def setup_service(service_name: str):
     """
 
     source_path = config.SERVICE_DIR / f'{service_name}.service'
-    dest_path = config.SERVICE_DIR / f'{service_name}.service'
+    dest_path = config.SYSTEM_DIR / f'{service_name}.service'
 
     # copying the .service file 
     if dest_path.exists():
@@ -63,8 +63,14 @@ def setup_service(service_name: str):
         logger.info(f'Reloaded systemd configuration successfully.')
     except subprocess.CalledProcessError as e:
         logger.error(f"Failed to reload systemd configuration: {e}")
-                     
-def node_launcher(net_name: str) -> None: 
+        
+    try:
+        subprocess.run(['sudo', 'systemctl', 'start' f'`{service_name}.service'], check=True)
+        logger.info(f'Enabled systemd configuration successfully.')
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to enable systemd configuration: {e}")
+
+def service_launcher(net_name: str) -> None:
     """
     Launch the appropriate network node based on the specified network name.
     *currently utilize syhstem.d rather than calling .sh (bothnode/ethnode/command)
@@ -89,9 +95,59 @@ def node_launcher(net_name: str) -> None:
             setup_service(service_name=service)
 
         # Run the clef.sh script to handle interactive commands
-        clef_sh = config.COMMAND_DIR / "clef.sh"
-        clef_process = subprocess.run(["bash", str(clef_sh), net_name], check=True)
-        if clef_process.returncode != 0:
-            logger.error(f"Error executing {clef_sh}: {clef_process.stderr.decode('utf-8')}")
-            return
-        logger.info(f"Executed {clef_sh} successfully.")
+        clef_sh = config.COMMAND_DIR / "clef.sh"        
+        try:
+            clef_process = subprocess.run(
+                ["bash", str(clef_sh), net_name],
+                check=True,
+                text=True,  # Enables text mode for capturing output as strings
+                stdout=subprocess.PIPE,  # Capture standard output
+                stderr=subprocess.PIPE   # Capture standard error
+                )
+            logger.info(f"Output: {clef_process.stdout}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error executing {clef_sh}: {e.stderr}")            
+
+def node_launcher(net_name: str) -> None: 
+    """
+    Args
+    ----
+    net_name : str
+        The name of the network to launch (i.e. ganache, geth & lighthouse)
+
+    Returns
+    -------
+    """
+    logger.info(f'Launching {net_name}')
+    
+    if net_name.lower() == 'ganache':
+        ganache_sh = config.COMMAND_DIR / 'ganache.sh'
+        subprocess.Popen(["bash", str(ganache_sh), str(config.ROOT_DIR), net_name])
+    else:
+        # Run the clef.sh script to handle interactive commands
+        clef_sh = config.COMMAND_DIR / "clef.sh"        
+        try:
+            clef_process = subprocess.run(
+                ["bash", str(clef_sh), net_name],
+                check=True,
+                text=True,  # Enables text mode for capturing output as strings
+                stdout=subprocess.PIPE,  # Capture standard output
+                stderr=subprocess.PIPE   # Capture standard error
+                )
+            logger.info(f"Output: {clef_process.stdout}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error executing {clef_sh}: {e.stderr}")
+        
+        geth_sh = config.COMMAND_DIR / "geth.sh"        
+        try:
+            geth_process = subprocess.run(
+                ["bash", str(geth_sh), net_name],
+                check=True,
+                text=True,  # Enables text mode for capturing output as strings
+                stdout=subprocess.PIPE,  # Capture standard output
+                stderr=subprocess.PIPE   # Capture standard error
+                )
+            logger.info(f"Output: {geth_process.stdout}")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error executing {geth_sh}: {e.stderr}")
+            
