@@ -127,6 +127,8 @@ class Graph(object):
         logger.info(f'{len(self.node_feature.nodes)=}')
         logger.info(f'{len(self.edge_feature.edges)=}')
         
+        self._create_address_index_dict()
+        
         try:
             self._node_link_generator()
             logger.info("Successfully constructed graph object.")
@@ -141,7 +143,12 @@ class Graph(object):
             logger.info("Successfully added features to the graph.")
         except Exception as e:
             logger.error(f"tensor generation failed: {e}") 
-             
+    
+    def _create_address_index_dict(self):
+        """create a simple index map for node addresses.
+        """
+        self.index_to_address = {i: features['address'] for i, features in enumerate(self.node_feature.nodes.values())}
+                 
     def _node_link_generator(self):
         """create DGL graph object
         """
@@ -185,7 +192,7 @@ class Graph(object):
         self.graph.ndata['tensor'] = torch.tensor(node_features, dtype=torch.float32)
         self.graph.edata['tensor'] = torch.tensor(edge_features, dtype=torch.float32)
             
-    def draw_graph(self, path_to_png: Path) -> None:
+    def draw_graph(self, path_to_png: Path, anomaly_dict: dict) -> None:
         """visuallize graph structure
         
         Args
@@ -193,21 +200,36 @@ class Graph(object):
         path_to_png : Path
             the path to the output png.
         """
-        
+                
         nx_g = self.graph.to_networkx()
         
         #matplotlib.use("TkAgg")
+
         plt.figure(figsize=(10, 10))
+
+        pos = nx.spring_layout(nx_g, seed=42)
         
-        pos = nx.spring_layout(nx_g, seed=42)  # Layout for better visualization
+        node_colors = ["red" if node in anomaly_dict else "blue" for node in nx_g.nodes()]
+        
         nx.draw(
-            nx_g, pos, node_size=20, node_color="blue", edge_color="gray", alpha=0.7, with_labels=False
+            nx_g, pos, node_size=50, node_color=node_colors, edge_color="gray", alpha=0.7, with_labels=False
         )
         
-        # Xmin Issue to be Fixed!
-        #plt.show()
-        
-        plt.savefig(path_to_png, format="PNG")  # You can change the filename and format
+        plt.savefig(path_to_png, format="PNG")
         plt.close()  # Close the plot to avoid it showing up
-
+    
+    def get_node_addresses(self, node_index: list) -> list:
+        """obtaine list of node addresses based on the given indices
         
+        Args
+        ----
+        node_index : list
+            list of node indices 
+        
+        Returns
+        -------
+        node_address : list
+            list of node addresses
+        """
+        return [self.index_to_address[i] for i in node_index]
+    

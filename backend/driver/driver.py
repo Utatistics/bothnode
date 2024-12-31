@@ -12,7 +12,7 @@ from backend.object.graph import NodeFeature, EdgeFeature, Graph
 from backend.object.model import GraphConvNetwork, GraphSAGE
 from backend.object.crowler import CryptoScamDBCrowler
 from backend.object.randomwalk import Node2Vec
-
+from backend.driver.ml import call_one_class_SVM
 from backend.util.config import Config
 from logging import getLogger
 
@@ -169,9 +169,10 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     block_len : int
         the length of blocks to aggregate the transactions from.
     """
-    logger.info("Retriving data from node.")
     if not block_num:
-        block_num = net.get_latest_block_num() 
+        block_num = net.get_latest_block_num()
+
+    logger.info(f"Retriving data from node: {block_num}, {block_len}")        
     block = Block(net_name=net.name)
     block.query_blocks(block_num=block_num, block_len=block_len)
     block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata.json')
@@ -186,10 +187,7 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     num_edges = graph.graph.num_edges()
     logger.info(f'{num_nodes=}')
     logger.info(f'{num_edges=}')
-    
-    # visualizatoin
-    graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_visualization.png")
-    
+        
     logger.info("DB ingestion")
     '''
     try:
@@ -208,7 +206,6 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     epochs = 10
     learning_rate = 1e-4
     
-
     logger.info("Running Node2Vec to compute similarity matrix")
     rw = Node2Vec(num_nodes=num_nodes, embedding_dim=embedding_dim)
     rw.train_node2vec(graph=graph.graph
@@ -233,19 +230,21 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
                           ,out_feats=output_dim)
     
     # Learn embeddings
-    new_embeddings = graphsage.learn_embedding(graph=graph.graph
+    embeddings = graphsage.learn_embedding(graph=graph.graph
                                                ,features=graph.graph.ndata.get('tensor', None)
                                                ,labels=similarity_matrix
                                                ,epochs=20
                                                ,learning_rate=0.01)
 
-    # Save the new embeddings
-    torch.save(new_embeddings, config.PRIVATE_DIR / 'new_embeddings.pt')
-    logger.info(f"New embeddings saved to {config.PRIVATE_DIR / 'new_embeddings.pt'}")
-
+    torch.save(embeddings, config.PRIVATE_DIR / 'new_embeddings.pt')  
+    logger.info(f"Network Embedding :{embeddings.shape}\n{embeddings}")
     
-    #logger.info('Learning the embedding via GNN')    
-    #gcn = GraphConvNetwork(graph=graph)
-    #gcn.define_forward()    
-    #output = gcn(graph.graph, graph.graph.ndata['tensor'])
+    logger.info("Training One-class SVM")
+    anomoly_score, anomaly_dict = call_one_class_SVM(array=embeddings.numpy())
+    anomoly_addoress = graph.get_node_addresses(anomaly_dict.keys())
     
+    logger.info(f"{anomaly_dict=}")
+    logger.info(f"{anomoly_addoress=}")
+     
+    # visualizatoin
+    graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_visualization.png", anomaly_dict=anomaly_dict)

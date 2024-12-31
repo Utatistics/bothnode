@@ -20,6 +20,7 @@ setup(
         ,'matplotlib'
         ,'torch==2.4'  # Ensure torch 2.4 is installed
         ,'dgl @ https://data.dgl.ai/wheels-test/torch-2.4/repo.html' # Adding the specific DGL install link
+        ,'pyod'
     ],
     entry_points={
         "console_scripts": [

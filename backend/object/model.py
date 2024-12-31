@@ -6,6 +6,7 @@ from dgl.dataloading import MultiLayerNeighborSampler
 
 import torch
 import torch.nn as nn
+import torch.nn.init as init
 import torch.optim as optim
 import torch.nn.functional as F
 import numpy as np
@@ -68,7 +69,20 @@ class GraphSAGE(nn.Module):
         self.output_dim = out_feats
         
         self.layer1 = dgl.nn.SAGEConv(in_feats, hidden_feats, 'mean')  # First GraphSAGE layer with mean aggregation.
+        self.bn1 = nn.BatchNorm1d(hidden_feats)  # Batch normalization for layer 1
         self.layer2 = dgl.nn.SAGEConv(hidden_feats, out_feats, 'mean')  # Second GraphSAGE layer with mean aggregation.
+        self.bn2 = nn.BatchNorm1d(out_feats)  # Batch normalization for layer         
+        
+        self._weights_initializer()
+
+    def _weights_initializer(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                logger.info(f'{m=}: Applying Xavier Initializer...')
+                init.xavier_uniform_(m.weight)  # Xavier initialization
+                if m.bias is not None:
+                    init.zeros_(m.bias)  # Bias initialized to 0
+
 
     def forward(self, graph: dgl.DGLGraph, features: torch.Tensor) -> torch.Tensor:
         """
@@ -87,8 +101,10 @@ class GraphSAGE(nn.Module):
             Final node embeddings of shape (num_nodes, out_feats).
         """
         h = self.layer1(graph, features) 
+        h = self.bn1(h)
         h = torch.relu(h)
         h = self.layer2(graph, h)
+        h = self.bn2(h)
 
         return h
     

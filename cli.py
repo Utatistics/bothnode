@@ -87,7 +87,7 @@ class ArgParse(object):
             if partial_args.command == 'detect':
                 self.parser.add_argument("-m", "--method", choices=['SVM','GNN'])
                 self.parser.add_argument("-n", "--block-number", type=int)
-                self.parser.add_argument("-l", "--block-length", type=int, default=1)
+                self.parser.add_argument("-l", "--block-length", type=int, default=2)
                             
         # parse the args
         self._parse_args()
