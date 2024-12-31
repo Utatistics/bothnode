@@ -1,7 +1,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 # bothnode
-Welcome to bothnode. (v0.3.0)
+Welcome to bothnode. (v0.5.0)
 ```                                                                                              
     )            )      )                  (            
  ( /(         ( /(   ( /(                  )\ )     (   
