@@ -92,52 +92,65 @@ class CryptoScamDBCrowler(object):
                
         nodes = res_report.json()['data']['allCsdbScamDomains']['edges']
         num_nodes = len(nodes)
-        logger.info(f'{num_nodes=}')
+        logger.debug(f'{num_nodes=}')
     
         return [i['node'] for i in nodes]
 
-    def get_black_list(self) -> None:
-        """obtain lists of reported_addresses        
-        """ 
-        res_pages = self.session.get(self.endpoint)
-        page_url_params = self._pages_js_perser(res_pages)
-        logger.info(f"Found {len(page_url_params)} url parameters.")
-                
-        self.black_node_list = []
+    def _get_reported_nodes(self, page_url: str) -> None:
+        """Fetch a single URL and parse its content.
         
-        for url_param in page_url_params:
-            page_url = f'https://cryptoscamdb.org/static/d/{url_param}.json'            
-            logger.info(f'{page_url=}')
-            try:
-                res_report = self.session.get(page_url)
-                res_report.raise_for_status()                
-                nodes = self._report_json_parser(res_report)        
-                self.black_node_list.extend(nodes)   
-                               
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Request failed for {page_url}: {e}")
-                raise  # Reraise the exception to handle it in the calling method
-            except ValueError as e:
-                logger.error(f"Error fetching data for {page_url}: {e}")
-    
-    def get_black_list_concurrent(self) -> None:
-        """Obtain lists of reported addresses using multithreading."""
+        Args
+        ----
+        page_url : string
+            endpoint url
+        
+        Returns
+        -------
+        nodes : list
+            reported nodes 
+        """
+        logger.info(f'{page_url=}')
+
+        try:
+            res_report = self.session.get(page_url)
+            res_report.raise_for_status()
+            return self._report_json_parser(res_report)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request failed for {page_url}: {e}")
+            return []
+        except ValueError as e:
+            logger.error(f"Error fetching data for {page_url}: {e}")
+            return []
+        
+    def get_black_list(self, concurrent: bool=False) -> None:
+        """obtain lists of reported_addresses
+        
+        Args
+        ----
+        concurrent : bool
+            execute the method concurrently  
+        """ 
+        
         res_pages = self.session.get(self.endpoint)
         page_url_params = self._pages_js_perser(res_pages)
-        logger.info(f"Found {len(page_url_params)} url parameters.")
-
         page_urls = [f'https://cryptoscamdb.org/static/d/{param}.json' for param in page_url_params]
-
-        with ThreadPoolExecutor(max_workers=10) as executor:  # Adjust max_workers as needed
-            future_to_url = {executor.submit(self._fetch_and_parse, url): url for url in page_urls}
-
-            for future in as_completed(future_to_url):
-                url = future_to_url[future]
-                try:
-                    nodes = future.result()
-                    self.black_node_list.extend(nodes)
-                except Exception as e:
-                    logger.error(f"Unexpected error processing {url}: {e}")
+        logger.info(f"Found {len(page_urls)} URLs.")
+        
+        self.black_node_list = [] 
+        if concurrent:
+            with ThreadPoolExecutor(max_workers=10) as executor:  # Adjust max_workers as needed
+                future_to_url = {executor.submit(self._get_reported_nodes, url): url for url in page_urls}
+                for future in as_completed(future_to_url):
+                    url = future_to_url[future]
+                    try:
+                        nodes = future.result()
+                        self.black_node_list.extend(nodes)
+                    except Exception as e:
+                        logger.error(f"Unexpected error processing {url}: {e}")
+        else:                       
+            for page_url in page_urls:
+                nodes = self._get_reported_nodes(page_url=page_url)
+                self.black_node_list.extend(nodes)
 
             
     def write_to_json(self, path_to_json: Path) -> None:
