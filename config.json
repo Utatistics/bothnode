@@ -52,7 +52,7 @@
     }
   },
   "CLI": {
-    "version": "0.5.0"
+    "version": "0.5.2"
   },
   "DB": {
     "connection_string": "mongodb://localhost:27017",

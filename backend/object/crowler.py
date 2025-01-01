@@ -1,9 +1,11 @@
 import re
 import json
 import requests
+from pathlib import Path
 from typing import List, Dict
-from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from backend.util.config import Config
 from logging import getLogger
@@ -87,45 +89,82 @@ class CryptoScamDBCrowler(object):
         """
         logger.debug(res_report.status_code)
         logger.debug(res_report.json())
-        
-        
-        
-        return res_report
+               
+        nodes = res_report.json()['data']['allCsdbScamDomains']['edges']
+        num_nodes = len(nodes)
+        logger.debug(f'{num_nodes=}')
+    
+        return [i['node'] for i in nodes]
 
-    def get_black_list(self) -> list:
-        """obtain lists of reported_addresses
+    def _get_reported_nodes(self, page_url: str) -> None:
+        """Fetch a single URL and parse its content.
+        
+        Args
+        ----
+        page_url : string
+            endpoint url
         
         Returns
         -------
-        black_list : list[dict]
-            list of addresses reported as scam
-        """   
-        # Get page URLs
+        nodes : list
+            reported nodes 
+        """
+        logger.info(f'{page_url=}')
+
+        try:
+            res_report = self.session.get(page_url)
+            res_report.raise_for_status()
+            return self._report_json_parser(res_report)
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request failed for {page_url}: {e}")
+            return []
+        except ValueError as e:
+            logger.error(f"Error fetching data for {page_url}: {e}")
+            return []
+        
+    def get_black_list(self, concurrent: bool=False) -> None:
+        """obtain lists of reported_addresses
+        
+        Args
+        ----
+        concurrent : bool
+            execute the method concurrently  
+        """ 
+        
         res_pages = self.session.get(self.endpoint)
         page_url_params = self._pages_js_perser(res_pages)
+        page_urls = [f'https://cryptoscamdb.org/static/d/{param}.json' for param in page_url_params]
+        logger.info(f"Found {len(page_urls)} URLs.")
         
-        # Generate black list
-        black_list = []
-        for url_param in page_url_params:
-            page_url = f'https://cryptoscamdb.org/static/d/{url_param}.json'            
-            try:
-                logger.info(f'{page_url=}')
-                res_report = self.session.get(page_url)
-                res_report.raise_for_status()
-                report_json = self._report_json_parser(res_report)
-                black_list.append(report_json.json())
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Request failed for {page_url}: {e}")
-                raise  # Reraise the exception to handle it in the calling method
-            except ValueError as e:
-                logger.error(f"Error fetching data for {page_url}: {e}")
+        self.black_node_list = [] 
+        if concurrent:
+            with ThreadPoolExecutor(max_workers=10) as executor:  # Adjust max_workers as needed
+                future_to_url = {executor.submit(self._get_reported_nodes, url): url for url in page_urls}
+                for future in as_completed(future_to_url):
+                    url = future_to_url[future]
+                    try:
+                        nodes = future.result()
+                        self.black_node_list.extend(nodes)
+                    except Exception as e:
+                        logger.error(f"Unexpected error processing {url}: {e}")
+        else:                       
+            for page_url in page_urls:
+                nodes = self._get_reported_nodes(page_url=page_url)
+                self.black_node_list.extend(nodes)
+
             
+    def write_to_json(self, path_to_json: Path) -> None:
+        """write the black list to a single json file
+        
+        Args
+        ----
+        path_to_json : Path
+            path to the .json file
+        
+        """
+        with open(path_to_json, mode="w") as file:
+            json.dump(self.black_node_list, file, indent=4)
             
-            break
-        
-        
-        return black_list
-        
 class EtherScanCrowler(object):
     def __init__(self):
         pass

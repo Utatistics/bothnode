@@ -65,7 +65,7 @@ class ArgParse(object):
             self.parser.add_argument("instance_region", help="region name (e.g., eu-east-2)")            
             self.parser.add_argument("db_name", help="database name (e.g., transaction)")        
         elif partial_args.command == 'fetch':
-            pass       
+            self.parser.add_argument("--concurrent", action="store_true", default=False)
         elif partial_args.command != 'run':
             # shared parms
             self.parser.add_argument("net", help="Network name (e.g., ganache)") 
@@ -162,7 +162,7 @@ def handler(args: argparse.Namespace):
         sync_mongodb(instance_id=args.instance_id, region=args.instance_region, container_name='mongodb', db_name=args.db_name)
     
     elif args.command == 'fetch':
-        driver.run_label_crowler()
+        driver.run_label_crowler(concurrent=args.concurrent)
         
     else:
         logger.info(f"Executing the command: {args.command}")
