@@ -27,7 +27,11 @@ increment_version() {
             ;;
         *)
             echo "Invalid update type. Use 'major', 'minor', or 'patch'."
-            exit 1
+            if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+                return 1  # Graceful exit for sourced script
+            else
+                exit 1
+            fi
             ;;
     esac
 
@@ -38,7 +42,11 @@ increment_version() {
 if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <update_type> <commit_message>"
     echo "Update types: major, minor, patch"
-    exit 1
+    if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+        return 1  # Graceful exit for sourced script
+    else
+        exit 1
+    fi
 fi
 
 UPDATE_TYPE="$1"
@@ -47,10 +55,21 @@ COMMIT_MESSAGE="$2"
 # Extract the current version from config.json
 current_version=$(jq -r '.CLI.version' "$CONFIG_FILE")
 
-# Increment the version based on the type
+# Increment the version based on the type to get the targeted version
 new_version=$(increment_version "$current_version" "$UPDATE_TYPE")
 
-# update README.md
+# Prompt the user with the targeted version
+read -p "Have you updated the README.md file for version ${new_version}? (yes/no): " user_input
+if [[ "$user_input" != "yes" ]]; then
+    echo "Please update the README.md file before running this script. Exiting."
+    if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+        return 0  # Graceful exit for sourced script
+    else
+        exit 0
+    fi
+fi
+
+# Update README.md
 sed -i "s/Welcome to bothnode.(v[0-9]*\.[0-9]*\.[0-9]*)/Welcome to bothnode.(v$new_version)/" "$README_FILE"
 
 # Update the version in config.json
@@ -68,6 +87,5 @@ git tag -a "${TAG_PREFIX}${new_version}" -m "Tagging version ${new_version}"
 # Push the commit and tags to the remote repository
 git push
 git push origin "${TAG_PREFIX}${new_version}"
-
 
 echo "Version updated to $new_version and tagged successfully."
