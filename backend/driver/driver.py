@@ -145,15 +145,21 @@ def run_label_crowler() -> None:
     """
     logger.info("Fetching blacklists from external service provider.")
     crowler = CryptoScamDBCrowler(extl_config=extl_config)
-    black_list = crowler.get_black_list()
-    logger.info(black_list)
-    logger.info("DB ingestion")
+    
+    # crowler.get_black_list()
+    crowler.get_black_list_concurrent()
+
+    logger.info(f'{len(crowler.black_node_list)=}')
+
+    crowler.write_to_json(path_to_json=config.PRIVATE_DIR / 'black_list.json')    
+    
     '''
+    logger.info("DB ingestion")
     try:
         db_client = MongoDBClient(uri=connection_string, database_name='')
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
-    '''
+    '''   
 
 def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) -> None:
     """detect anamolies in the network with the specified method
