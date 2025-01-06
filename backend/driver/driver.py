@@ -150,9 +150,9 @@ def run_label_crowler(concurrent: bool) -> None:
     """
     logger.info(f"Fetching blacklists from external service provider: concurrent={concurrent}")
     crowler = CryptoScamDBCrowler(extl_config=extl_config)
-    crowler.get_black_list(concurrent=concurrent)
+    crowler.get_reported_addresses(concurrent=concurrent)
 
-    logger.info(f'{len(crowler.black_node_list)=}')
+    logger.info(f'{len(crowler.address_dict)=}')
 
     crowler.write_to_json(path_to_json=config.PRIVATE_DIR / 'black_list.json')    
     

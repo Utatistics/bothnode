@@ -1,5 +1,6 @@
 import re
 import json
+import time
 import requests
 from pathlib import Path
 from typing import List, Dict
@@ -70,11 +71,8 @@ class CryptoScamDBCrowler(object):
                 logger.error("Error parsing dataPaths:", e)
         else:
             logger.info("dataPaths not found in the response.")
-        
-        def _report_json_parser(self):
-            pass
     
-    def _report_json_parser(self, res_report: dict):
+    def _report_json_parser(self, res_report: dict) -> list:
         """send GET request for a single scam page
         
         Args
@@ -84,7 +82,7 @@ class CryptoScamDBCrowler(object):
         
         Returns
         -------
-        res_report : dict
+        res_report : list
             parsed response
         """
         logger.debug(res_report.status_code)
@@ -95,7 +93,7 @@ class CryptoScamDBCrowler(object):
         logger.debug(f'{num_nodes=}')
     
         return [i['node'] for i in nodes]
-
+       
     def _get_reported_nodes(self, page_url: str) -> None:
         """Fetch a single URL and parse its content.
         
@@ -117,26 +115,32 @@ class CryptoScamDBCrowler(object):
             return self._report_json_parser(res_report)
         except requests.exceptions.RequestException as e:
             logger.error(f"Request failed for {page_url}: {e}")
-            return []
+            return {}
         except ValueError as e:
             logger.error(f"Error fetching data for {page_url}: {e}")
-            return []
+            return {}
         
-    def get_black_list(self, concurrent: bool=False) -> None:
+    def get_reported_nodes(self, concurrent: bool=False) -> list:
         """obtain lists of reported_addresses
         
         Args
         ----
         concurrent : bool
             execute the method concurrently  
+        
+        Returns
+        -------
+        reported_nodes : list
+            reported anamoly node instances
         """ 
+        init_time = time.time()
         
         res_pages = self.session.get(self.endpoint)
         page_url_params = self._pages_js_perser(res_pages)
         page_urls = [f'https://cryptoscamdb.org/static/d/{param}.json' for param in page_url_params]
         logger.info(f"Found {len(page_urls)} URLs.")
         
-        self.black_node_list = [] 
+        reported_nodes = []
         if concurrent:
             with ThreadPoolExecutor(max_workers=10) as executor:  # Adjust max_workers as needed
                 future_to_url = {executor.submit(self._get_reported_nodes, url): url for url in page_urls}
@@ -144,15 +148,53 @@ class CryptoScamDBCrowler(object):
                     url = future_to_url[future]
                     try:
                         nodes = future.result()
-                        self.black_node_list.extend(nodes)
+                        reported_nodes.extend(nodes)
                     except Exception as e:
                         logger.error(f"Unexpected error processing {url}: {e}")
-        else:                       
+        else:
             for page_url in page_urls:
                 nodes = self._get_reported_nodes(page_url=page_url)
-                self.black_node_list.extend(nodes)
+                reported_nodes.extend(nodes)
 
-            
+        logger.info(f'Exection Time: {time.time() - init_time:.3f} secs.')
+        return reported_nodes
+    
+    def get_reported_addresses(self, concurrent: bool=False, net_occurence: str='ETH') -> None:
+        """
+        
+        Args
+        ----
+        concurrent : bool
+            execute the method concurrently  
+        """
+        reported_nodes = self.get_reported_nodes(concurrent=concurrent)
+        
+        self.address_dict = {}
+        for item in reported_nodes:
+            for address in item.get('labelled_addresses', ''):
+                if address:         
+                    if address == '':
+                        continue
+                    else:
+                        logger.debug(f'{address=}')
+                        net, address = address.split(':')
+                    if net == net_occurence:                                    
+                        self.address_dict[address] = {
+                            "id": item["id"],
+                            "name": item["name"],
+                            "url": item["url"],
+                            "category": item["category"],
+                            "subcategory": item["subcategory"],
+                            "description": item["description"],
+                            "reporter": item["reporter"],
+                            "severity": item["severity"],
+                            "hostname": item["hostname"],
+                            "updated": item["updated"],
+                            "type": item["type"],
+                            }
+                else:
+                    continue
+                
     def write_to_json(self, path_to_json: Path) -> None:
         """write the black list to a single json file
         
@@ -163,8 +205,8 @@ class CryptoScamDBCrowler(object):
         
         """
         with open(path_to_json, mode="w") as file:
-            json.dump(self.black_node_list, file, indent=4)
-            
+            json.dump(self.address_dict, file, indent=4)
+        
 class EtherScanCrowler(object):
     def __init__(self):
         pass
