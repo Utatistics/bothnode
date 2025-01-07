@@ -153,20 +153,25 @@ def run_label_crowler(concurrent: bool) -> None:
     crowler = CryptoScamDBCrowler(extl_config=extl_config)
     crowler.get_reported_addresses(concurrent=concurrent)
     crowler.write_to_json(path_to_json=config.PRIVATE_DIR / 'black_list.json') 
-    logger.info(f'{len(crowler.address_dict)=}')
+    address_list = list(crowler.address_dict.keys())
+    logger.info(f'{len(address_list)=}')
 
-    '''
+    escan_api = EtherScanAPI(extl_config=extl_config, path_to_key=config.PRIVATE_DIR / 'etherscan.key')
+    block_num_dict = escan_api.get_block_nums_as_per_addr(concurrent=True, address_list=address_list)
+    logger.info(f'{len(block_num_dict)=}')
+    block_num_dict['timestamp'] = datetime.datetime.now()
+
     logger.info("DB ingestion")
+    api_data = {
+    "timestamp": datetime.datetime.now(),
+    "addresses": block_num_dict
+    }
     try:
-        db_client = MongoDBClient(uri=connection_string, database_name='')
+        db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
+        db_client.insert_document(collection_name='cryptoScamDBLabels', document=api_data)
+        
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
-    '''
-    address_list = list(crowler.address_dict.keys())
-    escan_api = EtherScanAPI(extl_config=extl_config, path_to_key=config.PRIVATE_DIR / 'ethscan.key')
-    block_num_dict = escan_api.get_block_nums_as_per_addr(concurrent=True, address_list=address_list)
-    
-    logger.info(f'{block_num_dict=}')
       
 def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) -> None:
     """detect anamolies in the network with the specified method
@@ -200,14 +205,15 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     num_edges = graph.graph.num_edges()
     logger.info(f'{num_nodes=}')
     logger.info(f'{num_edges=}')
-        
-    logger.info("DB ingestion")
-    '''
+    
+    logger.info("DB query.")
     try:
-        db_client = MongoDBClient(uri=connection_string, database_name='')
+        db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
+        docs = db_client.find_document(collection_name='cryptoScamDBLabels', projection={"addresses": 1, "_id": 0}, sort=[("timestamp", -1)])
+        logger.info(f'{docs=}')
+        
     except Exception as e:
-        logger.error(f"Failed to store data in MongoDB: {e}")
-    '''
+        logger.error(f"Failed to retrieve data from MongoDB: {e}")
     
     logger.info("Scoring node similarity via Randam Walk") 
     embedding_dim = 16

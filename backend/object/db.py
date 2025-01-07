@@ -52,15 +52,19 @@ class MongoDBClient:
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")
 
-    def find_document(self, collection_name: str, query: dict) -> dict:
+    def find_document(self, collection_name: str, filter: dict=None, projection: dict=None, sort: list=None) -> dict:
         """Find a single document in a collection.
         
         Args
         ----
-        collection_name:
+        collection_name: str
             Name of the collection
-        query:
-            Query to filter the documents
+        filter: dict
+            specifies the criteria for selecting documents
+        projection : dict
+            specifies which fields of the selected documents
+
+        sort : list
         
         Returns
         -------
@@ -68,19 +72,19 @@ class MongoDBClient:
         """
         try:
             collection = self.database[collection_name]
-            document = collection.find_one(query)
+            document = collection.find_one(filter=filter, projection=projection, sort=sort)
             return document
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")
 
-    def find_documents(self, collection_name: str, query: dict = {}, projection: dict = None):
+    def find_documents(self, collection_name: str, filter: dict = {}, projection: dict=None):
         """Find multiple documents in a collection.
         
         Args
         ----
         collection_name:
             Name of the collection
-        query:
+        filter:
             Query to filter the documents
         projection:
             Fields to include or exclude in the results
@@ -90,19 +94,19 @@ class MongoDBClient:
         """
         try:
             collection = self.database[collection_name]
-            cursor = collection.find(query, projection)
+            cursor = collection.find(filter=filter, projection=projection)
             return cursor
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")
 
-    def update_document(self, collection_name: str, query: dict, update: dict, upsert: bool = False):
+    def update_document(self, collection_name: str, filter: dict, update: dict, upsert: bool=False):
         """Update a single document in a collection.
         
         ARgs
         ----
         collection_name:
             Name of the collection
-        query:
+        filter:
             Query to match the document
         update:
             The update operations to apply
@@ -115,19 +119,19 @@ class MongoDBClient:
         """
         try:
             collection = self.database[collection_name]
-            result = collection.find_one_and_update(query, update, upsert=upsert, return_document=ReturnDocument.AFTER)
+            result = collection.find_one_and_update(filter-filter, update=update, upsert=upsert, return_document=ReturnDocument.AFTER)
             return result
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")
 
-    def delete_document(self, collection_name: str, query: dict):
+    def delete_document(self, collection_name: str, filter: dict):
         """Delete a single document from a collection.
         
         Args
         ----
         collection_name:
             Name of the collection
-        query:
+        filter:
             Query to match the document
         Returns
         -------
@@ -135,7 +139,7 @@ class MongoDBClient:
         """
         try:
             collection = self.database[collection_name]
-            result = collection.delete_one(query)
+            result = collection.delete_one(filter=filter)
             return result.deleted_count
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")

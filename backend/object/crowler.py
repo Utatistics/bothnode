@@ -203,6 +203,7 @@ class CryptoScamDBCrowler(object):
         with open(path_to_json, mode="w") as file:
             json.dump(self.address_dict, file, indent=4)
 
+
 class EtherScanCrowler(object):
     def __init__(self, extl_config: dict):
         """
@@ -214,6 +215,7 @@ class EtherScanCrowler(object):
         """
         self.endpoint = extl_config['etherScan']
         
+ 
 class EtherScanAPI(object):
     def __init__(self, extl_config: dict, path_to_key: Path):
         """Set endpoint and configure session
@@ -337,13 +339,16 @@ class EtherScanAPI(object):
             with ThreadPoolExecutor(max_workers=10) as executor:  # Adjust max_workers as needed
                 future_to_address = {executor.submit(self._get_block_nums_as_per_addr, address): address for address in address_list}
                 for future in as_completed(future_to_address):
-                    address = future_to_address[future]
+                    address = future_to_address[future]  # This correctly retrieves the address
                     try:
-                        address, block_nums = future.result()
-                        block_num_dict[address] = block_nums
+                        block_nums = future.result()  # Assuming result is just block_nums, not (address, block_nums)
+                        if block_nums:
+                            block_num_dict[address] = block_nums
+                        else:
+                            logger.warning(f"Block numbers are None for address {address}")
                     except Exception as e:
                         logger.error(f"Unexpected error processing {address}: {e}")
-                        
+
         else:
             for address in address_list:
                 block_num_dict[address] = self._get_block_nums_as_per_addr(address=address)
