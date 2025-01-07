@@ -172,6 +172,7 @@ def run_label_crowler(concurrent: bool) -> None:
         
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
+
       
 def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) -> None:
     """detect anamolies in the network with the specified method
