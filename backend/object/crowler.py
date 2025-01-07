@@ -3,7 +3,7 @@ import json
 import time
 import requests
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Tuple
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -13,10 +13,6 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-
-class LabelCrowler(object):
-    def __init__(self):
-        pass
 
 class CryptoScamDBCrowler(object):
     def __init__(self, extl_config: dict):
@@ -206,7 +202,152 @@ class CryptoScamDBCrowler(object):
         """
         with open(path_to_json, mode="w") as file:
             json.dump(self.address_dict, file, indent=4)
-        
+
 class EtherScanCrowler(object):
-    def __init__(self):
-        pass
+    def __init__(self, extl_config: dict):
+        """
+        
+        Args
+        ----
+        extl_config : dict
+            particial config object
+        """
+        self.endpoint = extl_config['etherScan']
+        
+class EtherScanAPI(object):
+    def __init__(self, extl_config: dict, path_to_key: Path):
+        """Set endpoint and configure session
+        
+        Args
+        ----
+        extl_config : dict
+            particial config object
+        path_to_key : Path
+            path to the api key stored in a file.
+        """
+        
+        self.endpoint = extl_config['etherScanAPI']
+        
+        with open(path_to_key, mode='r') as f:
+            self.api_key = f.read()
+            logger.info(f'{self.api_key=}')
+    
+    def _get_latest_block_num_as_per_addr(self, address: str) -> int:
+        """get the latest block that includes the transactions involving the given addresses
+        
+        Args 
+        ----
+        addresses : dict
+            dict of adddresses
+        
+        Returns
+        -------
+        block_number : int
+            the latest block number 
+        """
+        
+        params = {
+            "module": "account",
+            "action": "txlist",
+            "address": address,
+            "startblock": 0,
+            "endblock": 99999999,
+            "sort": "desc",  # Sort transactions by block number in descending order
+            "apikey": self.api_key,
+            }
+        
+        response = requests.get(self.endpoint, params=params)
+        res = response.json()
+        
+        if res["status"] == "1":  # Check if the request was successful
+            latest_block = res["result"][0]["blockNumber"]  # Most recent block
+            return int(latest_block)
+        else:
+            logger.error("Error:", res["message"])
+            return None
+            
+    def _get_first_block_num_as_per_addr(self, address: str) -> int:        
+        """Get the earliest block that includes the transactions involving the given address.
+        
+        Args
+        ----
+        address : str
+            Ethereum address to query.
+        
+        Returns
+        -------
+        block_number : int
+            The earliest block number.
+        """
+        params = {
+            "module": "account",
+            "action": "txlist",
+            "address": address,
+            "startblock": 0,
+            "endblock": 99999999,
+            "sort": "asc",  # Sort transactions by block number in ascending order
+            "apikey": self.api_key,
+        }
+        
+        response = requests.get(self.endpoint, params=params)
+        res = response.json()
+        
+        if res["status"] == "1":  # Check if the request was successful
+            first_block = res["result"][0]["blockNumber"]  # Earliest block
+            return int(first_block)
+        else:
+            logger.error("Error:", res["message"])
+            return None
+
+    def _get_block_nums_as_per_addr(self, address: str) -> Tuple[int, int]:
+        """
+        Args
+        ----
+        addrress : str
+            target address
+        
+        Retunrs 
+        -------
+        
+        """
+        n = self._get_latest_block_num_as_per_addr(address=address)
+        m = self._get_first_block_num_as_per_addr(address=address)
+        
+        return (n, m)
+    
+    def get_block_nums_as_per_addr(self, concurrent: bool=False, address_list: List[str]=[]) -> List[Tuple[int, int]]:
+        """obtain lists of reported_addresses
+        
+        Args
+        ----
+        concurrent : bool
+            execute the method concurrently  
+        address_list : list
+            the list of address 
+            
+        Returns
+        -------
+        block_num_dict : dict
+            the dict of address and latest/first tx block number.
+        """ 
+        init_time = time.time()
+        
+        block_num_dict = {}
+        if concurrent:
+            with ThreadPoolExecutor(max_workers=10) as executor:  # Adjust max_workers as needed
+                future_to_address = {executor.submit(self._get_block_nums_as_per_addr, address): address for address in address_list}
+                for future in as_completed(future_to_address):
+                    address = future_to_address[future]
+                    try:
+                        address, block_nums = future.result()
+                        block_num_dict[address] = block_nums
+                    except Exception as e:
+                        logger.error(f"Unexpected error processing {address}: {e}")
+                        
+        else:
+            for address in address_list:
+                block_num_dict[address] = self._get_block_nums_as_per_addr(address=address)
+   
+        logger.info(f'Exection Time: {time.time() - init_time:.3f} secs.')
+        
+        return block_num_dict

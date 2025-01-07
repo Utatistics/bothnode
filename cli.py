@@ -162,7 +162,7 @@ def handler(args: argparse.Namespace):
         sync_mongodb(instance_id=args.instance_id, region=args.instance_region, container_name='mongodb', db_name=args.db_name)
     
     elif args.command == 'fetch':
-        driver.run_label_crowler(concurrent=args.concurrent)
+        driver.run_label_crowler(concurrent=args.concurrent, net=net)
         
     else:
         logger.info(f"Executing the command: {args.command}")

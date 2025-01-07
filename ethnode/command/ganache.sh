@@ -6,8 +6,8 @@ PRIVATE_DIR="$ROOT_DIR/private"
 INSTALL_DIR="$ROOT_DIR/ethnode/install"
 CONFIG_PATH="$ROOT_DIR/config.json"
 ACCOUNT_KEYS_PATH="$PRIVATE_DIR/ganache_pk.json"
-INFURA_KEY_PATH="$PRIVATE_DIR/infura_key"
-ALCHEMY_KEY_PATH="$PRIVATE_DIR/alchemy_key"
+INFURA_KEY_PATH="$PRIVATE_DIR/infura.key"
+ALCHEMY_KEY_PATH="$PRIVATE_DIR/alchemy.key"
 GANACHE_LOG_PATH="$PRIVATE_DIR/ganache.log"
 
 # create ganache_pk.json

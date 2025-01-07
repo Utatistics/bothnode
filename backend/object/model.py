@@ -83,7 +83,6 @@ class GraphSAGE(nn.Module):
                 if m.bias is not None:
                     init.zeros_(m.bias)  # Bias initialized to 0
 
-
     def forward(self, graph: dgl.DGLGraph, features: torch.Tensor) -> torch.Tensor:
         """
         Forward pass to compute node embeddings.

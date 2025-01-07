@@ -66,6 +66,7 @@
   },
   "EXTL": {
     "cryptoScamDB": "https://cryptoscamdb.org/pages-manifest-0e07e26bdb01ac0f11b3.js",
-    "etherScan": "https://etherscan.io/"
+    "etherScan": "https://etherscan.io/",
+    "etherScanAPI": "https://api.etherscan.io/api"
   }
 }

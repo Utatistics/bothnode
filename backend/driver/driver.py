@@ -10,7 +10,7 @@ from backend.object.agent import FrontRunner, target_criteria
 from backend.object.block import Block
 from backend.object.graph import NodeFeature, EdgeFeature, Graph
 from backend.object.model import GraphConvNetwork, GraphSAGE
-from backend.object.crowler import CryptoScamDBCrowler
+from backend.object.crowler import CryptoScamDBCrowler, EtherScanAPI
 from backend.object.randomwalk import Node2Vec
 from backend.driver.ml import call_one_class_SVM
 from backend.util.config import Config
@@ -149,21 +149,25 @@ def run_label_crowler(concurrent: bool) -> None:
         enable multithreading 
     """
     logger.info(f"Fetching blacklists from external service provider: concurrent={concurrent}")
+
     crowler = CryptoScamDBCrowler(extl_config=extl_config)
     crowler.get_reported_addresses(concurrent=concurrent)
-
+    crowler.write_to_json(path_to_json=config.PRIVATE_DIR / 'black_list.json') 
     logger.info(f'{len(crowler.address_dict)=}')
 
-    crowler.write_to_json(path_to_json=config.PRIVATE_DIR / 'black_list.json')    
-    
     '''
     logger.info("DB ingestion")
     try:
         db_client = MongoDBClient(uri=connection_string, database_name='')
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
-    '''   
-
+    '''
+    address_list = list(crowler.address_dict.keys())
+    escan_api = EtherScanAPI(extl_config=extl_config, path_to_key=config.PRIVATE_DIR / 'ethscan.key')
+    block_num_dict = escan_api.get_block_nums_as_per_addr(concurrent=True, address_list=address_list)
+    
+    logger.info(f'{block_num_dict=}')
+      
 def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) -> None:
     """detect anamolies in the network with the specified method
     

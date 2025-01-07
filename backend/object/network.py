@@ -72,7 +72,7 @@ class Network(object):
         block_num = self.provider.eth.get_block('latest').number
         logger.info(f'>> Block Number={block_num}')
         return block_num
-
+    
     def get_chain_info(self):
         logger.info(f">> Chain ID: {self.provider.eth.chain_id}")
         logger.info(f">> Chain hashrate: {self.provider.eth.hashrate}")
@@ -109,7 +109,7 @@ class Network(object):
         except Exception as e:
             logger.error(f"An error occurred while querying the mempool: {str(e)}")
             return []
-
+    
     def _encode_nested_dict_to_bytes(self, data: dict):
         """Recursively encodes any nested dictionaries with 'types' and 'values'into bytes using solidityPack
         """
