@@ -5,8 +5,7 @@ private/
 .ipynb*
 **__pycache__/
 **.egg-info/
-update.sh
-pool.py
+build/
 
 # Node
 node_modules
@@ -23,7 +22,3 @@ yarn.lock
 # log
 *.log
 
-
-# temp 
-backend/solc/contractAddress.sol
-backend/solc/npm_install.sh
