@@ -44,6 +44,11 @@ class MongoDBClient:
             Name of the collection
         document:
             The document to insert
+        
+        Returns
+        -------
+        inserted_id : 
+            
         """
         try:
             collection = self.database[collection_name]
@@ -77,7 +82,7 @@ class MongoDBClient:
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")
 
-    def find_documents(self, collection_name: str, filter: dict = {}, projection: dict=None):
+    def find_documents(self, collection_name: str, filter: dict=None, projection: dict=None) -> dict:
         """Find multiple documents in a collection.
         
         Args
@@ -99,7 +104,7 @@ class MongoDBClient:
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")
 
-    def update_document(self, collection_name: str, filter: dict, update: dict, upsert: bool=False):
+    def update_document(self, collection_name: str, filter: dict=None, update: dict, upsert: bool=False):
         """Update a single document in a collection.
         
         ARgs
@@ -124,7 +129,7 @@ class MongoDBClient:
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")
 
-    def delete_document(self, collection_name: str, filter: dict):
+    def delete_document(self, collection_name: str, filter: dict=None):
         """Delete a single document from a collection.
         
         Args
