@@ -14,9 +14,9 @@ from backend.object.crowler import CryptoScamDBCrowler, EtherScanAPI
 from backend.object.randomwalk import Node2Vec
 from backend.driver.ml import call_one_class_SVM
 from backend.util.config import Config
-from logging import getLogger
-
 from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
+
+from logging import getLogger
 
 logger = getLogger(__name__)
 

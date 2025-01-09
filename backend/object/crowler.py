@@ -9,6 +9,7 @@ from requests.adapters import HTTPAdapter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from backend.util.config import Config
+
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -265,7 +266,8 @@ class EtherScanAPI(object):
             latest_block = res["result"][0]["blockNumber"]  # Most recent block
             return int(latest_block)
         else:
-            logger.error("Error:", res["message"])
+            logger.warning(f"Status={res['status']}: {res['message']}")
+
             return None
             
     def _get_first_block_num_as_per_addr(self, address: str) -> int:        
@@ -298,7 +300,8 @@ class EtherScanAPI(object):
             first_block = res["result"][0]["blockNumber"]  # Earliest block
             return int(first_block)
         else:
-            logger.error("Error:", res["message"])
+            logger.warning(f"Status={res['status']}: {res['message']}")
+            
             return None
 
     def _get_block_nums_as_per_addr(self, address: str) -> Tuple[int, int]:

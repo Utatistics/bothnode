@@ -104,7 +104,7 @@ class MongoDBClient:
         except OperationFailure as e:
             logger.error(f"Operation failed: {e}")
 
-    def update_document(self, collection_name: str, filter: dict=None, update: dict, upsert: bool=False):
+    def update_document(self, collection_name: str, filter: dict=None, update: dict=None, upsert: bool=False):
         """Update a single document in a collection.
         
         ARgs
