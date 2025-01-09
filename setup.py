@@ -1,40 +1,61 @@
 import os
 import json
 import subprocess
-from setuptools import setup, Extension
+from setuptools import setup
 from setuptools.command.build_ext import build_ext
-from pybind11.setup_helpers import Pybind11Extension
 
+import logging
+from logging import getLogger
+
+logger = getLogger(__name__)
+
+# Load version from config.json
 with open('config.json') as f:
     jf = json.load(f)
     version = jf['CLI']['version']
 
 class CMakeBuild(build_ext):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def run(self):
         subprocess.check_call(['cmake', '.'])
-        subprocess.check_call(['make'])
-        super().run()
         
+        try:
+            subprocess.check_call(['make', '-j', '4'])
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Error occurred during make: {e}")
+            raise
+
+        super().run()
+        self.cleanup_files()
+
+    def cleanup_files(self):
+        paths = ['CMakeCache.txt', 'Makefile', 'cmake_install.cmake', 'CMakeFiles']
+        for path in paths:
+            if os.path.exists(path):
+                logger.info(f"Removing {'directory' if os.path.isdir(path) else 'file'}: {path}")
+                subprocess.check_call(['rm', '-rf', path])
+
 setup(
     name='bothnode',
     version=version,
     install_requires=[
-        'blessed==1.20.0'
-        ,'colorlog'
-        ,'fastapi'
-        ,'uvicorn'
-        ,'pymongo'
-        ,'PyYAML'
-        ,'eth-abi'
-        ,'pandas'
-        ,'matplotlib'
-        ,'torch==2.4'  # Ensure torch 2.4 is installed
-        ,'dgl @ https://data.dgl.ai/wheels-test/torch-2.4/repo.html' # Adding the specific DGL install link
-        ,'pyod'
-        ,'pybind11'
+        'blessed==1.20.0',
+        'colorlog',
+        'fastapi',
+        'uvicorn',
+        'pymongo',
+        'PyYAML',
+        'eth-abi',
+        'pandas',
+        'matplotlib',
+        'torch==2.4',
+        'dgl @ https://data.dgl.ai/wheels-test/torch-2.4/repo.html',
+        'pyod',
+        'pybind11',
     ],
-    ext_modules=[],  # You no longer need this since CMake handles the build
-    cmdclass={'build_ext': CMakeBuild},  # Use the custom CMake build command
+    cmdclass={'build_ext': CMakeBuild},  # Custom CMake build command
     entry_points={
         "console_scripts": [
             "bothnode = cli:main",
