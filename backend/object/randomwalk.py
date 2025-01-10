@@ -5,7 +5,7 @@ import torch.optim as optim
 import numpy as np
 
 from backend.util.config import Config
-
+from build.lib import node2vec
 import logging
 from logging import getLogger
 from typing import List, Tuple

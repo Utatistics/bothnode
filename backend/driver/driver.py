@@ -173,7 +173,6 @@ def run_label_crowler(concurrent: bool) -> None:
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
 
-      
 def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) -> None:
     """detect anamolies in the network with the specified method
     
@@ -211,7 +210,7 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     try:
         db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
         docs = db_client.find_document(collection_name='cryptoScamDBLabels', projection={"addresses": 1, "_id": 0}, sort=[("timestamp", -1)])
-        logger.info(f'{docs=}')
+        logger.debug(f'{docs=}')
         
     except Exception as e:
         logger.error(f"Failed to retrieve data from MongoDB: {e}")

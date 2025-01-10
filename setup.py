@@ -19,6 +19,8 @@ class CMakeBuild(build_ext):
         super().__init__(*args, **kwargs)
 
     def run(self):
+        """invoked by build_ext. 
+        """
         subprocess.check_call(['cmake', '.'])
         
         try:
@@ -31,6 +33,8 @@ class CMakeBuild(build_ext):
         self.cleanup_files()
 
     def cleanup_files(self):
+        """Cleans up temporary files and directories created during the build
+        """
         paths = ['CMakeCache.txt', 'Makefile', 'cmake_install.cmake', 'CMakeFiles']
         for path in paths:
             if os.path.exists(path):
