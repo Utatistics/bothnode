@@ -5,7 +5,8 @@ import torch.optim as optim
 import numpy as np
 
 from backend.util.config import Config
-from build.lib import node2vec
+from build.lib.node2vec import biased_random_walk
+
 import logging
 from logging import getLogger
 from typing import List, Tuple
@@ -92,6 +93,18 @@ class Node2Vec(nn.Module):
             walks.append(walk)
         return walks
 
+    def _biased_random_walk_plus(self, graph: dgl.DGLGraph, init_nodes: torch.Tensor, walk_length: int, p: float, q: float):
+        """wrapper method for c++ biased_random_walker
+        
+        Args
+        ----
+        
+        Returns
+        -------
+        
+        """      
+        biased_random_walk(successors=graph.successors, init_nodes=init_nodes, walk_length=walk_length, p=p, q=q)
+        
     def train_node2vec(
         self,
         graph: dgl.DGLGraph,
@@ -129,7 +142,8 @@ class Node2Vec(nn.Module):
         all_walks = []
         for _ in range(num_walks):
             init_nodes = torch.arange(graph.num_nodes()) # a vector of consecutive node id within the range
-            walks = self._biased_random_walk(graph=graph, init_nodes=init_nodes, walk_length=walk_length, p=p, q=q)
+            # walks = self._biased_random_walk(graph=graph, init_nodes=init_nodes, walk_length=walk_length, p=p, q=q)
+            walks = self._biased_random_walk_plus(graph=graph, init_nodes=init_nodes, walk_length=walk_length, p=p, q=q)
             all_walks.extend(walks) # 'extend' appends the given list by items
 
         # Convert walks to skip-gram pairs

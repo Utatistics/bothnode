@@ -1,6 +1,7 @@
 import os
 import json
 import subprocess
+from pathlib import Path
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
 
@@ -17,12 +18,14 @@ with open('config.json') as f:
 class CMakeBuild(build_ext):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        self.path_to_cmake = Path('./backend/cpp')
 
     def run(self):
         """invoked by build_ext. 
         """
-        subprocess.check_call(['cmake', '.'])
-        
+        subprocess.check_call(['cmake', self.path_to_cmake.__str__()])
+
         try:
             subprocess.check_call(['make', '-j', '4'])
         except subprocess.CalledProcessError as e:
@@ -35,6 +38,7 @@ class CMakeBuild(build_ext):
     def cleanup_files(self):
         """Cleans up temporary files and directories created during the build
         """
+        logger.info("Deleting the intermediary file objects.")
         paths = ['CMakeCache.txt', 'Makefile', 'cmake_install.cmake', 'CMakeFiles']
         for path in paths:
             if os.path.exists(path):

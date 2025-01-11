@@ -1,12 +1,7 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
-#include <pybind11/stl.h>
+#include "randomwalk.h"
 #include <random>
-#include <vector>
 #include <algorithm>
 #include <numeric>
-
-namespace py = pybind11;
 
 // Biased Random Walk function
 std::vector<std::vector<int>> biased_random_walk(
@@ -15,7 +10,7 @@ std::vector<std::vector<int>> biased_random_walk(
     int walk_length,
     float p,
     float q) {
-    
+
     std::vector<std::vector<int>> walks;
     std::mt19937 gen(std::random_device{}());
 
@@ -59,7 +54,7 @@ std::vector<std::vector<int>> biased_random_walk(
 // Skip-Gram Pair Generation function
 std::vector<std::pair<int, int>> generate_skip_gram_pairs(
     const std::vector<std::vector<int>>& walks, int window_size) {
-    
+
     std::vector<std::pair<int, int>> skip_gram_pairs;
     for (const auto& walk : walks) {
         for (size_t i = 0; i < walk.size(); ++i) {
@@ -73,10 +68,5 @@ std::vector<std::pair<int, int>> generate_skip_gram_pairs(
         }
     }
     return skip_gram_pairs;
-}
-
-PYBIND11_MODULE(node2vec, m) {
-    m.def("biased_random_walk", &biased_random_walk, "Biased Random Walk");
-    m.def("generate_skip_gram_pairs", &generate_skip_gram_pairs, "Generate Skip-Gram Pairs");
 }
 

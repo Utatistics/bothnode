@@ -250,10 +250,10 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     
     # Learn embeddings
     embeddings = graphsage.learn_embedding(graph=graph.graph
-                                               ,features=graph.graph.ndata.get('tensor', None)
-                                               ,labels=similarity_matrix
-                                               ,epochs=20
-                                               ,learning_rate=0.01)
+                                           ,features=graph.graph.ndata.get('tensor', None)
+                                           ,labels=similarity_matrix
+                                           ,epochs=20
+                                           ,learning_rate=0.01)
 
     torch.save(embeddings, config.PRIVATE_DIR / 'new_embeddings.pt')  
     logger.info(f"Network Embedding :{embeddings.shape}\n{embeddings}")
