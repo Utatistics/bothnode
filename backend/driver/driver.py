@@ -187,6 +187,10 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     block_len : int
         the length of blocks to aggregate the transactions from.
     """
+    logger.info("Retriving block data")
+    if not block_num:
+        block_num = net.get_latest_block_num()
+        
     logger.info("DB query.")
     try:
         db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
@@ -194,14 +198,11 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
         logger.debug(f'{docs=}')
     except Exception as e:
         logger.error(f"Failed to retrieve data from MongoDB: {e}")
-            
-    if not block_num:
-        block_num = net.get_latest_block_num()
-
-    logger.info(f"Retriving data from node: {block_num}, {block_len}")        
+    
     block = Block(net_name=net.name)
-    block.query_blocks(block_num=block_num, block_len=block_len)
-    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata.json')
+    block.query_blocks(block_num=block_num, block_len=block_len) # via RPC 
+    block.aggregate_from_transactions(docs=docs['addresses']) # via external service (i.e. CryptoScamDB + Etherscan)
+    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata.json') # for debugging purposes
 
     logger.info("Graph construction")
     node_feature = NodeFeature(block_data=block.block_data)
@@ -213,6 +214,9 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     num_edges = graph.graph.num_edges()
     logger.info(f'{num_nodes=}')
     logger.info(f'{num_edges=}')
+
+    # visualizatoin
+    graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_visualization.png", anomaly_dict=None)
     
     logger.info("Scoring node similarity via Randam Walk") 
     embedding_dim = 16
@@ -265,4 +269,4 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     logger.info(f"{anomoly_addoress=}")
      
     # visualizatoin
-    graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_visualization.png", anomaly_dict=anomaly_dict)
+    graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_anomalies_visualization.png", anomaly_dict=anomaly_dict)

@@ -27,7 +27,7 @@ class NodeFeature(object):
         block_data : List[Dict]
         """
         self.nodes = {}
-        for block in block_data:
+        for block in block_data.values():
             timestamp = int(block.get("timestamp", "0x0"), 16)
 
             # Process transactions to extract node features
@@ -81,7 +81,7 @@ class EdgeFeature(object):
             A list of edges with features such as source, target, value, and timestamp.
         """
         self.edges = []
-        for block in block_data:
+        for block in block_data.values():
             block_hash = block.get("hash")
             timestamp = int(block.get("timestamp", "0x0"), 16)
 
@@ -127,7 +127,7 @@ class Graph(object):
         logger.info(f'{len(self.node_feature.nodes)=}')
         logger.info(f'{len(self.edge_feature.edges)=}')
         
-        self._create_address_index_dict()
+        self.index_to_address = {i: features['address'] for i, features in enumerate(self.node_feature.nodes.values())}
         
         try:
             self._node_link_generator()
@@ -143,12 +143,7 @@ class Graph(object):
             logger.info("Successfully added features to the graph.")
         except Exception as e:
             logger.error(f"tensor generation failed: {e}") 
-    
-    def _create_address_index_dict(self):
-        """create a simple index map for node addresses.
-        """
-        self.index_to_address = {i: features['address'] for i, features in enumerate(self.node_feature.nodes.values())}
-                 
+                     
     def _node_link_generator(self):
         """create DGL graph object
         """
@@ -209,8 +204,12 @@ class Graph(object):
 
         pos = nx.spring_layout(nx_g, seed=42)
         
-        node_colors = ["red" if node in anomaly_dict else "blue" for node in nx_g.nodes()]
-        
+        if anomaly_dict:
+            node_colors = ["red" if node in anomaly_dict else "blue" for node in nx_g.nodes()]
+
+        else:
+            node_colors = 'blue'
+                
         nx.draw(
             nx_g, pos, node_size=50, node_color=node_colors, edge_color="gray", alpha=0.7, with_labels=False
         )

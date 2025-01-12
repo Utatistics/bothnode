@@ -20,8 +20,9 @@ class Block(object):
         """
         self.net_name = net_name
         self.rpc_url = config.NET_CONFIG[net_name.upper()]['local_rpc']
+        self.block_data = {}  # Initialize an empty list to store data for all blocks
 
-    def query_block_by_num(self, block_num: int) -> dict:
+    def _query_block_by_num(self, block_num: int) -> dict:
         """Query a specific block by its number.
 
         Args
@@ -55,7 +56,7 @@ class Block(object):
             return None
         
     def query_blocks(self, block_num: int, block_len: int) -> None:
-        """Query a range of blocks, from (block_num - block_len + 1) to block_num.
+        """Direct query for block via RPC: from (block_num - block_len + 1) to block_num.
 
         Args
         ----
@@ -72,19 +73,57 @@ class Block(object):
         end_block = block_num
         logger.info(f'Querying blocks from {start_block} to {end_block}')
 
-        self.block_data = []  # Initialize an empty list to store data for all blocks
-
         for block_number in range(start_block, end_block + 1):
-            rpc_res = self.query_block_by_num(block_number)
+            rpc_res = self._query_block_by_num(block_number)
             if rpc_res and 'result' in rpc_res:
-                block_info = rpc_res['result']
-                self.block_data.append(block_info)  # Append each block's data to the list
+                payload = rpc_res['result']
+                # logger.warning(f"{rpc_res['result']=}")
+                block_hash = rpc_res['result']['hash']
+                self.block_data[block_hash] = payload  # Append each block's data to the list
                 logger.info(f"Fetched Block {block_number}")
             else:
                 logger.warning(f"Failed to fetch data for Block {block_number}")
 
         logger.info(f"Finished querying blocks. Total blocks fetched: {len(self.block_data)}")
     
+    def aggregate_from_transactions(self, docs: dict) -> None:
+        """Aggregate tx data from external DB into blockdata
+        
+        Args 
+        ----
+        docs : dict
+            externally obtained transaction data
+        """
+        for address in docs:
+            logger.debug(f'{address=}')
+            transactions = docs[address]
+            for tx in transactions:
+                payload = {
+                    'hash': tx.get('hash', None)
+                    ,'nonce': tx.get('nonce', None)
+                    ,'blockHash': tx.get('blockHash', None)
+                    ,'blockNumber': tx.get('blockNumber', None)
+                    ,'from': tx.get('from', None)
+                    ,'to': tx.get('to', None)
+                    ,'value': tx.get('value', None)
+                    ,'gas': tx.get('gas', None)
+                    ,'gasPrice': tx.get('gasPrice', None)
+                    ,'input': tx.get('input', None)
+                    ,'cumulativeGasUsed': tx.get('cumulativeGasUsed', None)
+                    ,'txreceipt_status': tx.get('txreceipt_status', None)
+                    ,'gasUsed': tx.get('gasUsed', None)
+                    ,'isError': tx.get('isError', None)
+                }           
+                block_hash = tx['blockHash']
+                if block_hash in self.block_data:
+                    self.block_data[block_hash]['transactions'].append(payload)
+                else:
+                    self.block_data[block_hash]= {
+                        'hash': tx['blockHash']
+                        ,'number': tx['blockNumber']
+                        ,'transactions': [payload]
+                    }
+        
     def write_to_json(self, path_to_json: Path) -> None:
         with open(path_to_json, 'w', encoding='utf-8') as json_file:
             json.dump(self.block_data, json_file, indent=4, ensure_ascii=False)
