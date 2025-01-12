@@ -21,7 +21,7 @@ class Block(object):
         self.net_name = net_name
         self.rpc_url = config.NET_CONFIG[net_name.upper()]['local_rpc']
 
-    def _query_block_by_num(self, block_num: int) -> dict:
+    def query_block_by_num(self, block_num: int) -> dict:
         """Query a specific block by its number.
 
         Args
@@ -75,7 +75,7 @@ class Block(object):
         self.block_data = []  # Initialize an empty list to store data for all blocks
 
         for block_number in range(start_block, end_block + 1):
-            rpc_res = self._query_block_by_num(block_number)
+            rpc_res = self.query_block_by_num(block_number)
             if rpc_res and 'result' in rpc_res:
                 block_info = rpc_res['result']
                 self.block_data.append(block_info)  # Append each block's data to the list

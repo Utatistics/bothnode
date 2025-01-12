@@ -6,13 +6,14 @@ from backend.object.network import Network
 from backend.object.account import Account
 from backend.object.wallet import Wallet
 from backend.object.contract import Contract
-from backend.object.agent import FrontRunner, target_criteria
 from backend.object.block import Block
+from backend.object.agent import FrontRunner, target_criteria
 from backend.object.graph import NodeFeature, EdgeFeature, Graph
 from backend.object.model import GraphConvNetwork, GraphSAGE
 from backend.object.crowler import CryptoScamDBCrowler, EtherScanAPI
 from backend.object.randomwalk import Node2Vec
 from backend.driver.ml import call_one_class_SVM
+
 from backend.util.config import Config
 from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
 
@@ -157,23 +158,21 @@ def run_label_crowler(concurrent: bool) -> None:
     logger.info(f'{len(address_list)=}')
 
     escan_api = EtherScanAPI(extl_config=extl_config, path_to_key=config.PRIVATE_DIR / 'etherscan.key')
-    block_num_dict = escan_api.get_block_nums_as_per_addr(concurrent=True, address_list=address_list)
-    logger.info(f'{len(block_num_dict)=}')
-    block_num_dict['timestamp'] = datetime.datetime.now()
-
+    tx_dict = escan_api.get_transactions_as_per_addr(concurrent=True, address_list=address_list)
+    logger.info(f'{len(tx_dict)=}')
+    
     logger.info("DB ingestion")
     api_data = {
-    "timestamp": datetime.datetime.now(),
-    "addresses": block_num_dict
-    }
+        "timestamp": datetime.datetime.now(),
+        "addresses": tx_dict}
+
     try:
         db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
         db_client.insert_document(collection_name='cryptoScamDBLabels', document=api_data)
-        
+    
     except Exception as e:
         logger.error(f"Failed to store data in MongoDB: {e}")
-
-      
+  
 def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) -> None:
     """detect anamolies in the network with the specified method
     
@@ -188,6 +187,14 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     block_len : int
         the length of blocks to aggregate the transactions from.
     """
+    logger.info("DB query.")
+    try:
+        db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
+        docs = db_client.find_document(collection_name='cryptoScamDBLabels', projection={"addresses": 1, "_id": 0}, sort=[("timestamp", -1)])
+        logger.debug(f'{docs=}')
+    except Exception as e:
+        logger.error(f"Failed to retrieve data from MongoDB: {e}")
+            
     if not block_num:
         block_num = net.get_latest_block_num()
 
@@ -206,15 +213,6 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     num_edges = graph.graph.num_edges()
     logger.info(f'{num_nodes=}')
     logger.info(f'{num_edges=}')
-    
-    logger.info("DB query.")
-    try:
-        db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
-        docs = db_client.find_document(collection_name='cryptoScamDBLabels', projection={"addresses": 1, "_id": 0}, sort=[("timestamp", -1)])
-        logger.info(f'{docs=}')
-        
-    except Exception as e:
-        logger.error(f"Failed to retrieve data from MongoDB: {e}")
     
     logger.info("Scoring node similarity via Randam Walk") 
     embedding_dim = 16

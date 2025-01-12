@@ -235,19 +235,27 @@ class EtherScanAPI(object):
             self.api_key = f.read()
             logger.info(f'{self.api_key=}')
     
-    def _get_latest_block_num_as_per_addr(self, address: str) -> int:
-        """get the latest block that includes the transactions involving the given addresses
+    def _get_block_num_as_per_addr(self, address: str, loc: str) -> int:
+        """implements API call to get the block num involving the given address
         
         Args 
         ----
-        addresses : dict
-            dict of adddresses
-        
+        address : str
+            a single adddress 
+        loc: str
+            first or last (i.e. asc or desc)
+            
         Returns
         -------
         block_number : int
             the latest block number 
         """
+        if loc == 'first':
+            sort = 'asc'
+        elif loc == 'last':
+            sort = 'desc'
+        else:
+            raise ValueError("loc should be either 'asc' or 'desc'")
         
         params = {
             "module": "account",
@@ -255,7 +263,7 @@ class EtherScanAPI(object):
             "address": address,
             "startblock": 0,
             "endblock": 99999999,
-            "sort": "desc",  # Sort transactions by block number in descending order
+            "sort": sort,  # Sort transactions by block number in descending order
             "apikey": self.api_key,
             }
         
@@ -263,47 +271,13 @@ class EtherScanAPI(object):
         res = response.json()
         
         if res["status"] == "1":  # Check if the request was successful
+            logger.info(f"Status={res['status']}: {res['message']}: Address={address}")
             latest_block = res["result"][0]["blockNumber"]  # Most recent block
             return int(latest_block)
         else:
-            logger.warning(f"Status={res['status']}: {res['message']}")
-
+            logger.warning(f"Status={res['status']}: {res['message']}: Address={address}")
             return None
             
-    def _get_first_block_num_as_per_addr(self, address: str) -> int:        
-        """Get the earliest block that includes the transactions involving the given address.
-        
-        Args
-        ----
-        address : str
-            Ethereum address to query.
-        
-        Returns
-        -------
-        block_number : int
-            The earliest block number.
-        """
-        params = {
-            "module": "account",
-            "action": "txlist",
-            "address": address,
-            "startblock": 0,
-            "endblock": 99999999,
-            "sort": "asc",  # Sort transactions by block number in ascending order
-            "apikey": self.api_key,
-        }
-        
-        response = requests.get(self.endpoint, params=params)
-        res = response.json()
-        
-        if res["status"] == "1":  # Check if the request was successful
-            first_block = res["result"][0]["blockNumber"]  # Earliest block
-            return int(first_block)
-        else:
-            logger.warning(f"Status={res['status']}: {res['message']}")
-            
-            return None
-
     def _get_block_nums_as_per_addr(self, address: str) -> Tuple[int, int]:
         """
         Args
@@ -315,8 +289,8 @@ class EtherScanAPI(object):
         -------
         
         """
-        n = self._get_latest_block_num_as_per_addr(address=address)
-        m = self._get_first_block_num_as_per_addr(address=address)
+        n = self._get_block_num_as_per_addr(address=address, loc='first')
+        m = self._get_block_num_as_per_addr(address=address, loc='last')
         
         return (n, m)
     
@@ -359,3 +333,68 @@ class EtherScanAPI(object):
         logger.info(f'Exection Time: {time.time() - init_time:.3f} secs.')
         
         return block_num_dict
+
+    def _get_transactions_as_per_addr(self, address: str) -> dict:
+        """impelemnts API call to get transactions involving the given address
+        
+        Args
+        ----
+        address : str 
+            a single address
+            
+        """
+        params = {
+            "module": "account",
+            "action": "txlist",
+            "address": address,
+            "startblock": 0,
+            "endblock": 99999999,
+            "sort": 'asc',
+            "apikey": self.api_key,
+            }
+
+        response = requests.get(self.endpoint, params=params)
+        res = response.json()
+        
+        if res["status"] == "1":  # Check if the request was successful
+            transactions = res['result']
+            logger.info(f"Status={res['status']}: {res['message']}: Address={address}: n={len(transactions)}")
+            return transactions
+        else:
+            logger.warning(f"Status={res['status']}: {res['message']}: Address={address}")
+            return None
+        
+    def get_transactions_as_per_addr(self, concurrent: bool=False, address_list: List[str]=[]):
+        """
+        
+        Args 
+        ----
+        concurrent : bool
+            execute the method concurrently  
+        address_list : list
+            the list of address 
+        
+        """
+        init_time = time.time()
+        
+        tx_dict = {}
+        if concurrent:
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                future_to_address = {executor.submit(self._get_transactions_as_per_addr, address): address for address in address_list}
+                for future in as_completed(future_to_address):
+                    address = future_to_address[future] 
+                    try:
+                        transactions = future.result()  # Assuming result is just block_nums, not (address, block_nums)
+                        if transactions:
+                            tx_dict[address] = transactions
+                        else:
+                            logger.warning(f"Block numbers are None for address {address}")
+                    except Exception as e:
+                        logger.error(f"Unexpected error processing {address}: {e}")
+        else:
+            for address in address_list:
+                tx_dict[address] = self._get_transactions_as_per_addr(address=address) # returns nested dict storing transactions 
+
+        logger.info(f'Exection Time: {time.time() - init_time:.3f} secs.')
+
+        return tx_dict

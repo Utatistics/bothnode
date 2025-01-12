@@ -16,7 +16,6 @@ from colorlog import ColoredFormatter
 from web3 import Web3
 
 logger = getLogger(__name__)
-level = logging.INFO
 
 formatter = ColoredFormatter(
     "%(log_color)s%(asctime)s [%(levelname)s] %(message)s%(reset)s",
@@ -33,11 +32,9 @@ formatter = ColoredFormatter(
 
 # Get the root logger
 logger = logging.getLogger()
-logger.setLevel(level=level)
 
 # Add a stream handler with the colored formatter
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(level=level)
 stream_handler.setFormatter(formatter)
 
 # Add the handler to the logger
@@ -55,7 +52,10 @@ class ArgParse(object):
         # command and args
         self.cmd = ['run', 'init', 'db_sync', 'fetch', 'get', 'tx', 'frontrun', 'detect']
         self.parser.add_argument("command", help="Command to execute", choices=self.cmd)       
-        
+
+        # set log level
+        self.parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    
         partial_args, _ = self.parser.parse_known_args()
 
         self.parser.add_argument("-v", "--verbose")
@@ -91,7 +91,7 @@ class ArgParse(object):
                             
         # parse the args
         self._parse_args()
-
+    
     def _parse_args(self):
         self.args = self.parser.parse_args()
         logger.debug(f'{self.args=}')
@@ -149,6 +149,15 @@ def draw_ascii_art():
     print('\n')
     
 def handler(args: argparse.Namespace):
+    """handle command by calling the drivers
+    """
+    if args.debug:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+    logger.setLevel(level=level)
+    stream_handler.setLevel(level=level)
+    
     if args.command == 'run':
         logger.info(f"Starting bothnode application.")       
         draw_ascii_art()
