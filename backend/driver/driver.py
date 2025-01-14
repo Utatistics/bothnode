@@ -8,7 +8,7 @@ from backend.object.wallet import Wallet
 from backend.object.contract import Contract
 from backend.object.block import Block
 from backend.object.agent import FrontRunner, target_criteria
-from backend.object.graph import NodeFeature, EdgeFeature, Graph
+from backend.object.graph import NodeFeature, EdgeFeature, Graph, graph_merger
 from backend.object.model import GraphConvNetwork, GraphSAGE
 from backend.object.crowler import CryptoScamDBCrowler, EtherScanAPI
 from backend.object.randomwalk import Node2Vec
@@ -164,7 +164,8 @@ def run_label_crowler(concurrent: bool) -> None:
     logger.info("DB ingestion")
     api_data = {
         "timestamp": datetime.datetime.now(),
-        "addresses": tx_dict}
+        "addresses": tx_dict
+        }
 
     try:
         db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
@@ -186,36 +187,11 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
         the latest number of blocks to aggregate the transactions from.
     block_len : int
         the length of blocks to aggregate the transactions from.
-    """
-    logger.info("Retriving block data")
-    if not block_num:
-        block_num = net.get_latest_block_num()
+    """        
+    graph_rpc = graph_builder_rpc(net=net, block_num=block_num, block_len=block_len) 
+    graph_rest = graph_builder_rest(net=net)
+    graph = graph_merger(graph_rpc, graph_rest)
         
-    logger.info("DB query.")
-    try:
-        db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
-        docs = db_client.find_document(collection_name='cryptoScamDBLabels', projection={"addresses": 1, "_id": 0}, sort=[("timestamp", -1)])
-        logger.debug(f'{docs=}')
-    except Exception as e:
-        logger.error(f"Failed to retrieve data from MongoDB: {e}")
-    
-    block = Block(net_name=net.name)
-    block.query_blocks(block_num=block_num, block_len=block_len) # via RPC 
-    block.aggregate_from_transactions(docs=docs['addresses']) # via external service (i.e. CryptoScamDB + Etherscan)
-    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata.json') # for debugging purposes
-
-    logger.info("Graph construction")
-    node_feature = NodeFeature(block_data=block.block_data)
-    edge_feature = EdgeFeature(block_data=block.block_data)
-    node_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'node.json')
-    edge_feature.write_to_json(path_to_json=config.PRIVATE_DIR / 'edge.json')
-    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
-    num_nodes = graph.graph.num_nodes()
-    num_edges = graph.graph.num_edges()
-    logger.info(f'{num_nodes=}')
-    logger.info(f'{num_edges=}')
-
-    # visualizatoin
     graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_visualization.png", anomaly_dict=None)
     
     logger.info("Scoring node similarity via Randam Walk") 
@@ -238,6 +214,7 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
                       ,q=q
                       ,epochs=epochs
                       ,learning_rate=learning_rate)
+    
     similarity_matrix = rw.compute_similarity_matrix()
     logger.info(f"Network Embeddings:\n{rw.node_embeddings}")
     logger.info(f"Similarity Matrix :{similarity_matrix.shape}\n{similarity_matrix}")
@@ -270,3 +247,58 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
      
     # visualizatoin
     graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_anomalies_visualization.png", anomaly_dict=anomaly_dict)
+
+def graph_builder_rest(net: Network):
+    """
+    
+    Args
+    ----
+
+    Retunrs
+    -------
+    graph : Graph
+        graph object    
+    """
+    logger.info("DB query.")
+    try:
+        db_client = MongoDBClient(uri=connection_string, database_name='analytics_db')
+        docs = db_client.find_document(collection_name='cryptoScamDBLabels', projection={"addresses": 1, "_id": 0}, sort=[("timestamp", -1)])
+        logger.debug(f'{docs=}')
+    except Exception as e:
+        logger.error(f"Failed to retrieve data from MongoDB: {e}")
+    
+    block = Block(net_name=net.name)
+    block.aggregate_from_transactions(docs=docs['addresses']) # via external service (i.e. CryptoScamDB + Etherscan)
+    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'block_rest.json') # for debugging purposes
+
+    logger.info("Graph construction: REST")
+    node_feature = NodeFeature(block_data=block.block_data)
+    edge_feature = EdgeFeature(block_data=block.block_data)
+    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
+    
+    return graph
+
+def graph_builder_rpc(net: Network, block_num: int, block_len: int):
+    """
+    
+    Args
+    ----
+    
+    Retunrs
+    -------
+    graph : Graph
+        graph object
+    """
+    logger.info("Retriving block data")
+    if not block_num:
+        block_num = net.get_latest_block_num()
+    block = Block(net_name=net.name)
+    block.query_blocks(block_num=block_num, block_len=block_len) # via RPC 
+    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'block_rpc.json') # for debugging purposes
+
+    logger.info("Graph construction: RPC")
+    node_feature = NodeFeature(block_data=block.block_data)
+    edge_feature = EdgeFeature(block_data=block.block_data)
+    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
+    
+    return graph

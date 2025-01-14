@@ -36,7 +36,7 @@ class Network(object):
             self._modify_ganache_account_keys()
 
     def _connector(self):
-        logger.info(f"The instance connecting to {self.name}...")
+        logger.debug(f"The instance connecting to {self.name}...")
         self.provider = Web3(Web3.HTTPProvider(self.local_rpc))
         if self.provider.is_connected():
             logger.info(f"Successfully connected to {self.name}!")

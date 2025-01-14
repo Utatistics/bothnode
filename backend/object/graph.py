@@ -7,6 +7,7 @@ import dgl
 import torch
 import networkx as nx
 
+from backend.object.network import Network
 from backend.util.config import Config
 from logging import getLogger
 
@@ -113,37 +114,45 @@ class EdgeFeature(object):
             json.dump(self.edges, jf, indent=2)
 
 class Graph(object):
-    def __init__(self, node_feature: NodeFeature, edge_feature: EdgeFeature):
+    def __init__(self, node_feature: NodeFeature=None, edge_feature: EdgeFeature=None, graph: dgl.DGLGraph=None) -> None:
         """custom graph object
         
         Args
         ----
         node_feature : NodeFeature
         edge_feature : EdgeFeature
+        graph : dgl.DGLGraph
+            when provided, used to create the graph without using Node/EdgeFeature instances
         
         """
-        self.node_feature = node_feature
-        self.edge_feature = edge_feature
-        logger.info(f'{len(self.node_feature.nodes)=}')
-        logger.info(f'{len(self.edge_feature.edges)=}')
-        
-        self.index_to_address = {i: features['address'] for i, features in enumerate(self.node_feature.nodes.values())}
-        
-        try:
-            self._node_link_generator()
-            logger.info("Successfully constructed graph object.")
-        except Exception as e:
-            logger.error(f"node link generation failed: {e}") 
-
-        try:
+        if graph:
+            self._load_from_dglGraph(graph=graph)
             logger.info(f'{self.graph.num_nodes()=}')
             logger.info(f'{self.graph.num_edges()=}')
 
-            self._tensor_generator()         
-            logger.info("Successfully added features to the graph.")
-        except Exception as e:
-            logger.error(f"tensor generation failed: {e}") 
-                     
+        else:
+            self.node_feature = node_feature
+            self.edge_feature = edge_feature
+            logger.info(f'{len(self.node_feature.nodes)=}')
+            logger.info(f'{len(self.edge_feature.edges)=}')
+            
+            self.index_to_address = {i: features['address'] for i, features in enumerate(self.node_feature.nodes.values())}
+                               
+            try:
+                self._node_link_generator()
+                logger.info("Successfully constructed graph object.")
+            except Exception as e:
+                logger.error(f"node link generation failed: {e}") 
+
+            try:
+                logger.info(f'{self.graph.num_nodes()=}')
+                logger.info(f'{self.graph.num_edges()=}')
+
+                self._tensor_generator()         
+                logger.info("Successfully added features to the graph.")
+            except Exception as e:
+                logger.error(f"tensor generation failed: {e}") 
+            
     def _node_link_generator(self):
         """create DGL graph object
         """
@@ -186,7 +195,11 @@ class Graph(object):
         
         self.graph.ndata['tensor'] = torch.tensor(node_features, dtype=torch.float32)
         self.graph.edata['tensor'] = torch.tensor(edge_features, dtype=torch.float32)
-            
+    
+    def _load_from_dglGraph(self, graph: dgl.DGLGraph):
+        logger.info("Loading from the dgl.DGLGraph")
+        self.graph = graph 
+    
     def draw_graph(self, path_to_png: Path, anomaly_dict: dict) -> None:
         """visuallize graph structure
         
@@ -231,4 +244,28 @@ class Graph(object):
             list of node addresses
         """
         return [self.index_to_address[i] for i in node_index]
+
+def graph_merger(*args: Graph) -> Graph:
+    """Merges multiple DGLGraph objects into a single graph.
+    
+    Args
+    ----
+    *args : Graph
+        Variable number of Graph objects to be merged.
+    
+    Returns
+    -------
+    graph : Graph
+        A single merged Graph object
+    """
+    try:
+        dgl_graphs = [graph.graph for graph in args]
+        dgl_graph = dgl.batch(dgl_graphs)
+        graph = Graph(graph=dgl_graph)
+        logger.info("Graph Merge Successful.")
+        return graph
+    
+    except Exception as e:
+        logger.error(f"Graph Merge Failed: {e}")
+        return None
     
