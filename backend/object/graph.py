@@ -132,10 +132,7 @@ class Graph(object):
 
         else:
             self.node_feature = node_feature
-            self.edge_feature = edge_feature
-            logger.info(f'{len(self.node_feature.nodes)=}')
-            logger.info(f'{len(self.edge_feature.edges)=}')
-            
+            self.edge_feature = edge_feature            
             self.index_to_address = {i: features['address'] for i, features in enumerate(self.node_feature.nodes.values())}
                                
             try:
@@ -200,6 +197,40 @@ class Graph(object):
         logger.info("Loading from the dgl.DGLGraph")
         self.graph = graph 
     
+    def graph_sampler(self, base_num: int, base_ratio: float):
+        """sampling 
+        
+        Args
+        ----
+        
+        """
+        logger.info(f"Appying Graph Sampling")
+    
+        p = base_ratio * base_num / ((1 - base_ratio) * self.graph.num_nodes())
+        logger.debug(f'{base_num=}')
+        logger.debug(f'{base_ratio=}')
+        logger.debug(f'{self.graph.num_nodes()=}')
+        logger.debug(f'{p=}')
+        
+        in_degrees = self.graph.in_degrees()
+        out_degrees = self.graph.out_degrees()
+        degrees = in_degrees + out_degrees
+        sorted_node_indices = torch.argsort(degrees, descending=True) 
+        num_top_nodes = int(p * len(sorted_node_indices))        
+        top_nodes = sorted_node_indices[:num_top_nodes]
+        subgraph = self.graph.subgraph(top_nodes.tolist()) 
+     
+        if '_ID' in subgraph.ndata:
+            del subgraph.ndata['_ID']
+        if '_ID' in subgraph.edata:
+            del subgraph.edata['_ID']
+        
+        self.graph = subgraph
+        
+        logger.info(f'{self.graph.num_nodes()=}')
+        logger.info(f'{self.graph.num_edges()=}')
+
+    
     def draw_graph(self, path_to_png: Path, anomaly_dict: dict) -> None:
         """visuallize graph structure
         
@@ -258,10 +289,25 @@ def graph_merger(*args: Graph) -> Graph:
     graph : Graph
         A single merged Graph object
     """
+
     try:
         dgl_graphs = [graph.graph for graph in args]
         dgl_graph = dgl.batch(dgl_graphs)
         graph = Graph(graph=dgl_graph)
+    
+        nx_graph = graph.graph.to_networkx()
+        logger.info(f'{nx_graph=}')
+
+        '''
+        if nx_graph.is_strongly_connected(nx_graph):
+            logger.info("The graph is fully connected.")
+        else:
+            logger.warning("The graph contains disconnected subgraphs.")
+            components = list(nx.connected_components(nx_graph))
+            logger.warning(f"Number of connected components: {len(components)}")
+            logger.warning("Component sizes:", [len(c) for c in components])
+        '''
+        
         logger.info("Graph Merge Successful.")
         return graph
     

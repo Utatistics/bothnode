@@ -188,13 +188,14 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     block_len : int
         the length of blocks to aggregate the transactions from.
     """        
-    graph_rpc = graph_builder_rpc(net=net, block_num=block_num, block_len=block_len) 
-    graph_rest = graph_builder_rest(net=net)
-    graph = graph_merger(graph_rpc, graph_rest)
-        
+    graph_normal = graph_builder_normal(net=net, block_num=block_num, block_len=block_len) 
+    graph_abnormal = graph_builder_abnormal(net=net)
+    graph_abnormal.graph_sampler(base_num=graph_normal.graph.num_nodes(), base_ratio=.1)
+    graph = graph_merger(graph_normal, graph_abnormal)        
     graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_visualization.png", anomaly_dict=None)
     
     logger.info("Scoring node similarity via Randam Walk") 
+    num_nodes = graph.graph.num_nodes()
     embedding_dim = 16
     walk_length = 10
     num_walks = 80
@@ -248,7 +249,32 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     # visualizatoin
     graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_anomalies_visualization.png", anomaly_dict=anomaly_dict)
 
-def graph_builder_rest(net: Network):
+def graph_builder_normal(net: Network, block_num: int, block_len: int):
+    """
+    
+    Args
+    ----
+    
+    Retunrs
+    -------
+    graph : Graph
+        graph object
+    """
+    logger.info("Retriving block data")
+    if not block_num:
+        block_num = net.get_latest_block_num()
+    block = Block(net_name=net.name)
+    block.query_blocks(block_num=block_num, block_len=block_len) # via RPC 
+    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'block_rpc.json') # for debugging purposes
+
+    logger.info("Normal-Graph construction")
+    node_feature = NodeFeature(block_data=block.block_data)
+    edge_feature = EdgeFeature(block_data=block.block_data)
+    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
+    
+    return graph
+
+def graph_builder_abnormal(net: Network):
     """
     
     Args
@@ -271,32 +297,7 @@ def graph_builder_rest(net: Network):
     block.aggregate_from_transactions(docs=docs['addresses']) # via external service (i.e. CryptoScamDB + Etherscan)
     block.write_to_json(path_to_json=config.PRIVATE_DIR / 'block_rest.json') # for debugging purposes
 
-    logger.info("Graph construction: REST")
-    node_feature = NodeFeature(block_data=block.block_data)
-    edge_feature = EdgeFeature(block_data=block.block_data)
-    graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
-    
-    return graph
-
-def graph_builder_rpc(net: Network, block_num: int, block_len: int):
-    """
-    
-    Args
-    ----
-    
-    Retunrs
-    -------
-    graph : Graph
-        graph object
-    """
-    logger.info("Retriving block data")
-    if not block_num:
-        block_num = net.get_latest_block_num()
-    block = Block(net_name=net.name)
-    block.query_blocks(block_num=block_num, block_len=block_len) # via RPC 
-    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'block_rpc.json') # for debugging purposes
-
-    logger.info("Graph construction: RPC")
+    logger.info("Abnormal Graph construction")
     node_feature = NodeFeature(block_data=block.block_data)
     edge_feature = EdgeFeature(block_data=block.block_data)
     graph = Graph(node_feature=node_feature, edge_feature=edge_feature)

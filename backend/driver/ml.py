@@ -56,3 +56,6 @@ def call_one_class_SVM(array: np.ndarray) -> Tuple:
     logger.info(f"Anomalies detected at indices: {anomaly_dict}")
     
     return anomaly_scores, anomaly_dict
+
+def call_performance_metrix():
+    pass
