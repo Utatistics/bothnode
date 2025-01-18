@@ -228,12 +228,27 @@ class EtherScanAPI(object):
         path_to_key : Path
             path to the api key stored in a file.
         """
-        
+        retries = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[500, 502, 503, 504],
+            allowed_methods=["GET"]
+        )
+        adapter = HTTPAdapter(max_retries=retries)
+        self.session = requests.Session()
+        self.session.mount("https://", adapter)   
+             
         self.endpoint = extl_config['etherScanAPI']
         
         with open(path_to_key, mode='r') as f:
             self.api_key = f.read()
             logger.info(f'{self.api_key=}')
+
+    def __del__(self):
+        """Ensure the session is closed when the object is deleted.
+        """
+        if hasattr(self, 'session'):
+            self.session.close()
     
     def _get_block_num_as_per_addr(self, address: str, loc: str) -> int:
         """implements API call to get the block num involving the given address
@@ -267,7 +282,7 @@ class EtherScanAPI(object):
             "apikey": self.api_key,
             }
         
-        response = requests.get(self.endpoint, params=params)
+        response = self.session.get(self.endpoint, params=params)
         res = response.json()
         
         if res["status"] == "1":  # Check if the request was successful
@@ -353,7 +368,7 @@ class EtherScanAPI(object):
             "apikey": self.api_key,
             }
 
-        response = requests.get(self.endpoint, params=params)
+        response = self.session.get(self.endpoint, params=params)
         res = response.json()
         
         if res["status"] == "1":  # Check if the request was successful
