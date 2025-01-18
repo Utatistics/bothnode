@@ -52,10 +52,20 @@ def call_one_class_SVM(array: np.ndarray) -> Tuple:
     anomalies = np.where(predictions == 1)[0].tolist()
     anomaly_dict = dict(zip(anomalies, anomaly_scores))
     
-    logger.info(f"Anomaly scores: {anomaly_scores}")
+    logger.debug(f"Anomaly scores: {anomaly_scores}")
     logger.info(f"Anomalies detected at indices: {anomaly_dict}")
     
     return anomaly_scores, anomaly_dict
 
-def call_performance_metrix():
-    pass
+def call_performance_metrics(label_address: list, anomaly_address: list) -> None:
+    """calculate basic metrics for model validation
+    
+    Args
+    ----
+    label_address : list
+        list of anamoly addresses (as lables)
+    anamoly_address : list
+        list of predicted anamoly addresses
+        
+    """
+    logger.info(f'{}')

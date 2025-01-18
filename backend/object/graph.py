@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 import dgl
 import torch
+import numpy as np
 import networkx as nx
 
 from backend.object.network import Network
@@ -31,15 +32,13 @@ class NodeFeature(object):
         for block in block_data.values():
             timestamp = int(block.get("timestamp", "0x0"), 16)
 
-            # Process transactions to extract node features
             transactions = block.get("transactions", [])
-            for txn in transactions:
-                sender = txn.get("from")
-                recipient = txn.get("to")
-                value = int(txn.get("value", "0x0"), 16) / 1e18  # Convert Wei to Ether
-                gas_used = int(txn.get("gas", "0x0"), 16)
+            for tx in transactions:
+                sender = tx.get("from")
+                recipient = tx.get("to")
+                value = int(tx.get("value", "0x0"), 16) / 1e18  # Convert Wei to Ether
+                gas_used = int(tx.get("gas", "0x0"), 16)
 
-                # Update sender's features
                 if sender:
                     if sender not in self.nodes:
                         self.nodes[sender] = {"address": sender, "total_sent": 0, "total_received": 0, "total_gas_used": 0, "last_active": 0}
@@ -47,7 +46,6 @@ class NodeFeature(object):
                     self.nodes[sender]["total_gas_used"] += gas_used
                     self.nodes[sender]["last_active"] = max(self.nodes[sender]["last_active"], timestamp)
 
-                # Update recipient's features
                 if recipient:
                     if recipient not in self.nodes:
                         self.nodes[recipient] = {"address": recipient, "total_sent": 0, "total_received": 0, "total_gas_used": 0, "last_active": 0}
@@ -83,20 +81,17 @@ class EdgeFeature(object):
         """
         self.edges = []
         for block in block_data.values():
-            block_hash = block.get("hash")
             timestamp = int(block.get("timestamp", "0x0"), 16)
 
-            # Extract transactions
             transactions = block.get("transactions", [])
-            for txn in transactions:
+            for tx in transactions:
                 self.edges.append({
-                    "edge_id": txn.get("hash"),  # Transaction hash
-                    "from": txn.get("from"),  # Sender address
-                    "to": txn.get("to"),  # recipient address
-                    "value": int(txn.get("value", "0x0"), 16) / 1e18,  # Value in Ether (from Wei)
-                    "gas_used": int(txn.get("gas", "0x0"), 16),  # Gas used
+                    "edge_id": tx.get("hash"),  # Transaction hash
+                    "from": tx.get("from"),  # Sender address
+                    "to": tx.get("to"),  # recipient address
+                    "value": int(tx.get("value", "0x0"), 16) / 1e18,  # Value in Ether (from Wei)
+                    "gas_used": int(tx.get("gas", "0x0"), 16),  # Gas used
                     "timestamp": timestamp,  # Block timestamp
-                    "block_hash": block_hash  # Hash of the block
                 })
 
     def write_to_json(self, path_to_json: str) -> None:
@@ -134,7 +129,8 @@ class Graph(object):
             self.node_feature = node_feature
             self.edge_feature = edge_feature            
             self.index_to_address = {i: features['address'] for i, features in enumerate(self.node_feature.nodes.values())}
-                               
+            self.address_to_index = {features['address']: i for i, features in enumerate(self.node_feature.nodes.values())}
+                                          
             try:
                 self._node_link_generator()
                 logger.info("Successfully constructed graph object.")
@@ -153,8 +149,6 @@ class Graph(object):
     def _node_link_generator(self):
         """create DGL graph object
         """
-        self.address_to_index = {features['address']: i for i, features in enumerate(self.node_feature.nodes.values())}
-        
         src = []
         dst = []
         for edge in self.edge_feature.edges:
@@ -230,7 +224,6 @@ class Graph(object):
         logger.info(f'{self.graph.num_nodes()=}')
         logger.info(f'{self.graph.num_edges()=}')
 
-    
     def draw_graph(self, path_to_png: Path, anomaly_dict: dict) -> None:
         """visuallize graph structure
         
@@ -276,12 +269,15 @@ class Graph(object):
         """
         return [self.index_to_address[i] for i in node_index]
 
-def graph_merger(*args: Graph) -> Graph:
+def graph_merger(graph_normal: Graph, *args: Graph) -> Graph:
     """Merges multiple DGLGraph objects into a single graph.
     
     Args
     ----
+    graph_normal : graph
+        graph with normal nodes (i.e. obtained via RPC)
     *args : Graph
+        graphs with abnormal nodes (i.e. obtrained from external source via REST)
         Variable number of Graph objects to be merged.
     
     Returns
@@ -289,25 +285,46 @@ def graph_merger(*args: Graph) -> Graph:
     graph : Graph
         A single merged Graph object
     """
-
     try:
         dgl_graphs = [graph.graph for graph in args]
-        dgl_graph = dgl.batch(dgl_graphs)
-        graph = Graph(graph=dgl_graph)
-    
-        nx_graph = graph.graph.to_networkx()
-        logger.info(f'{nx_graph=}')
-
-        '''
-        if nx_graph.is_strongly_connected(nx_graph):
-            logger.info("The graph is fully connected.")
-        else:
-            logger.warning("The graph contains disconnected subgraphs.")
-            components = list(nx.connected_components(nx_graph))
-            logger.warning(f"Number of connected components: {len(components)}")
-            logger.warning("Component sizes:", [len(c) for c in components])
-        '''
+        attr = [graph.index_to_address for graph in args]
         
+        dgl_graph = dgl.batch(dgl_graphs)
+        graph = Graph(graph=dgl_graph) # call '_load_from_dglGraph'
+    
+        '''WARNINGS: deprecate '_load_from_dglGraph' if this works!
+        node_feature = graph_normal.node_features
+        edge_feature = graph_normal.edge_features
+        
+        node_feature_list = [graph.node_features for graph in args]
+        edge_feature_list = [graph.edge_features for graph in args]
+        
+        if len(args) == 1:
+            node_feaures = {**node_feature_list, node_feature}
+            edge_feaures = {**edge_feature_list, edge_feature}
+        else:
+            pass
+
+        graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
+        '''
+
+        nx_graph = graph.graph.to_networkx()
+        components = list(nx.weakly_connected_components(nx_graph))
+        num_subgraphs = len(components)       
+        component_sizes = [len(component) for component in components]
+        percentiles = np.percentile(component_sizes, [0, 25, 50, 75, 100]).astype(int)
+
+        if num_subgraphs == 1:
+            logger.info("Graph is connected.") 
+        else:
+            logger.warning(f"Graph contains {num_subgraphs} disconnected subgraphs.")
+            logger.warning(
+                f"Subgraph size distribution: "
+                f"min={percentiles[0]}, Q1={percentiles[1]}, median={percentiles[2]}, "
+                f"Q3={percentiles[3]}, max={percentiles[4]}"
+            )
+            
+                
         logger.info("Graph Merge Successful.")
         return graph
     

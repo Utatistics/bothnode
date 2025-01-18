@@ -1,6 +1,7 @@
-from pathlib import Path
 import json
 import subprocess
+from pathlib import Path
+
 from web3 import Web3
 from eth_abi import encode
 

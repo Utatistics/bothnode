@@ -12,7 +12,7 @@ from backend.object.graph import NodeFeature, EdgeFeature, Graph, graph_merger
 from backend.object.model import GraphConvNetwork, GraphSAGE
 from backend.object.crowler import CryptoScamDBCrowler, EtherScanAPI
 from backend.object.randomwalk import Node2Vec
-from backend.driver.ml import call_one_class_SVM
+from backend.driver.ml import call_one_class_SVM, call_performance_metrics
 
 from backend.util.config import Config
 from backend.object.db import MongoDBClient, add_auth_to_mongo_connection_string
@@ -189,8 +189,10 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
         the length of blocks to aggregate the transactions from.
     """        
     graph_normal = graph_builder_normal(net=net, block_num=block_num, block_len=block_len) 
+    
     graph_abnormal = graph_builder_abnormal(net=net)
     graph_abnormal.graph_sampler(base_num=graph_normal.graph.num_nodes(), base_ratio=.1)
+ 
     graph = graph_merger(graph_normal, graph_abnormal)        
     graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_visualization.png", anomaly_dict=None)
     
@@ -230,22 +232,24 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
                           ,out_feats=output_dim)
     
     # Learn embeddings
-    embeddings = graphsage.learn_embedding(graph=graph.graph
-                                               ,features=graph.graph.ndata.get('tensor', None)
-                                               ,labels=similarity_matrix
-                                               ,epochs=20
-                                               ,learning_rate=0.01)
+    embeddings = graphsage.learn_embedding(graph=graph.graph                                    
+                                           ,features=graph.graph.ndata.get('tensor', None)
+                                           ,labels=similarity_matrix
+                                           ,epochs=20
+                                           ,learning_rate=0.01)
 
     torch.save(embeddings, config.PRIVATE_DIR / 'new_embeddings.pt')  
     logger.info(f"Network Embedding :{embeddings.shape}\n{embeddings}")
-    
+
+    # downstream anamoly detection    
     logger.info("Training One-class SVM")
+    label_address = graph_abnormal.address_to_index.keys()
     anomoly_score, anomaly_dict = call_one_class_SVM(array=embeddings.numpy())
-    anomoly_addoress = graph.get_node_addresses(anomaly_dict.keys())
-    
+    anomoly_address = graph.get_node_addresses(anomaly_dict.keys())
     logger.info(f"{anomaly_dict=}")
-    logger.info(f"{anomoly_addoress=}")
-     
+    logger.info(f"{anomoly_address=}")
+    call_performance_metrics(label_address=label_address, anomaly_address=anomaly_address)
+
     # visualizatoin
     graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_anomalies_visualization.png", anomaly_dict=anomaly_dict)
 
@@ -279,10 +283,11 @@ def graph_builder_abnormal(net: Network):
     
     Args
     ----
-
+    None : None
+        need not network
     Retunrs
     -------
-    graph : Graph
+    net : Graph
         graph object    
     """
     logger.info("DB query.")
