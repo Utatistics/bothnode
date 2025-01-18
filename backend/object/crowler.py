@@ -14,15 +14,9 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-
-class CryptoScamDBCrowler(object):
-    def __init__(self, extl_config: dict):
-        """set endpoint and configure session
-        
-        Args
-        ----
-        extl_config : dict
-            partial config object
+class Crowler(object):
+    def __init__(self):
+        """
         """
         retries = Retry(
             total=3,
@@ -34,14 +28,28 @@ class CryptoScamDBCrowler(object):
         
         self.session = requests.Session()
         self.session.mount("https://", adapter)
-        self.endpoint = extl_config['cryptoScamDB']
-    
+
     def __del__(self):
         """Ensure the session is closed when the object is deleted.
         """
         if hasattr(self, 'session'):
             self.session.close()
-            
+    
+    
+class CryptoScamDBCrowler(Crowler):
+    def __init__(self, extl_config: dict):
+        """
+        Set endpoint and configure session.
+        
+        Args
+        ----
+        extl_config : dict
+            partial config object
+        """
+        super().__init__()
+        
+        self.endpoint = extl_config['cryptoScamDB']
+                    
     def _pages_js_perser(self, res) -> list:
         """parse the response to obrain
         
@@ -205,7 +213,7 @@ class CryptoScamDBCrowler(object):
             json.dump(self.address_dict, file, indent=4)
 
 
-class EtherScanCrowler(object):
+class EtherScanCrowler(Crowler):
     def __init__(self, extl_config: dict):
         """
         
@@ -214,10 +222,12 @@ class EtherScanCrowler(object):
         extl_config : dict
             particial config object
         """
-        self.endpoint = extl_config['etherScan']
+        super().__init__()
         
- 
-class EtherScanAPI(object):
+        self.endpoint = extl_config['etherScan']
+
+         
+class EtherScanAPI(Crowler):
     def __init__(self, extl_config: dict, path_to_key: Path):
         """Set endpoint and configure session
         
@@ -228,27 +238,13 @@ class EtherScanAPI(object):
         path_to_key : Path
             path to the api key stored in a file.
         """
-        retries = Retry(
-            total=3,
-            backoff_factor=1,
-            status_forcelist=[500, 502, 503, 504],
-            allowed_methods=["GET"]
-        )
-        adapter = HTTPAdapter(max_retries=retries)
-        self.session = requests.Session()
-        self.session.mount("https://", adapter)   
+        super().__init__()
              
         self.endpoint = extl_config['etherScanAPI']
         
         with open(path_to_key, mode='r') as f:
             self.api_key = f.read()
             logger.info(f'{self.api_key=}')
-
-    def __del__(self):
-        """Ensure the session is closed when the object is deleted.
-        """
-        if hasattr(self, 'session'):
-            self.session.close()
     
     def _get_block_num_as_per_addr(self, address: str, loc: str) -> int:
         """implements API call to get the block num involving the given address
