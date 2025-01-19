@@ -9,7 +9,7 @@ from backend.object.contract import Contract
 from backend.object.block import Block
 from backend.object.agent import FrontRunner, target_criteria
 from backend.object.graph import NodeFeature, EdgeFeature, Graph, graph_merger
-from backend.object.model import GraphConvNetwork, GraphSAGE
+from backend.object.model import GraphSAGE
 from backend.object.crowler import CryptoScamDBCrowler, EtherScanAPI
 from backend.object.randomwalk import Node2Vec
 from backend.driver.ml import call_one_class_SVM, call_performance_metrics
@@ -192,7 +192,7 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     
     graph_abnormal = graph_builder_abnormal(net=net)
     graph_abnormal.graph_sampler(base_num=graph_normal.graph.num_nodes(), base_ratio=.1)
- 
+    
     graph = graph_merger(graph_normal, graph_abnormal)        
     graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_visualization.png", anomaly_dict=None)
     
@@ -248,7 +248,7 @@ def detect_anamolies(net: Network, method: str, block_num: int, block_len: int) 
     anomoly_address = graph.get_node_addresses(anomaly_dict.keys())
     logger.info(f"{anomaly_dict=}")
     logger.info(f"{anomoly_address=}")
-    call_performance_metrics(label_address=label_address, anomaly_address=anomaly_address)
+    # call_performance_metrics(label_address=label_address, anomaly_address=anomaly_address)
 
     # visualizatoin
     graph.draw_graph(path_to_png=config.PRIVATE_DIR / "graph_anomalies_visualization.png", anomaly_dict=anomaly_dict)
@@ -269,7 +269,7 @@ def graph_builder_normal(net: Network, block_num: int, block_len: int):
         block_num = net.get_latest_block_num()
     block = Block(net_name=net.name)
     block.query_blocks(block_num=block_num, block_len=block_len) # via RPC 
-    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'block_rpc.json') # for debugging purposes
+    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata_normal.json') # for debugging purposes
 
     logger.info("Normal-Graph construction")
     node_feature = NodeFeature(block_data=block.block_data)
@@ -300,7 +300,7 @@ def graph_builder_abnormal(net: Network):
     
     block = Block(net_name=net.name)
     block.aggregate_from_transactions(docs=docs['addresses']) # via external service (i.e. CryptoScamDB + Etherscan)
-    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'block_rest.json') # for debugging purposes
+    block.write_to_json(path_to_json=config.PRIVATE_DIR / 'blockdata_abnormal.json') # for debugging purposes
 
     logger.info("Abnormal Graph construction")
     node_feature = NodeFeature(block_data=block.block_data)

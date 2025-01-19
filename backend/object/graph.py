@@ -51,7 +51,7 @@ class NodeFeature(object):
                         self.nodes[recipient] = {"address": recipient, "total_sent": 0, "total_received": 0, "total_gas_used": 0, "last_active": 0}
                     self.nodes[recipient]["total_received"] += value
                     self.nodes[recipient]["last_active"] = max(self.nodes[recipient]["last_active"], timestamp)
-                                        
+       
     def write_to_json(self, path_to_json: str) -> None:
         """
         Save the extracted edges to a JSON file.
@@ -65,6 +65,7 @@ class NodeFeature(object):
         """
         with open(path_to_json, "w") as jf:
             json.dump(self.nodes, jf, indent=2)
+
         
 class EdgeFeature(object):
     def __init__(self, block_data: List[Dict]):
@@ -108,45 +109,38 @@ class EdgeFeature(object):
         with open(path_to_json, "w") as jf:
             json.dump(self.edges, jf, indent=2)
 
+
 class Graph(object):
-    def __init__(self, node_feature: NodeFeature=None, edge_feature: EdgeFeature=None, graph: dgl.DGLGraph=None) -> None:
+    def __init__(self, node_feature: NodeFeature, edge_feature: EdgeFeature) -> None:
         """custom graph object
         
         Args
         ----
         node_feature : NodeFeature
         edge_feature : EdgeFeature
-        graph : dgl.DGLGraph
-            when provided, used to create the graph without using Node/EdgeFeature instances
         
         """
-        if graph:
-            self._load_from_dglGraph(graph=graph)
-            logger.info(f'{self.graph.num_nodes()=}')
-            logger.info(f'{self.graph.num_edges()=}')
+        self.node_feature = node_feature
+        self.edge_feature = edge_feature            
+        self.index_to_address = {i: features['address'] for i, features in enumerate(self.node_feature.nodes.values())}
+        self.address_to_index = {features['address']: i for i, features in enumerate(self.node_feature.nodes.values())}
+                                        
+        try:
+            self._node_link_generator()
+            logger.info("Successfully constructed graph object.")
+        except Exception as e:
+            logger.error(f"node link generation failed: {e}") 
 
-        else:
-            self.node_feature = node_feature
-            self.edge_feature = edge_feature            
-            self.index_to_address = {i: features['address'] for i, features in enumerate(self.node_feature.nodes.values())}
-            self.address_to_index = {features['address']: i for i, features in enumerate(self.node_feature.nodes.values())}
-                                          
-            try:
-                self._node_link_generator()
-                logger.info("Successfully constructed graph object.")
-            except Exception as e:
-                logger.error(f"node link generation failed: {e}") 
-
-            try:
-                logger.info(f'{self.graph.num_nodes()=}')
-                logger.info(f'{self.graph.num_edges()=}')
-
-                self._tensor_generator()         
-                logger.info("Successfully added features to the graph.")
-            except Exception as e:
-                logger.error(f"tensor generation failed: {e}") 
-            
-    def _node_link_generator(self):
+        try:
+            self._tensor_generator()         
+            logger.info("Successfully added features to the graph.")
+        except Exception as e:
+            logger.error(f"tensor generation failed: {e}") 
+          
+        logger.info(f'number of graph nodes: {self.graph.num_nodes()}')
+        logger.info(f'number of graph edges: {self.graph.num_edges()}')
+   
+    def _node_link_generator(self) -> None:
         """create DGL graph object
         """
         src = []
@@ -162,7 +156,7 @@ class Graph(object):
     
         self.graph = dgl.graph((src, dst))
 
-    def _tensor_generator(self):
+    def _tensor_generator(self) -> None:
         """extract tensors from node and edge features
         """        
         node_features = []
@@ -186,17 +180,44 @@ class Graph(object):
         
         self.graph.ndata['tensor'] = torch.tensor(node_features, dtype=torch.float32)
         self.graph.edata['tensor'] = torch.tensor(edge_features, dtype=torch.float32)
+
+    def _update_node_feature(self, address_set: set) -> None:
+        """update node_feature attribute given the current graph
+        
+        Args
+        ----
+        address_set : set
+        
+        """
+        self.node_feature.nodes = {address: self.node_feature.nodes[address] for address in address_set}
+                
+    def _update_edge_feature(self, address_set: set) -> None:
+        """update edge_feature attribute given the current graph
+
+        Args
+        ----
+        address_set : set
+        
+        """
+        edge_id_set = set() 
+        for edge in self.edge_feature.edges:
+            edge_id = edge['edge_id']
+            if edge['from'] in address_set or edge['to'] in address_set:
+                edge_id_set.add(edge_id) 
     
-    def _load_from_dglGraph(self, graph: dgl.DGLGraph):
-        logger.info("Loading from the dgl.DGLGraph")
-        self.graph = graph 
-    
-    def graph_sampler(self, base_num: int, base_ratio: float):
+        logger.debug(f'{len(edge_id_set)=}')
+        self.edge_feature.edges = [edge for edge in self.edge_feature.edges if edge['edge_id'] in edge_id_set]
+            
+    def graph_sampler(self, base_num: int, base_ratio: float) -> None:
         """sampling 
         
         Args
         ----
-        
+        base_num : int
+            number of nodes from normal graph to sample from, in propotion to the given base_ratio
+        base_ratio : float
+            sampling ratio
+
         """
         logger.info(f"Appying Graph Sampling")
     
@@ -206,14 +227,14 @@ class Graph(object):
         logger.debug(f'{self.graph.num_nodes()=}')
         logger.debug(f'{p=}')
         
+        # node selection logic
         in_degrees = self.graph.in_degrees()
         out_degrees = self.graph.out_degrees()
         degrees = in_degrees + out_degrees
-        sorted_node_indices = torch.argsort(degrees, descending=True) 
-        num_top_nodes = int(p * len(sorted_node_indices))        
-        top_nodes = sorted_node_indices[:num_top_nodes]
-        subgraph = self.graph.subgraph(top_nodes.tolist()) 
-     
+        node_indices = torch.argsort(degrees, descending=True) # sorted in the order of highest degrees
+        sampled_nodes = node_indices[:int(p * len(node_indices))]  # top i-th node to be selected 
+        subgraph = self.graph.subgraph(sampled_nodes.tolist()) 
+
         if '_ID' in subgraph.ndata:
             del subgraph.ndata['_ID']
         if '_ID' in subgraph.edata:
@@ -221,8 +242,31 @@ class Graph(object):
         
         self.graph = subgraph
         
-        logger.info(f'{self.graph.num_nodes()=}')
-        logger.info(f'{self.graph.num_edges()=}')
+        address_set = set([self.index_to_address[int(i)] for i in sampled_nodes])
+        logger.warning(f'{len(address_set)=}')
+
+        self._update_node_feature(address_set=address_set)
+        self._update_edge_feature(address_set=address_set)
+        
+        logger.info(f'number of graph nodes: {self.graph.num_nodes()}')
+        logger.info(f'number of graph edges: {self.graph.num_edges()}')
+        logger.warning(f'{len(self.node_feature.nodes)=}')
+        logger.warning(f'{len(self.edge_feature.edges)=}')
+      
+    def get_node_addresses(self, node_index: list) -> list:
+        """obtaine list of node addresses based on the given indices
+        
+        Args
+        ----
+        node_index : list
+            list of node indices 
+        
+        Returns
+        -------
+        node_address : list
+            list of node addresses
+        """
+        return [self.index_to_address[i] for i in node_index]
 
     def draw_graph(self, path_to_png: Path, anomaly_dict: dict) -> None:
         """visuallize graph structure
@@ -253,21 +297,7 @@ class Graph(object):
         
         plt.savefig(path_to_png, format="PNG")
         plt.close()  # Close the plot to avoid it showing up
-    
-    def get_node_addresses(self, node_index: list) -> list:
-        """obtaine list of node addresses based on the given indices
-        
-        Args
-        ----
-        node_index : list
-            list of node indices 
-        
-        Returns
-        -------
-        node_address : list
-            list of node addresses
-        """
-        return [self.index_to_address[i] for i in node_index]
+
 
 def graph_merger(graph_normal: Graph, *args: Graph) -> Graph:
     """Merges multiple DGLGraph objects into a single graph.
@@ -277,6 +307,7 @@ def graph_merger(graph_normal: Graph, *args: Graph) -> Graph:
     graph_normal : graph
         graph with normal nodes (i.e. obtained via RPC)
     *args : Graph
+        abnorml graphs *contained in tuple
         graphs with abnormal nodes (i.e. obtrained from external source via REST)
         Variable number of Graph objects to be merged.
     
@@ -285,28 +316,32 @@ def graph_merger(graph_normal: Graph, *args: Graph) -> Graph:
     graph : Graph
         A single merged Graph object
     """
+    logger.info("Nerging the graphs...")
     try:
-        dgl_graphs = [graph.graph for graph in args]
+        dgl_graphs = [graph.graph for graph in args] # abnormal graphs
         attr = [graph.index_to_address for graph in args]
         
+        '''
         dgl_graph = dgl.batch(dgl_graphs)
         graph = Graph(graph=dgl_graph) # call '_load_from_dglGraph'
-    
-        '''WARNINGS: deprecate '_load_from_dglGraph' if this works!
-        node_feature = graph_normal.node_features
-        edge_feature = graph_normal.edge_features
-        
-        node_feature_list = [graph.node_features for graph in args]
-        edge_feature_list = [graph.edge_features for graph in args]
-        
-        if len(args) == 1:
-            node_feaures = {**node_feature_list, node_feature}
-            edge_feaures = {**edge_feature_list, edge_feature}
-        else:
-            pass
-
-        graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
         '''
+        
+        node_feature = graph_normal.node_feature
+        edge_feature = graph_normal.edge_feature
+             
+        nodes = node_feature.nodes
+        edges = edge_feature.edges
+        node_list = [graph.node_feature.nodes for graph in args]
+        edge_list = [graph.edge_feature.edges for graph in args]
+        
+        for node, edge in zip(node_list, edge_list):
+            nodes = {**node, **nodes}
+            edges += edge
+        
+        # overwrite node/edge data
+        node_feature.nodes = nodes
+        edge_feature.edges = edges         
+        graph = Graph(node_feature=node_feature, edge_feature=edge_feature)
 
         nx_graph = graph.graph.to_networkx()
         components = list(nx.weakly_connected_components(nx_graph))

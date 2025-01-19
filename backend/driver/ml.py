@@ -68,4 +68,4 @@ def call_performance_metrics(label_address: list, anomaly_address: list) -> None
         list of predicted anamoly addresses
         
     """
-    logger.info(f'{}')
+    logger.info(f'{None}')
